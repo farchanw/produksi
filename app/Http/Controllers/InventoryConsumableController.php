@@ -8,6 +8,7 @@ use App\Models\InventoryConsumableStock;
 use App\Models\InventoryConsumableMovement;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Validation;
+use Idev\EasyAdmin\app\Helpers\Constant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -326,6 +327,59 @@ class InventoryConsumableController extends DefaultController
             'labels' => $labels,
             'values' => $values,
         ]);
+    }
+
+    protected function indexApi()
+    {
+        $manyDatas = 10;
+        if (request('manydatas')) {
+            $manyDatas = request('manydatas');
+            if ($manyDatas == "All") {
+                $manyDatas = 10000; // we are using this boundaries to prevent lack of request
+            }
+        }
+        $permission =  $this->arrPermissions;
+        if ($this->dynamicPermission) {
+            $permission = (new Constant())->permissionByMenu($this->generalUri);
+        }
+        foreach ($this->extendPermissions as $keyE => $ep) {
+            $permission[] = $ep;
+        }
+        $eb = [];
+        $dataColumns = [];
+        $dataColFormat = [];
+        foreach ($this->tableHeaders as $key => $col) {
+            if ($key > 0) {
+                $dataColumns[] = $col['column'];
+                if (array_key_exists("formatting", $col)) {
+                    $dataColFormat[$col['column']] = $col['formatting'];
+                }
+            }
+        }
+
+        foreach ($this->actionButtons as $key => $ab) {
+            if (in_array(str_replace("btn_", "", $ab), $permission)) {
+                $eb[] = $ab;
+            }
+        }
+
+        $dataQueries = $this->defaultDataQuery()->paginate($manyDatas);
+
+        $datas['extra_buttons'] = $eb;
+        $datas['data_columns'] = $dataColumns;
+        $datas['data_col_formatting'] = $dataColFormat;
+        $datas['data_queries'] = $dataQueries;
+        $datas['data_permissions'] = $permission;
+        $datas['uri_key'] = $this->generalUri;
+
+        foreach ($datas['data_queries'] as $key => $dq) {
+            if($dq->stock <= $dq->minimum_stock){
+                $dq->name = "<span class='text-danger fw-bold'>".$dq->name."</span>";
+                $dq->stock = "<span class='text-danger fw-bold'>".$dq->stock."</span>";
+            }
+        }
+
+        return $datas;
     }
 
 
