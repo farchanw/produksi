@@ -10,21 +10,16 @@ class Sidebar
 {
 
   public function generate()
-  {    
+  {
     $menus = $this->menus();
     $constant = new Constant();
     $permission = $constant->permissions();
 
     $arrMenu = [];
     foreach ($menus as $key => $menu) {
-      $visibilityMenu = in_array($menu['key'] . ".index", $permission['list_access']);
-      if (isset($menu['override_visibility'])) {
-        $visibilityMenu = $menu['override_visibility'];
-      }
-      $menu['visibility'] = $visibilityMenu;
-      $menu['url'] = (Route::has($menu['key'].".index")) ? route($menu['key'].".index") : "#";
+      $menu['url'] = (Route::has($menu['key'] . ".index")) ? route($menu['key'] . ".index") : "/idev-admin";
       $menu['base_key'] = $menu['key'];
-      $menu['key'] = $menu['key'].".index";
+      $menu['key'] = $menu['key'] . ".index";
 
       $arrMenu[] = $menu;
     }
@@ -32,65 +27,101 @@ class Sidebar
   }
 
 
-  public function menus(){
+  public function menus()
+  {
     $role = "admin";
-    if(config('idev.enable_role',true)){
+    $currentModule = session()->get('module');
+    if (config('idev.enable_role', true)) {
       $role = Auth::user()->role->name;
     }
-    return
-      [
-        [
-          'name' => 'Dashboard',
-          'icon' => 'ti ti-dashboard',
-          'key' => 'dashboard',
-          'base_key' => 'dashboard',
-          'visibility' => true,
-          'ajax_load' => false,
-          'childrens' => []
-        ],
-        [
-          'name' => 'Role',
-          'icon' => 'ti ti-key',
-          'key' => 'role',
-          'base_key' => 'role',
-          'visibility' => in_array($role, ['admin']),
-          'ajax_load' => false,
-          'childrens' => []
-        ],
-        [
-          'name' => 'User',
-          'icon' => 'ti ti-users',
-          'key' => 'user',
-          'base_key' => 'user',
-          'visibility' => in_array($role, ['admin']),
-          'ajax_load' => false,
-          'childrens' => []
-        ],
 
-        [
-          'name' => 'Inventory Consumable',
-          'icon' => 'ti ti-menu',
-          'key' => 'inventory-consumable',
-          'base_key' => 'inventory-consumable',
-          'visibility' => true,
-          'ajax_load' => false,
-          'childrens' => []
-        ],
-        [
-          'name' => 'Inventory Consumable Movement',
-          'icon' => 'ti ti-menu',
-          'key' => 'inventory-consumable-movement',
-          'base_key' => 'inventory-consumable-movement',
-          'visibility' => true,
-          'ajax_load' => false,
-          'childrens' => []
-        ],
-      ];
+    $generalMenu = [
+      [
+        'name' => 'Back Home',
+        'icon' => 'ti ti-arrow-left',
+        'key' => 'idev-admin',
+        'base_key' => 'idev-admin',
+        'visibility' => true,
+        'ajax_load' => false,
+        'childrens' => []
+      ],
+      [
+        'name' => 'Dashboard',
+        'icon' => 'ti ti-dashboard',
+        'key' => 'dashboard-' . $currentModule,
+        'base_key' => 'dashboard-' . $currentModule,
+        'visibility' => true,
+        'ajax_load' => false,
+        'childrens' => []
+      ],
+    ];
+
+    return array_merge(
+      $generalMenu,
+      $this->menuInventory($role, $currentModule),
+      $this->menuSetting($role, $currentModule),
+
+    );
   }
 
 
-  public function defaultAllAccess($exclude = []) {
-    return ['list', 'create','show', 'edit', 'delete','import-excel-default', 'export-excel-default','export-pdf-default'];
+  private function menuInventory($role, $module)
+  {
+    $currentModule = 'inventory';
+
+    return [
+      [
+        'name' => 'Inventory Consumable',
+        'icon' => 'ti ti-menu',
+        'key' => 'inventory-consumable',
+        'base_key' => 'inventory-consumable',
+        'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+        'ajax_load' => false,
+        'childrens' => []
+      ],
+      [
+        'name' => 'Inventory Consumable Movement',
+        'icon' => 'ti ti-menu',
+        'key' => 'inventory-consumable-movement',
+        'base_key' => 'inventory-consumable-movement',
+        'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+        'ajax_load' => false,
+        'childrens' => []
+      ],
+    ];
+  }
+
+
+
+  private function menuSetting($role, $module)
+  {
+    $currentModule = 'setting';
+
+    return [
+      [
+        'name' => 'Role',
+        'icon' => 'ti ti-key',
+        'key' => 'role',
+        'base_key' => 'role',
+        'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+        'ajax_load' => false,
+        'childrens' => []
+      ],
+      [
+        'name' => 'User',
+        'icon' => 'ti ti-users',
+        'key' => 'user',
+        'base_key' => 'user',
+        'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+        'ajax_load' => false,
+        'childrens' => []
+      ],
+    ];
+  }
+
+  public function defaultAllAccess($exclude = [])
+  {
+    return ['list', 'create', 'show', 'edit', 'delete', 'import-excel-default', 'export-excel-default', 'export-pdf-default'];
   }
 
 
@@ -102,5 +133,4 @@ class Sidebar
 
     return $arrMenu[$menuKey] ?? $this->defaultAllAccess();
   }
-
 }

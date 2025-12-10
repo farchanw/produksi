@@ -97,6 +97,13 @@
     text-align: center;
 }
 
+
+@media (min-width: 1080px) {
+    #createForm-purchase-order{
+        width: 50%;
+    }
+}
+
 @media (max-width: 960px) {
     .col-divide-5{
         width: 25%;

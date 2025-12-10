@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Inventory;
 
 use App\Models\InventoryConsumableStock;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;

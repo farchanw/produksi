@@ -71,6 +71,59 @@ function submitAfterValid(formId, suffixID = "", massError = false) {
     });
 }
 
+function submitAndReload(formId, suffixID = "") {
+    var initText = $("#btn-for-" + formId).html();
+
+    var imgLoading =
+        "<img src='" +
+        baseUrl +
+        "/easyadmin/idev/img/loading-buffering.gif' style='width:15px;' width='20px'>";
+    $("#btn-for-" + formId).html(imgLoading + " Processing...");
+    $("#btn-for-" + formId).attr("disabled", "disabled");
+
+    var formData = new FormData($("#" + formId)[0]);
+
+    var url = $("#" + formId).attr("action");
+
+    $(".error-message").remove();
+    $(".progress-loading").remove();
+    blinkElement(".btn");
+    setInterval(blinkElement, 1000);
+
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            $("#btn-for-" + formId).removeAttr("disabled");
+            $(".progress-loading").remove();
+            $("#btn-for-" + formId).html(initText);
+            if (response.status) {
+                location.reload();
+            } else {
+                messageErrorGeneral("#" + formId, response.message);
+                $.each(response.validation_errors, function (index, error) {
+                    var currentID = $("#" + error.id + suffixID);
+                    $(currentID).css({ border: "1px solid #c74266" });
+                    messageErrorForm(currentID, error.message);
+                });
+            }
+        },
+        error: function (xhr, status, error) {
+            $("#btn-for-" + formId).html(initText);
+            $("#btn-for-" + formId).removeAttr("disabled");
+            $(".progress-loading").remove();
+            var messageErr = "Something Went Wrong";
+            if (xhr.responseJSON) {
+                messageErr = xhr.responseJSON.message;
+            }
+            messageErrorGeneral("#" + formId, messageErr);
+        },
+    });
+}
+
 function blinkElement(elem) {
     $(elem).fadeOut(500);
     $(elem).fadeIn(300);
@@ -108,13 +161,13 @@ function messageErrorGeneral(currentID, message, type = "danger") {
     }, 6000);
 }
 
-let pubAttrs = {}
-let listCheckboxes = []
+let pubAttrs = {};
+let listCheckboxes = [];
 
 function idevTable(formId, attrs = []) {
     var datastring = $("#form-filter-" + formId).serialize();
     var url = $("#form-filter-" + formId).attr("action");
-    var cbEnable = false
+    var cbEnable = false;
     if (attrs.url) {
         url = attrs.url;
     }
@@ -161,44 +214,76 @@ function idevTable(formId, attrs = []) {
                         1 +
                         key +
                         (dataQueries.current_page - 1) * dataQueries.per_page;
-                    
+
                     if ($(window).width() <= 765) {
                         $(idTable + " thead").html("");
                         $(idTable).addClass("table-striped");
 
                         htmlTable += "<tr><td>";
                         // htmlTable += "<td>" + numb + "</td>";
-                        $.each(dataColumns, function (key2, col) {  
-                            var mLabel = col.replace("_", " ").toUpperCase() 
+                        $.each(dataColumns, function (key2, col) {
+                            var mLabel = col.replace("_", " ").toUpperCase();
                             htmlTable += "<b>" + mLabel + " : </b><br>";
 
-                            var mItem = formattingColumn(item, col, dataColFormat)
+                            var mItem = formattingColumn(
+                                item,
+                                col,
+                                dataColFormat
+                            );
 
-                            if (col == 'view_image') {
-                                htmlTable += "<div><img class='img-thumbnail img-responsive' width='120px' src='"+mItem+"'></div>";
-                            }else{
-                                htmlTable += "<div class='" +formId +"-"+primaryKey+"-" +col +"'>" + mItem +"</div>";
+                            if (col == "view_image") {
+                                htmlTable +=
+                                    "<div><img class='img-thumbnail img-responsive' width='120px' src='" +
+                                    mItem +
+                                    "'></div>";
+                            } else {
+                                htmlTable +=
+                                    "<div class='" +
+                                    formId +
+                                    "-" +
+                                    primaryKey +
+                                    "-" +
+                                    col +
+                                    "'>" +
+                                    mItem +
+                                    "</div>";
                             }
                         });
                         htmlTable +=
                             "<div class='col-action' style='white-space: nowrap;'>";
                         $.each(extraButtons, function (key3, eb) {
-                            if (item[eb] && dataPermissions.includes(eb.replace("btn_", ""))) {
+                            if (
+                                item[eb] &&
+                                dataPermissions.includes(eb.replace("btn_", ""))
+                            ) {
                                 htmlTable += item[eb];
                                 intActionCol++;
                             }
                         });
                         htmlTable += "</div>";
                         htmlTable += "</td></tr>";
-                    }else{
+                    } else {
                         htmlTable += "<tr>";
                         if (cbEnable) {
-                            htmlTable += "<td><input type='checkbox' class='cb-"+formId+"' id='single-"+formId+"-"+primaryKey+"' value='"+primaryKey+"'></td>";
+                            htmlTable +=
+                                "<td><input type='checkbox' class='cb-" +
+                                formId +
+                                "' id='single-" +
+                                formId +
+                                "-" +
+                                primaryKey +
+                                "' value='" +
+                                primaryKey +
+                                "'></td>";
                         }
                         htmlTable += "<td>" + numb + "</td>";
                         $.each(dataColumns, function (key2, col) {
-                            var mItem = formattingColumn(item, col, dataColFormat);
-    
+                            var mItem = formattingColumn(
+                                item,
+                                col,
+                                dataColFormat
+                            );
+
                             if (col == "view_image") {
                                 htmlTable +=
                                     "<td><img class='img-thumbnail img-responsive' width='120px' src='" +
@@ -257,7 +342,7 @@ function idevTable(formId, attrs = []) {
             $("button").removeAttr("disabled");
 
             if (cbEnable) {
-                tableCheckboxManager(formId)
+                tableCheckboxManager(formId);
             }
         },
         error: function (xhr, status, error) {
@@ -279,42 +364,55 @@ function idevTable(formId, attrs = []) {
     });
 }
 
+function tableCheckboxManager(uriKey) {
+    $("#" + uriKey + "-cb-all").click(function () {
+        $(".cb-" + uriKey).prop("checked", jQuery(this).prop("checked"));
 
-function tableCheckboxManager(uriKey){
-    $('#'+uriKey+"-cb-all").click(function(){
-        $('.cb-'+uriKey).prop('checked', jQuery(this).prop('checked'));
-
-        $( '.cb-'+uriKey ).each(function( index ) {
-            if ($(this).prop('checked')) {
-                listCheckboxes.push($(this).val())
-            }else{
-                listCheckboxes = listCheckboxes.filter(item => item !== $(this).val());                
+        $(".cb-" + uriKey).each(function (index) {
+            if ($(this).prop("checked")) {
+                listCheckboxes.push($(this).val());
+            } else {
+                listCheckboxes = listCheckboxes.filter(
+                    (item) => item !== $(this).val()
+                );
             }
         });
-        sessionStorage.setItem("bulk_"+uriKey, JSON.stringify(listCheckboxes));
+        sessionStorage.setItem(
+            "bulk_" + uriKey,
+            JSON.stringify(listCheckboxes)
+        );
     });
 
-    $('.cb-'+uriKey).click(function(){
-        if (!$(this).prop('checked')) {
-            $('#'+uriKey+"-cb-all").prop('checked', false);
-            listCheckboxes = listCheckboxes.filter(item => item !== $(this).val());
+    $(".cb-" + uriKey).click(function () {
+        if (!$(this).prop("checked")) {
+            $("#" + uriKey + "-cb-all").prop("checked", false);
+            listCheckboxes = listCheckboxes.filter(
+                (item) => item !== $(this).val()
+            );
         } else {
-            listCheckboxes.push($(this).val())
-            if ($('.cb-'+uriKey+':checked').length == $('.cb-'+uriKey).length) {
-                $('#'+uriKey+"-cb-all").prop('checked', true);
+            listCheckboxes.push($(this).val());
+            if (
+                $(".cb-" + uriKey + ":checked").length ==
+                $(".cb-" + uriKey).length
+            ) {
+                $("#" + uriKey + "-cb-all").prop("checked", true);
             }
         }
-        sessionStorage.setItem("bulk_"+uriKey, JSON.stringify(listCheckboxes));
-    });
-    
-    $.each(listCheckboxes, function( index, value ) {
-        $('#single-'+uriKey+"-"+value).prop('checked', true);
+        sessionStorage.setItem(
+            "bulk_" + uriKey,
+            JSON.stringify(listCheckboxes)
+        );
     });
 
-    var checkingAllCb = $('.cb-'+uriKey+':checked').length == $('.cb-'+uriKey).length
-    $('#'+uriKey+"-cb-all").prop('checked', checkingAllCb);
+    $.each(listCheckboxes, function (index, value) {
+        $("#single-" + uriKey + "-" + value).prop("checked", true);
+    });
 
-    sessionStorage.setItem("bulk_"+uriKey, JSON.stringify(listCheckboxes));
+    var checkingAllCb =
+        $(".cb-" + uriKey + ":checked").length == $(".cb-" + uriKey).length;
+    $("#" + uriKey + "-cb-all").prop("checked", checkingAllCb);
+
+    sessionStorage.setItem("bulk_" + uriKey, JSON.stringify(listCheckboxes));
 }
 
 function generatePaginate(formId, current, pages) {
@@ -633,6 +731,25 @@ const formatToRupiah = (number) => {
     }).format(number);
 };
 
+const unitConversionRates = {
+    kg: {
+        gram: 1000,
+        mg: 1000000,
+    },
+    gram: {
+        kg: 1 / 1000,
+    },
+    mg: {
+        kg: 1 / 1000000,
+    },
+    liter: {
+        ml: 1000,
+    },
+    ml: {
+        liter: 1 / 1000,
+    },
+};
+
 function showDetailPage(route, mClass, heightSkeleton = 10) {
     $(mClass).html(skeleton(heightSkeleton));
     $(mClass).css("filter", "blur(2px)");
@@ -658,122 +775,144 @@ function skeleton(heightSkeleton) {
         mHtml +=
             "<div style='width:" +
             randWidth +
-            "%; height:"+heightSkeleton+"px; background:silver; margin:4px;'></div>";
+            "%; height:" +
+            heightSkeleton +
+            "px; background:silver; margin:4px;'></div>";
     }
 
     return mHtml;
 }
 
-function idevSetEdit(id, uriKey)
-{
-    var uriEdit = baseUrl+"/"+uriKey+"/"+id+"/edit"
-    var uriUpdate = baseUrl+"/"+uriKey+"/"+id+""
-    $('.idev-form').val(null).trigger('change')
+function idevSetEdit(id, uriKey, prefix = "") {
+    var uriEdit = baseUrl + "" + prefix + "/" + uriKey + "/" + id + "/edit";
+    var uriUpdate = baseUrl + "" + prefix + "/" + uriKey + "/" + id + "";
+    $(".idev-form").val(null).trigger("change");
     // $('.select2-hidden-accessible').html("")
-    $('.form-checkbox').prop("checked", false)
-    $("#form-edit-" + uriKey).attr('action', uriUpdate)
+    $(".form-checkbox").prop("checked", false);
+    $("#form-edit-" + uriKey).attr("action", uriUpdate);
 
-    $.get(uriEdit, function(response) {
-        var fields = response.fields
+    $.get(uriEdit, function (response) {
+        var fields = response.fields;
 
-        $.each(fields, function(key, field) {
-            
-           
+        $.each(fields, function (key, field) {
             if (field.type == "onlyview") {
-                $('#edit_' + field.name).text(field.value)
+                $("#edit_" + field.name).text(field.value);
                 if (field.options) {
-                    $.each(field.options, function(index, option) {
+                    $.each(field.options, function (index, option) {
                         if (option.value == field.value) {
-                            $('#edit_' + field.name).text(option.text)
+                            $("#edit_" + field.name).text(option.text);
                         }
-                    })
+                    });
                 }
-            }
-            else if (field.type == "image") {
-                $('.thumb_'+field.name).attr('src', field.value)
-            }
-            else if (field.type == "upload") {
-                $('.fiu_'+field.name).attr('href', field.value)
-            }
-            else if (field.type == "select2_ajax_multiple") {
+            } else if (field.type == "image") {
+                $(".thumb_" + field.name).attr("src", field.value);
+            } else if (field.type == "upload") {
+                $(".fiu_" + field.name).attr("href", field.value);
+            } else if (field.type == "select2_ajax_multiple") {
                 var selected = [];
                 var initials = [];
-                $.each(field.value, function(index, option) {
+                $.each(field.value, function (index, option) {
                     initials.push({
                         id: option.value,
-                        text: option.text
-                    })
-                    selected.push(option.value)
+                        text: option.text,
+                    });
+                    selected.push(option.value);
                 });
-                $('#edit_' + field.name).select2({
+                $("#edit_" + field.name).select2({
                     data: initials,
                     ajax: {
                         url: field.ajax_url,
                         cache: true,
                         delay: 250,
-                        data: function(params) {
+                        data: function (params) {
                             var query = {
                                 search: params.term,
-                                type: 'public'
-                            }
+                                type: "public",
+                            };
                             return query;
                         },
                     },
                 });
-                $('#edit_' + field.name).val(selected).trigger('change')
-                $('.s2-' + field.name + ' select').val(selected).trigger('change')
-            }
-            else if (field.type == "checkbox") {
-                $('#edit_' + field.name).val(field.value)
-                $('#edit_' + field.name).prop("checked", field.value)
-            }
-            else if (field.type == "radio") {
-                $.each(field.options, function(index, option) {
+                $("#edit_" + field.name)
+                    .val(selected)
+                    .trigger("change");
+                $(".s2-" + field.name + " select")
+                    .val(selected)
+                    .trigger("change");
+            } else if (field.type == "checkbox") {
+                $("#edit_" + field.name).val(field.value);
+                $("#edit_" + field.name).prop("checked", field.value);
+            } else if (field.type == "radio") {
+                $.each(field.options, function (index, option) {
                     if (option.value == field.value) {
-                        $('#edit_' + field.name + "_" + index).prop("checked", true)
+                        $("#edit_" + field.name + "_" + index).prop(
+                            "checked",
+                            true
+                        );
                     }
                 });
-            }
-            else if (field.type == "group_checklist") {
-                var htmlCl = ""
-                $.each(field.checklists, function(index, cl) {
-                    var labelName = cl.label.replaceAll("-", " ")
+            } else if (field.type == "group_checklist") {
+                var htmlCl = "";
+                $.each(field.checklists, function (index, cl) {
+                    var labelName = cl.label.replaceAll("-", " ");
 
-                    htmlCl += "<p class='mt-2 mb-0'>"+labelName.toUpperCase()+"</p>"
-                    htmlCl += "<div class='row'>"
-                    $.each(cl.checkbox, function(index, cb) {
-                        var isChecked = cb.enable ? "checked" : ""
-                        var accessName = cb.name.replaceAll("-", " ")
-                        htmlCl += "<div class='col-md-6'>"
-                        htmlCl += "<input type='checkbox' class='cb-edit_"+field.name+"' name='"+field.name+"["+cl.key+"][]' value='"+cb.name+"' "+isChecked+"> <small> "+accessName+"</small>"
-                        htmlCl += "</div>"
+                    htmlCl +=
+                        "<p class='mt-2 mb-0'>" +
+                        labelName.toUpperCase() +
+                        "</p>";
+                    htmlCl += "<div class='row'>";
+                    $.each(cl.checkbox, function (index, cb) {
+                        var isChecked = cb.enable ? "checked" : "";
+                        var accessName = cb.name.replaceAll("-", " ");
+                        htmlCl += "<div class='col-md-6'>";
+                        htmlCl +=
+                            "<input type='checkbox' class='cb-edit_" +
+                            field.name +
+                            "' name='" +
+                            field.name +
+                            "[" +
+                            cl.key +
+                            "][]' value='" +
+                            cb.name +
+                            "' " +
+                            isChecked +
+                            "> <small> " +
+                            accessName +
+                            "</small>";
+                        htmlCl += "</div>";
                     });
-                    htmlCl += "</div>"
+                    htmlCl += "</div>";
                 });
-                $('#group-checklist-edit_'+field.name).html(htmlCl)
-            }else if(field.type == "repeatable"){
-                var jsonValues = JSON.parse(field.value)
-                var cloneElement = $('.edit_repeatable-sections .row:last()').clone();
-                var arrClone = [cloneElement]
+                $("#group-checklist-edit_" + field.name).html(htmlCl);
+            } else if (field.type == "repeatable") {
+                var jsonValues = JSON.parse(field.value);
+                var cloneElement = $(
+                    ".edit_repeatable-sections .row:last()"
+                ).clone();
+                var arrClone = [cloneElement];
 
-                $('.edit_repeatable-sections').html("")
-                $.each(jsonValues, function(index, jv) {
+                $(".edit_repeatable-sections").html("");
+                $.each(jsonValues, function (index, jv) {
+                    $(".edit_repeatable-sections").html(arrClone);
 
-                    $('.edit_repeatable-sections').html(arrClone)
-
-                    $('.edit_repeatable-sections .row:last()').attr('id', 'edit_repeatable-'+index)
+                    $(".edit_repeatable-sections .row:last()").attr(
+                        "id",
+                        "edit_repeatable-" + index
+                    );
                     // $('.edit_repeatable-sections').append(cloneElement);
-                    arrClone.push(cloneElement.clone())
-                    $.each(field.html_fields, function(index2, hf) {
-                        $("#edit_repeatable-"+index+" #edit_" + hf.name).val(jv[hf.name])
-                    })
+                    arrClone.push(cloneElement.clone());
+                    $.each(field.html_fields, function (index2, hf) {
+                        $(
+                            "#edit_repeatable-" + index + " #edit_" + hf.name
+                        ).val(jv[hf.name]);
+                    });
                 });
+            } else if (field.type == "repeatable_bom") {
+                handleRepeatableBom(field.value)
+            } else {
+                $("#edit_" + field.name).val(field.value);
+                $("#edit_" + field.name).trigger("change");
             }
-            else{
-                $("#edit_" + field.name).val(field.value)
-                $('#edit_' + field.name).trigger('change')
-            }
-        })
-    })
+        });
+    });
 }
-

@@ -16,7 +16,7 @@ class DashboardController extends Controller
     public function __construct()
     {
         $this->title = 'Dashboard';
-        $this->generalUri = 'dashboard';
+        $this->generalUri = 'dashboard-inventory';
     }
 
 
