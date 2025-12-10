@@ -1,0 +1,116 @@
+.sidebar-wrapper .menu .sidebar-item.active>.sidebar-link {
+    background-color: #3f51b5;
+}
+
+
+.idev-pagination .paginate_button {
+    background: #ffffff;
+    border: 1px solid #ffffff;
+    color: #000000 !important;
+    padding: 0.3em 0.8em;
+}
+
+.idev-pagination .paginate_button:hover {
+    background: #787879;
+    border: 1px solid #787879;
+    color: #ffffff !important;
+}
+
+.idev-pagination .current {
+    background: #9d9d9e;
+    border: 1px solid #a1aab2;
+    color: #ffffff !important;
+    padding: 0.3em 0.8em;
+    border-radius: 6px;
+}
+
+.section-footer {
+    background-color: #435ebe;
+    color: #ffffff;
+    font-size: 20px;
+    padding-top: 6px;
+}
+
+.title-header{
+    font-size: large;
+    margin-top: 26px;
+    font-weight: bold;
+}
+
+.radius-6{
+    border-radius: 6px;
+}
+
+.field-bulktable{
+    border: 1px solid #ced4da;
+    /* background: #fefefe; */
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.pc-header .m-header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 260px;
+    padding: 16px 10px 16px 24px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.auth-main .auth-wrapper .auth-form img {
+    padding: 5px 15px 25px 15px;
+    width: 180px;
+    opacity: 0.8;
+}
+
+.auth-main .auth-wrapper .auth-form .card {
+    width: 100%;
+    max-width: 400px;
+}
+
+.btn-primary-idev{
+    background-color: #6fa8a1;
+    border-color: #6fa8a1;
+}
+
+.btn-primary-idev:hover{
+    background-color: #6fa8a1;
+    border-color: #6fa8a1;
+    color: #ffffff;
+    opacity: 0.8;
+}
+
+.summary-section{
+    width: 100%;
+    overflow-x: scroll;
+    display: flex;
+}
+
+.col-divide-5{
+    border: 2px solid #ffffff;
+    padding: 6px;
+    width: 20%;
+    border-radius: 8px;
+    background: #dbeaeb;
+    text-align: center;
+}
+
+@media (max-width: 960px) {
+    .col-divide-5{
+        width: 25%;
+    }
+}
+
+@media (max-width: 760px) {
+    .col-divide-5{
+        width: 33%;
+    }
+}
+
+@media (max-width: 560px) {
+    .col-divide-5{
+        width: 50%;
+    }
+}
