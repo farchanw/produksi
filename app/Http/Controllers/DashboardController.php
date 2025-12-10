@@ -6,6 +6,7 @@ use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableMovement;
 use Idev\EasyAdmin\app\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -35,6 +36,8 @@ class DashboardController extends Controller
             ->distinct()
             ->orderByDesc('year')
             ->pluck('year');
+        $data['dataInventoryConsumablesStock'] = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumables.id', '=', 'inventory_consumable_stocks.item_id')
+            ->select(DB::raw('CONCAT_WS(" - ", sku, category, subcategory, name) as name'), 'stock')->get();
 
         return view($layout, $data);
     }

@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('sku');
             $table->string('name');
+            $table->string('category');
+            $table->string('subcategory');
+            $table->integer('minimum_stock')->default(0);
+            $table->string('satuan');
+            $table->integer('harga_satuan')->default(0);
             $table->timestamps();
         });
     }

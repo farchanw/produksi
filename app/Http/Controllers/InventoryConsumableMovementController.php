@@ -31,8 +31,11 @@ class InventoryConsumableMovementController extends DefaultController
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Item', 'column' => 'item', 'order' => true],
-                    ['name' => 'Qty', 'column' => 'qty', 'order' => true],
+                    ['name' => 'Category', 'column' => 'category', 'order' => true],
+                    ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true],
                     ['name' => 'Type', 'column' => 'type', 'order' => true],
+                    ['name' => 'Qty', 'column' => 'qty', 'order' => true],
+                    ['name' => 'Harga', 'column' => 'harga', 'order' => true],
                     ['name' => 'Movement datetime', 'column' => 'movement_datetime', 'order' => true],
                     ['name' => 'Notes', 'column' => 'notes', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
@@ -44,10 +47,11 @@ class InventoryConsumableMovementController extends DefaultController
             'primaryKeys' => ['qty'],
             'headers' => [
                     ['name' => 'Item', 'column' => 'item'],
-                    ['name' => 'Qty', 'column' => 'qty'],
                     ['name' => 'Type', 'column' => 'type'],
+                    ['name' => 'Qty', 'column' => 'qty'],
+                    ['name' => 'Harga', 'column' => 'harga'],
                     ['name' => 'Movement datetime', 'column' => 'movement_datetime'],
-                    ['name' => 'Notes', 'column' => 'notes'], 
+                    ['name' => 'Notes', 'column' => 'notes'],
             ]
         ];
     }
@@ -81,14 +85,6 @@ class InventoryConsumableMovementController extends DefaultController
                         'options' => $optionsItem
                     ],
                     [
-                        'type' => 'number',
-                        'label' => 'Qty',
-                        'name' =>  'qty',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('qty', $id),
-                        'value' => (isset($edit)) ? $edit->qty : '',
-                    ],
-                    [
                         'type' => 'select',
                         'label' => 'Type',
                         'name' =>  'type',
@@ -96,6 +92,14 @@ class InventoryConsumableMovementController extends DefaultController
                         'required' => $this->flagRules('type', $id),
                         'value' => (isset($edit)) ? $edit->type : '',
                         'options' => $optionsType
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => 'Qty',
+                        'name' =>  'qty',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('qty', $id),
+                        'value' => (isset($edit)) ? $edit->qty : ''
                     ],
                     [
                         'type' => 'datetime',
@@ -167,7 +171,7 @@ class InventoryConsumableMovementController extends DefaultController
                 $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
-            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item');
+            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item',   'inventory_consumables.category as category', 'inventory_consumables.subcategory as subcategory');
 
         return $dataQueries;
     }
@@ -215,6 +219,10 @@ class InventoryConsumableMovementController extends DefaultController
                 }
             }
 
+            // Set harga
+            $hargaSatuan = InventoryConsumable::where('id', $insert->item_id)->first()->harga_satuan;
+            $insert->harga = $insert->qty * $hargaSatuan;
+
             $insert->save();
 
             $this->afterMainInsert($insert, $request);
@@ -240,7 +248,7 @@ class InventoryConsumableMovementController extends DefaultController
                 ->first();
 
             $currentStock = $rowStock ? (int) $rowStock->stock : 0;
-            $newStock = $currentStock; // default
+            $newStock = $currentStock;
 
             if ($rowStock) {
 

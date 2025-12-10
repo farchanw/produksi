@@ -38,6 +38,8 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true], 
                     ['name' => 'Minimum Stock', 'column' => 'minimum_stock', 'order' => true],
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true], 
+                    ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
+                    ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -48,6 +50,11 @@ class InventoryConsumableController extends DefaultController
             'headers' => [
                     ['name' => 'Sku', 'column' => 'sku'],
                     ['name' => 'Name', 'column' => 'name'], 
+                    ['name' => 'Category', 'column' => 'category'], 
+                    ['name' => 'Subcategory', 'column' => 'subcategory'], 
+                    ['name' => 'Minimum Stock', 'column' => 'minimum_stock'],
+                    ['name' => 'Satuan', 'column' => 'satuan'], 
+                    ['name' => 'Harga Satuan', 'column' => 'harga_satuan'],
             ]
         ];
     }
@@ -101,6 +108,22 @@ class InventoryConsumableController extends DefaultController
                         'required' => $this->flagRules('minimum_stock', $id),
                         'value' => (isset($edit)) ? $edit->minimum_stock : ''
                     ],
+                    [
+                        'type' => 'text',
+                        'label' => 'Satuan',
+                        'name' =>  'satuan',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('satuan', $id),
+                        'value' => (isset($edit)) ? $edit->satuan : ''
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => 'Harga satuan',
+                        'name' =>  'harga_satuan',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('harga_satuan', $id),
+                        'value' => (isset($edit)) ? $edit->harga_satuan : ''
+                    ],
         ];
         
         return $fields;
@@ -115,6 +138,8 @@ class InventoryConsumableController extends DefaultController
                     'category' => 'required|string',
                     'subcategory' => 'required|string',
                     'minimum_stock' => 'required|integer',
+                    'satuan' => 'required|string',
+                    'harga_satuan' => 'required|integer',
         ];
 
         return $rules;
@@ -228,6 +253,7 @@ class InventoryConsumableController extends DefaultController
         }
     }
 
+    // data stock chart
     public function chartData(Request $request)
     {
         $year   = $request->year;
@@ -270,6 +296,38 @@ class InventoryConsumableController extends DefaultController
             'values' => $values,
         ]);
     }
+
+    public function chartDataOut(Request $request)
+    {
+        $year   = $request->year;
+        $itemId = $request->item_id;
+
+        $rows = InventoryConsumableMovement::selectRaw("
+                MONTH(movement_datetime) AS month,
+                SUM(qty) AS total
+            ")
+            ->where('item_id', $itemId)
+            ->where('type', 'out')
+            ->whereYear('movement_datetime', $year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $labels = [];
+        $values = [];
+
+        for ($m = 1; $m <= 12; $m++) {
+            $labels[] = date('M', mktime(0, 0, 0, $m, 1));
+            $values[] = $rows[$m]->total ?? 0;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'values' => $values,
+        ]);
+    }
+
 
 
 }

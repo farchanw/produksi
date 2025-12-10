@@ -21,27 +21,55 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-body p-3">
-                        <h3>InventoryConsumable</h3>
+                        <h3>Inventory Consumables</h3>
 
-                        <form id="filterForm" class="flex gap-3">
-                            <select id="year">
-                                @foreach($dataInventoryConsumablesChartYears as $year)
-                                    <option value="{{ $year }}">{{ $year }}</option>
-                                @endforeach
-                            </select>
+                        <section style="display:grid; grid-template-columns:repeat(2, 1fr); gap:4rem; margin-bottom:1rem;">
+                            <div class="card p-2">
+                                <h4>Outs</h4>
+                                <form id="filterForm" class="flex gap-3">
+                                    <select id="year">
+                                        @foreach($dataInventoryConsumablesChartYears as $year)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endforeach
+                                    </select>
 
-                            <select id="item">
-                                @foreach($dataInventoryConsumablesChartItems as $item)
-                                    <option value="{{ $item->id }}">
-                                        {{ $item->sku }} - {{ $item->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                                    <select id="item">
+                                        @foreach($dataInventoryConsumablesChartItems as $item)
+                                            <option value="{{ $item->id }}">
+                                                {{ $item->sku }} - {{ $item->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
 
-                            <button type="button" onclick="loadChart()">View</button>
-                        </form>
+                                    <button type="button" onclick="loadChart()">View</button>
+                                </form>
 
-                        <canvas id="inventoryChart" height="120"></canvas>
+                                <canvas id="inventoryChart" height="120"></canvas>
+
+                            </div>
+                            <div class="card p-2">
+                                <h4>Stocks</h4>
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($dataInventoryConsumablesStock as $d)
+                                        <tr>
+                                            <td>{{ $d['name'] }}</td>
+                                            <td>{{ $d['stock'] }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card p-2">
+
+                            </div>
+                        </section>
 
                     </div>
                 </div>
@@ -81,7 +109,7 @@ function loadChart() {
     const year   = document.getElementById('year').value;
     const itemId = document.getElementById('item').value;
 
-    fetch(`inventory-consumable-chart-data-default?year=${year}&item_id=${itemId}`)
+    fetch(`inventory-consumable-chart-data-out-default?year=${year}&item_id=${itemId}`)
         .then(res => res.json())
         .then(data => {
             if (chart) {
@@ -95,7 +123,7 @@ function loadChart() {
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: 'Stock Level',
+                        label: 'Out Level',
                         data: data.values,
                         tension: 0.3,
                         fill: true
