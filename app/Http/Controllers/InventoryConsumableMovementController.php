@@ -60,7 +60,10 @@ class InventoryConsumableMovementController extends DefaultController
             $edit = $this->modelClass::where('id', $id)->first();
         }
 
-        $optionsItem = InventoryConsumable::select('id as value', 'name as text')->get();
+        $optionsItem = InventoryConsumable::select('id as value', DB::raw('CONCAT_WS(" - ", sku, category, subcategory,  name) as text'))
+            ->orderBy('name', 'ASC')
+            ->get()
+            ->toArray();
         $optionsType = [
             ['value' => 'in', 'text' => 'In'],
             ['value' => 'out', 'text' => 'Out'],
@@ -224,30 +227,63 @@ class InventoryConsumableMovementController extends DefaultController
             } elseif ($insert->type == 'adjust') {
                 $insert->qty = (int) $insert->qty;
             } else {
-                throw new Exception("Invalid movement type");
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'danger',
+                    'message' => 'Invalid value',
+                ], 200);
             }
+
+
             $rowStock = DB::table('inventory_consumable_stocks')
                 ->where('item_id', $insert->item_id)
                 ->first();
 
+            $currentStock = $rowStock ? (int) $rowStock->stock : 0;
+            $newStock = $currentStock; // default
+
             if ($rowStock) {
+
                 if ($insert->type == 'adjust') {
-                    DB::table('inventory_consumable_stocks')
-                        ->where('item_id', $insert->item_id)
-                        ->update([
-                            'stock' => (int) $insert->qty
-                        ]);
+                    // Adjusting means the new stock is exactly qty
+                    $newStock = (int) $insert->qty;
+
                 } else {
-                    DB::table('inventory_consumable_stocks')
-                        ->where('item_id', $insert->item_id)
-                        ->increment('stock', (int) $insert->qty);
+                    // Increment/decrement operation
+                    $newStock = $currentStock + (int) $insert->qty;
                 }
+
+                // ❗ Prevent negative stock
+                if ($newStock < 0) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'danger',
+                        'message' => 'Invalid value',
+                    ], 200);
+                }
+
+                DB::table('inventory_consumable_stocks')
+                    ->where('item_id', $insert->item_id)
+                    ->update(['stock' => $newStock]);
+
             } else {
+
+                // When no existing stock exists, also ensure not negative
+                if ((int) $insert->qty < 0) {
+                    return response()->json([
+                        'status' => false,
+                        'alert' => 'danger',
+                        'message' => 'Invalid value',
+                    ], 200);
+                }
+
                 DB::table('inventory_consumable_stocks')->insert([
                     'item_id' => $insert->item_id,
                     'stock' => (int) $insert->qty,
                 ]);
             }
+
+
             
             DB::commit();
 

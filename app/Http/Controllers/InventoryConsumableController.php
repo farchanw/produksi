@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InventoryConsumable;
+use App\Models\InventoryConsumableCategory;
 use App\Models\InventoryConsumableStock;
 use App\Models\InventoryConsumableMovement;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
@@ -33,6 +34,9 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Sku', 'column' => 'sku', 'order' => true],
                     ['name' => 'Name', 'column' => 'name', 'order' => true], 
+                    ['name' => 'Category', 'column' => 'category', 'order' => true], 
+                    ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true], 
+                    ['name' => 'Minimum Stock', 'column' => 'minimum_stock', 'order' => true],
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
@@ -67,11 +71,35 @@ class InventoryConsumableController extends DefaultController
                     ],
                     [
                         'type' => 'text',
+                        'label' => 'Category',
+                        'name' =>  'category',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('category', $id),
+                        'value' => (isset($edit)) ? $edit->category : '',
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => 'Subcategory',
+                        'name' =>  'subcategory',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('subcategory', $id),
+                        'value' => (isset($edit)) ? $edit->subcategory : '',
+                    ],
+                    [
+                        'type' => 'text',
                         'label' => 'Name',
                         'name' =>  'name',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('name', $id),
                         'value' => (isset($edit)) ? $edit->name : ''
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => 'Minimum Stock',
+                        'name' =>  'minimum_stock',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('minimum_stock', $id),
+                        'value' => (isset($edit)) ? $edit->minimum_stock : ''
                     ],
         ];
         
@@ -84,6 +112,9 @@ class InventoryConsumableController extends DefaultController
         $rules = [
                     'sku' => 'required|string',
                     'name' => 'required|string',
+                    'category' => 'required|string',
+                    'subcategory' => 'required|string',
+                    'minimum_stock' => 'required|integer',
         ];
 
         return $rules;
@@ -171,14 +202,15 @@ class InventoryConsumableController extends DefaultController
                 }
             }
 
+            $insert->save();
+
+            $this->afterMainInsert($insert, $request);
+
+            
             $stockInsert = new InventoryConsumableStock();
             $stockInsert->stock = 0;
             $stockInsert->item_id = $insert->id;
             $stockInsert->save();
-
-            $insert->save();
-
-            $this->afterMainInsert($insert, $request);
 
             DB::commit();
 

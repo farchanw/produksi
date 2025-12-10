@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inventory_consumables', function (Blueprint $table) {
-            $table->foreignId('category_id')
-                ->constrained('inventory_consumable_categories')
-                ->restrictOnDelete();
+            $table->string('category');
+            $table->string('subcategory');
+            $table->integer('minimum_stock')->default(0);
         });
     }
 
@@ -24,8 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('inventory_consumables', function (Blueprint $table) {
-            $table->dropForeign(['category_id']);
-            $table->dropColumn('category_id');
+            $table->dropColumn('category');
+            $table->dropColumn('subcategory');
+            $table->dropColumn('minimum_stock');
         });
     }
 };
