@@ -41,6 +41,7 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
                     ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true], 
+                    ['name' => 'Harga total', 'column' => 'harga_total', 'order' => true], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -164,7 +165,7 @@ class InventoryConsumableController extends DefaultController
         $dataQueries = $this->modelClass::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'harga_total'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -181,7 +182,11 @@ class InventoryConsumableController extends DefaultController
                 }
             })
             ->orderBy($orderBy, $orderState)
-            ->select('inventory_consumables.*', 'inventory_consumable_stocks.stock');
+            ->select(
+                'inventory_consumables.*', 
+                'inventory_consumable_stocks.stock',
+                DB::raw('(inventory_consumables.harga_satuan * inventory_consumable_stocks.stock) AS harga_total')
+            );
 
         return $dataQueries;
     }

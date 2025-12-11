@@ -140,7 +140,7 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $filters = [];
         $orThose = null;
-        $orById = null;
+        $orByMasterItemId = null;
         $orderBy = 'id';
         $orderState = 'DESC';
         if (request('search')) {
@@ -153,14 +153,14 @@ class InventoryConsumableMovementController extends DefaultController
 
 
         if (request('inventory_consumable_id')) {
-            $orById = request('inventory_consumable_id');
+            $orByMasterItemId = request('inventory_consumable_id');
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
             ->where($filters)
-            ->where(function ($query) use ($orById) {
-                if ($orById) {
-                    $query->where('inventory_consumables.id', '=', $orById);
+            ->where(function ($query) use ($orByMasterItemId) {
+                if ($orByMasterItemId) {
+                    $query->where('inventory_consumables.id', '=', $orByMasterItemId);
                 }
             })
             ->where(function ($query) use ($orThose) {
