@@ -11,7 +11,7 @@
                     <div class="col-md-12">
                         Hi, <b>{{ Auth::user()->name }} </b> 
                         @if(config('idev.enable_role',true))
-                        You are logged in as <i>{{ Auth::user()->role->name }}</i> 
+                        Login bertindak sebagai <i>{{ Auth::user()->role->name }}</i> 
                         @endif
                     </div>
                 </div>
@@ -21,11 +21,10 @@
             <div class="col-12">
                 <div class="card mb-4">
                     <div class="card-body p-3">
-                        <h3>Inventory Consumables</h3>
 
                         <section style="display:grid; grid-template-columns:repeat(2, 1fr); gap:4rem; margin-bottom:1rem;">
                             <div class="card p-2">
-                                <h4>Outs</h4>
+                                <h4>Out</h4>
                                 <form id="filterForm" class="flex gap-3">
                                     <select id="chart-data-inventory-consumable-year">
                                         @foreach($dataInventoryConsumablesChartYears as $year)
@@ -48,7 +47,7 @@
 
                             </div>
                             <div class="card p-2">
-                                <h4>Stocks</h4>
+                                <h4>Stock</h4>
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -75,22 +74,16 @@
                 </div>
 
 
-
+                <!--
                 <div class="card mb-4">
                     <div class="card-body p-3">
                         <h3>InventoryConsumable</h3>
 
                     </div>
                 </div>
+                -->
 
 
-
-                <div class="card mb-4">
-                    <div class="card-body p-3">
-                        <h3>InventoryConsumable</h3>
-
-                    </div>
-                </div>
             </div>
         </div>
     </div>
