@@ -26,7 +26,7 @@ class InventoryConsumableController extends DefaultController
 
     public function __construct()
     {
-        $this->title = 'Inventory Consumable';
+        $this->title = 'Kartu Stok Consumable Part';
         $this->generalUri = 'inventory-consumable';
         // $this->arrPermissions = [];
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
@@ -41,8 +41,8 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
                     ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true], 
-                    ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
-                    ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+                    //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+                    //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
 
 
@@ -373,6 +373,14 @@ class InventoryConsumableController extends DefaultController
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
         
+        /* Override edit button */
+        // unset first
+        if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
+            unset($this->actionButtonViews[$key]);
+        }
+        // set new edit button
+        $this->actionButtonViews[] = 'backend.idev.buttons.edit';
+
         /* Override delete button */
         // unset first
         if (($key = array_search('easyadmin::backend.idev.buttons.delete', $this->actionButtonViews)) !== false) {
@@ -380,6 +388,7 @@ class InventoryConsumableController extends DefaultController
         }
         // set new delete button
         $this->actionButtonViews[] = 'backend.idev.buttons.delete';
+        
 
         $data['actionButtonViews'] = $this->actionButtonViews;
         $data['templateImportExcel'] = "#";

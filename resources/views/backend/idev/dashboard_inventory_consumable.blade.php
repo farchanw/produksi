@@ -119,7 +119,7 @@ function chartInventoryConsumableLoad() {
             const ctx = document.getElementById('inventoryChart');
 
             chartInventoryConsumable = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: data.labels,
                     datasets: [{

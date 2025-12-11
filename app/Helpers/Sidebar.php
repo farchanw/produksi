@@ -71,7 +71,7 @@ class Sidebar
 
     return [
       [
-        'name' => 'Inventory Consumable',
+        'name' => 'Kartu Stok Consumable Part',
         'icon' => 'ti ti-menu',
         'key' => 'inventory-consumable',
         'base_key' => 'inventory-consumable',
@@ -80,7 +80,7 @@ class Sidebar
         'childrens' => []
       ],
       [
-        'name' => 'Inventory Consumable Movement',
+        'name' => 'Riwayat Kartu Stok Consumable Part',
         'icon' => 'ti ti-menu',
         'key' => 'inventory-consumable-movement',
         'base_key' => 'inventory-consumable-movement',

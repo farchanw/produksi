@@ -24,7 +24,7 @@ class InventoryConsumableMovementController extends DefaultController
 
     public function __construct()
     {
-        $this->title = 'Inventory Consumable Movement';
+        $this->title = 'Riwayat Kartu Stok Consumable Part';
         $this->generalUri = 'inventory-consumable-movement';
         // $this->arrPermissions = [];
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
@@ -37,10 +37,10 @@ class InventoryConsumableMovementController extends DefaultController
                     ['name' => 'Type', 'column' => 'type', 'order' => true],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => true],
                     ['name' => 'Harga', 'column' => 'harga', 'order' => true],
-                    ['name' => 'Movement datetime', 'column' => 'movement_datetime', 'order' => true],
-                    ['name' => 'Notes', 'column' => 'notes', 'order' => true], 
-                    ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
-                    ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+                    ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],
+                    ['name' => 'Catatan', 'column' => 'notes', 'order' => true], 
+                    //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+                    //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
 
 
@@ -352,6 +352,14 @@ class InventoryConsumableMovementController extends DefaultController
         $data['url_store'] = route($this->generalUri . '.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
+
+        /* Override edit button */
+        // unset first
+        if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
+            unset($this->actionButtonViews[$key]);
+        }
+        // set new edit button
+        $this->actionButtonViews[] = 'backend.idev.buttons.edit';
         
         /* Override delete button */
         // unset first
