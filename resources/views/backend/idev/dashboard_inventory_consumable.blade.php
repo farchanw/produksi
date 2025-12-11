@@ -27,13 +27,13 @@
                             <div class="card p-2">
                                 <h4>Outs</h4>
                                 <form id="filterForm" class="flex gap-3">
-                                    <select id="year">
+                                    <select id="chart-data-inventory-consumable-year">
                                         @foreach($dataInventoryConsumablesChartYears as $year)
                                             <option value="{{ $year }}">{{ $year }}</option>
                                         @endforeach
                                     </select>
 
-                                    <select id="item">
+                                    <select id="chart-data-inventory-consumable-item">
                                         @foreach($dataInventoryConsumablesChartItems as $item)
                                             <option value="{{ $item->id }}">
                                                 {{ $item->sku }} - {{ $item->name }}
@@ -41,7 +41,7 @@
                                         @endforeach
                                     </select>
 
-                                    <button type="button" onclick="loadChart()">View</button>
+                                    {{-- <button type="button" onclick="chartInventoryConsumableLoad()">View</button> --}}
                                 </form>
 
                                 <canvas id="inventoryChart" height="120"></canvas>
@@ -103,22 +103,22 @@
 @endforeach
 @endif
 <script>
-let chart;
+let chartInventoryConsumable;
 
-function loadChart() {
-    const year   = document.getElementById('year').value;
-    const itemId = document.getElementById('item').value;
+function chartInventoryConsumableLoad() {
+    const year   = document.getElementById('chart-data-inventory-consumable-year').value;
+    const itemId = document.getElementById('chart-data-inventory-consumable-item').value;
 
     fetch(`inventory-consumable-chart-data-out-default?year=${year}&item_id=${itemId}`)
         .then(res => res.json())
         .then(data => {
-            if (chart) {
-                chart.destroy();
+            if (chartInventoryConsumable) {
+                chartInventoryConsumable.destroy();
             }
 
             const ctx = document.getElementById('inventoryChart');
 
-            chart = new Chart(ctx, {
+            chartInventoryConsumable = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.labels,
@@ -130,11 +130,20 @@ function loadChart() {
                     }]
                 }
             });
+        })
+        .catch(error => {
+            document.getElementById('inventoryChart').innerHTML = /*html*/`
+                <div style="color:red; font-weight:bold; ">Failed to get data: ${error}</div>
+            `
         });
 }
 
 window.addEventListener('load', () => {
-    loadChart();
+    chartInventoryConsumableLoad();
 });
+
+document.getElementById('chart-data-inventory-consumable-year').onchange = chartInventoryConsumableLoad
+document.getElementById('chart-data-inventory-consumable-item').onchange = chartInventoryConsumableLoad
+
 </script>
 @endsection

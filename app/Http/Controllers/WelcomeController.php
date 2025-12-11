@@ -20,8 +20,8 @@ class WelcomeController extends Controller
     {
         $modules = [
             [
-                'title' => 'Inventory',
-                'link' => url('inventory/dashboard-inventory'),
+                'title' => 'Inventory Consumable',
+                'link' => url('inventory-consumable/dashboard-inventory-consumable'),
                 'active' => true,
                 'icon' => asset('module-icons/inventory.png')
             ],

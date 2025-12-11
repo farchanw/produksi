@@ -58,16 +58,16 @@ class Sidebar
 
     return array_merge(
       $generalMenu,
-      $this->menuInventory($role, $currentModule),
+      $this->menuInventoryConsumable($role, $currentModule),
       $this->menuSetting($role, $currentModule),
 
     );
   }
 
 
-  private function menuInventory($role, $module)
+  private function menuInventoryConsumable($role, $module)
   {
-    $currentModule = 'inventory';
+    $currentModule = 'inventory-consumable';
 
     return [
       [

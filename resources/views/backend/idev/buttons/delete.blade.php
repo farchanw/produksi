@@ -5,7 +5,7 @@
                 <h5 class="modal-title">Konfirmasi</h5>
             </div>
             <div class="modal-body">
-                <p>Are you sure, want to delete this data? <span id='attrDelete'></span></p>
+                <p>Are you sure, want to delete this data?<span id='attrDelete'></span></p>
                 <form id="form-delete-{{$uri_key}}" action="#" method="post">
                     {{ csrf_field() }}
                     {{ method_field('DELETE') }}

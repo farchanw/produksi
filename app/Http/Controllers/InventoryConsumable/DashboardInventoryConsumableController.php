@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\InventoryConsumable;
 
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableMovement;
+use App\Http\Controllers\Controller;
 use Idev\EasyAdmin\app\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class DashboardController extends Controller
+class DashboardInventoryConsumableController extends Controller
 {
     private $title;
     private $generalUri;
@@ -22,9 +23,10 @@ class DashboardController extends Controller
 
     public function index()
     {
+        session(['module' => 'inventory-consumable']);
         $data['title'] = $this->title;
 
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.dashboard';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.idev.dashboard_inventory_consumable';
 
         $data['import_scripts'] = [
              ['source' => asset('vendor/Chart.js/chart.umd.js')],
