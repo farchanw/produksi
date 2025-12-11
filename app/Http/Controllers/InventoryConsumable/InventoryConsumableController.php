@@ -29,7 +29,7 @@ class InventoryConsumableController extends DefaultController
         $this->title = 'Kartu Stok Consumable Part';
         $this->generalUri = 'inventory-consumable';
         // $this->arrPermissions = [];
-        $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
+        $this->actionButtons = ['btn_inventory_consumable_history', 'btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
@@ -357,6 +357,7 @@ class InventoryConsumableController extends DefaultController
         if ($this->dynamicPermission) {
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
         }
+        $permission[] = 'inventory_consumable_history';
         $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
@@ -388,6 +389,9 @@ class InventoryConsumableController extends DefaultController
         }
         // set new delete button
         $this->actionButtonViews[] = 'backend.idev.buttons.delete';
+
+        /* Create new button */
+        $this->actionButtonViews[] = 'backend.idev.buttons.inventory_consumable_history';
         
 
         $data['actionButtonViews'] = $this->actionButtonViews;
@@ -415,6 +419,7 @@ class InventoryConsumableController extends DefaultController
         foreach ($this->extendPermissions as $keyE => $ep) {
             $permission[] = $ep;
         }
+        $permission[] = 'inventory_consumable_history';
         $eb = [];
         $dataColumns = [];
         $dataColFormat = [];

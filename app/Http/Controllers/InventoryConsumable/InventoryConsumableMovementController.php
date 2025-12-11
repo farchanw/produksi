@@ -140,6 +140,7 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $filters = [];
         $orThose = null;
+        $orById = null;
         $orderBy = 'id';
         $orderState = 'DESC';
         if (request('search')) {
@@ -150,8 +151,18 @@ class InventoryConsumableMovementController extends DefaultController
             $orderState = request('order_state');
         }
 
+
+        if (request('inventory_consumable_id')) {
+            $orById = request('inventory_consumable_id');
+        }
+
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
             ->where($filters)
+            ->where(function ($query) use ($orById) {
+                if ($orById) {
+                    $query->where('inventory_consumables.id', '=', $orById);
+                }
+            })
             ->where(function ($query) use ($orThose) {
                 $efc = ['#', 'created_at', 'updated_at', 'id', 'item'];
 
@@ -352,6 +363,14 @@ class InventoryConsumableMovementController extends DefaultController
         $data['url_store'] = route($this->generalUri . '.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
+        
+        /* Append build query params */
+        $params = [];
+        if (request('inventory_consumable_id')) {
+            $params['inventory_consumable_id'] = request('inventory_consumable_id');
+        }
+        $urlListApiQueryParams = http_build_query($params);
+        $data['uri_list_api'] = $data['uri_list_api'] . '?' . $urlListApiQueryParams;
 
         /* Override edit button */
         // unset first
@@ -452,5 +471,7 @@ class InventoryConsumableMovementController extends DefaultController
 
         return view('easyadmin::backend.idev.show-default', $data);
     }
+
+    
 
 }
