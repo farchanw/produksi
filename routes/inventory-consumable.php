@@ -13,6 +13,8 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable
     Route::get('dashboard-inventory-consumable-export-excel-default', [DashboardInventoryConsumableController::class, 'exportExcel'])->name('dashboard-inventory.export-excel-default');
     Route::post('dashboard-inventory-consumable-import-excel-default', [DashboardInventoryConsumableController::class, 'importExcel'])->name('dashboard-inventory.import-excel-default');
     Route::get('dashboard-inventory-consumable-chart-data-out-default', [DashboardInventoryConsumableController::class, 'chartDataOut']);
+    
+
 
     Route::resource('inventory-consumable', InventoryConsumableController::class);
     Route::get('inventory-consumable-api', [InventoryConsumableController::class, 'indexApi'])->name('inventory-consumable.listapi');
@@ -20,6 +22,8 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable
     Route::get('inventory-consumable-export-excel-default', [InventoryConsumableController::class, 'exportExcel'])->name('inventory-consumable.export-excel-default');
     Route::post('inventory-consumable-import-excel-default', [InventoryConsumableController::class, 'importExcel'])->name('inventory-consumable.import-excel-default');
     Route::get('inventory-consumable-chart-data-out-default', [InventoryConsumableController::class, 'chartDataOut']);
+    Route::get('inventory-consumable-fetch-category-subcategories-default', [InventoryConsumableController::class, 'fetchCategorySubcategories']);
+
 
     Route::resource('inventory-consumable-movement', InventoryConsumableMovementController::class);
     Route::get('inventory-consumable-movement-api', [InventoryConsumableMovementController::class, 'indexApi'])->name('inventory-consumable-movement.listapi');

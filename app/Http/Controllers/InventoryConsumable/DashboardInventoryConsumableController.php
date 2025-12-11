@@ -39,7 +39,7 @@ class DashboardInventoryConsumableController extends Controller
             ->orderByDesc('year')
             ->pluck('year');
         $data['dataInventoryConsumablesStock'] = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumables.id', '=', 'inventory_consumable_stocks.item_id')
-            ->select(DB::raw('CONCAT_WS(" - ", sku, category, subcategory, name) as name'), 'stock')->get();
+            ->select(DB::raw('CONCAT_WS(" - ", sku, name) as name'), 'stock')->get();
 
         return view($layout, $data);
     }

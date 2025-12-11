@@ -11,24 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventory_consumables', function (Blueprint $table) {
+        Schema::create('inventory_consumable_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('sku');
             $table->string('name');
-            $table->unsignedBigInteger('category_id')->nullable();
 
-            $table->foreign('category_id')
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->foreign('parent_id')
                 ->references('id')
                 ->on('inventory_consumable_categories')
-                ->onDelete('set null');
+                ->onDelete('set null')
+                ->default(null);
 
-            $table->integer('minimum_stock')->default(0);
-            $table->string('satuan');
-            $table->integer('harga_satuan')->default(0);
             $table->timestamps();
         });
-
-        
     }
 
     /**
@@ -36,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventory_consumables');
+        Schema::dropIfExists('inventory_consumable_categories');
     }
 };

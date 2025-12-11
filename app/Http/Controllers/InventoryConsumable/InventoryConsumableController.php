@@ -59,6 +59,15 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Harga Satuan', 'column' => 'harga_satuan'],
             ]
         ];
+
+        $this->importScripts = [
+            ['source' => asset('vendor/select2/js/select2.min.js')],
+            ['source' => asset('vendor/select2/js/select2-init.js')],
+        ];
+        $this->importStyles = [
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            //['source' => asset('vendor/select2/css/select2-style.css')]
+        ];
     }
 
 
@@ -67,6 +76,26 @@ class InventoryConsumableController extends DefaultController
         $edit = null;
         if ($id != '-') {
             $edit = $this->modelClass::where('id', $id)->first();
+        }
+
+        $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')
+            ->whereNull('parent_id')
+            ->get();
+
+        if (isset($edit)) {
+            $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
+            ->where('parent_id', '=', $edit->category)
+            ->get();
+            
+            // Get subcategory
+            $subcategory = InventoryConsumableCategory::find($edit->category_id);
+
+            // Get parent category (top-level)
+            $categoryId = $subcategory?->parent_id ? $subcategory->parent_id : $subcategory->id;
+        } else {
+            $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
+            ->whereNotNull('parent_id')
+            ->get();
         }
 
         $fields = [
@@ -79,20 +108,24 @@ class InventoryConsumableController extends DefaultController
                         'value' => (isset($edit)) ? $edit->sku : ''
                     ],
                     [
-                        'type' => 'text',
+                        'type' => 'select2_value_appendable',
                         'label' => 'Category',
                         'name' =>  'category',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('category', $id),
-                        'value' => (isset($edit)) ? $edit->category : '',
+                        //'value' => (isset($edit)) ? $edit->category : '',
+                        'value' => isset($edit) ? $categoryId : '',
+                        'options' => $optionsCategory,
                     ],
                     [
-                        'type' => 'text',
+                        'type' => 'select2_value_appendable',
                         'label' => 'Subcategory',
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('subcategory', $id),
-                        'value' => (isset($edit)) ? $edit->subcategory : '',
+                        //'value' => (isset($edit)) ? $edit->subcategory : '',
+                        'value' => isset($edit) ? $edit->subcategory_id : '',
+                        'options' => $optionsSubcategory,
                     ],
                     [
                         'type' => 'text',
@@ -163,9 +196,11 @@ class InventoryConsumableController extends DefaultController
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
+            ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
+            ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'harga_total'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'harga_total', 'name', 'category', 'subcategory'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -185,6 +220,8 @@ class InventoryConsumableController extends DefaultController
             ->select(
                 'inventory_consumables.*', 
                 'inventory_consumable_stocks.stock',
+                'category_child.name AS subcategory',
+                'category_parent.name AS category',
                 DB::raw('(inventory_consumables.harga_satuan * inventory_consumable_stocks.stock) AS harga_total')
             );
 
@@ -223,6 +260,10 @@ class InventoryConsumableController extends DefaultController
 
             $insert = new $this->modelClass();
             foreach ($this->fields('create') as $key => $th) {
+                if($th['name'] === 'category' || $th['name'] === 'subcategory') {
+                    continue;
+                }
+
                 if ($request[$th['name']]) {
                     $insert->{$th['name']} = $request[$th['name']];
                 }
@@ -232,16 +273,32 @@ class InventoryConsumableController extends DefaultController
                     $insert->{$as['name']} = $as['value'];
                 }
             }
+            
+            // Save kategori if not exists
+            $categoryInsert = InventoryConsumableCategory::firstOrCreate(
+                ['name' => $request['category']]
+            );
+
+            // Save subkategori if not exists
+            $subcategoryInsert = InventoryConsumableCategory::firstOrCreate(
+                [
+                    'name' => $request['subcategory'],
+                    'parent_id' => $categoryInsert->id
+                ]
+            );
+
+            $insert->category_id = $subcategoryInsert->id;
 
             $insert->save();
 
             $this->afterMainInsert($insert, $request);
 
-            
+            // Save stok
             $stockInsert = new InventoryConsumableStock();
             $stockInsert->stock = 0;
             $stockInsert->item_id = $insert->id;
             $stockInsert->save();
+
 
             DB::commit();
 
@@ -252,6 +309,96 @@ class InventoryConsumableController extends DefaultController
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    protected function update(Request $request, $id)
+    {
+        $rules = $this->rules($id);
+        
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeUpdateResponse = $this->beforeMainUpdate($id, $request);
+        if ($beforeUpdateResponse !== null) {
+            return $beforeUpdateResponse; // Return early if there's a response
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendUpdate = $this->appendUpdate($request);
+
+            $change = $this->modelClass::where('id', $id)->first();
+            foreach ($this->fields('edit', $id) as $key => $th) {
+                if($th['name'] === 'category' || $th['name'] === 'subcategory') {
+                    continue;
+                }
+
+                if ($request[$th['name']]) {
+                    $change->{$th['name']} = $request[$th['name']];
+                }
+            }
+            if (array_key_exists('columns', $appendUpdate)) {
+                foreach ($appendUpdate['columns'] as $key => $as) {
+                    $change->{$as['name']} = $as['value'];
+                }
+            }
+
+
+
+            // Save kategori and subkategori if not exists
+            // FIX: $request['category'] send id, try convert to name.
+            $category = InventoryConsumableCategory::find($request['category']);
+            if (!$category) {
+                $category = $request['category'];
+            }
+
+            $subcategory = InventoryConsumableCategory::find($request['subcategory']);
+            if (!$subcategory) {
+                $subcategory = $request['subcategory'];
+            }
+
+            $categoryInsert = InventoryConsumableCategory::firstOrCreate(
+                ['name' => $category->name]
+            );
+            $subcategoryInsert = InventoryConsumableCategory::firstOrCreate(
+                [
+                    'name' => $subcategory->name,
+                    'parent_id' => $categoryInsert->id
+                ]
+            );
+
+
+            $change->category_id = $subcategoryInsert->id;
+            
+            $change->save();
+
+            $this->afterMainUpdate($change, $request);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Was Updated Successfully',
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -471,6 +618,24 @@ class InventoryConsumableController extends DefaultController
 
         return view('easyadmin::backend.idev.show-default', $data);
     }
+
+
+    public function fetchCategorySubcategories(Request $request)
+    {
+        $categoryId = $request->category_id;
+
+        if (!$categoryId) {
+            return response()->json([]);
+        }
+
+        $items = InventoryConsumableCategory::select('id as value', 'name as text')
+            ->where('parent_id', $categoryId)
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($items);
+    }
+
 
 
 
