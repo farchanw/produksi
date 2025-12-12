@@ -26,6 +26,18 @@ class WelcomeController extends Controller
                 'icon' => asset('module-icons/inventory.png')
             ],
             [
+                'title' => 'Utilisasi Produksi',
+                'link' => url('utilisation-production/dashboard-utilisation-production'),
+                'active' => true,
+                'icon' => asset('module-icons/project-management.png')
+            ],
+            [
+                'title' => 'KPI Produksi',
+                'link' => url('kpi-production/dashboard-kpi-production'),
+                'active' => true,
+                'icon' => asset('module-icons/hr.png')
+            ],
+            [
                 'title' => 'Setting',
                 'link' => url('setting/dashboard-setting'),
                 'active' => true,

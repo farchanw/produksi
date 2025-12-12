@@ -13,6 +13,7 @@ $preffix_method = (isset($method))? $method."_": "";
     <select 
         id="{{$preffix_method}}{{$select_id}}" 
         name="{{$select_name}}" 
+        data-original-value="{{ $field['value'] ?? '' }}"
         class="form-control idev-form support-live-select2-value-appendable @if($prefix_repeatable) field-repeatable @endif">
         @foreach($field['options'] as $key => $opt)
         <option value="{{$opt['value']}}" 

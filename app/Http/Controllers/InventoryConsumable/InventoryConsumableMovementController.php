@@ -4,6 +4,7 @@ namespace App\Http\Controllers\InventoryConsumable;
 
 use App\Models\InventoryConsumableMovement;
 use App\Models\InventoryConsumable;
+use App\Models\InventoryConsumableCategory;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Validation;
 use Idev\EasyAdmin\app\Helpers\Constant;
@@ -55,6 +56,16 @@ class InventoryConsumableMovementController extends DefaultController
                     ['name' => 'Notes', 'column' => 'notes'],
             ]
         ];
+
+        
+        $this->importScripts = [
+            ['source' => asset('vendor/select2/js/select2.min.js')],
+            ['source' => asset('vendor/select2/js/select2-module-inventory-consumable.js')],
+        ];
+        $this->importStyles = [
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            //['source' => asset('vendor/select2/css/select2-style.css')]
+        ];
     }
 
 
@@ -75,9 +86,69 @@ class InventoryConsumableMovementController extends DefaultController
             ['value' => 'adjust', 'text' => 'Adjust'],
         ];
 
+        // Top-level categories
+        $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')
+            ->whereNull('parent_id')
+            ->get();
+
+        $categoryId = null;
+        $subcategoryId = null;
+        $optionsSubcategory = collect();
+
+        if (isset($edit)) {
+            // Load the consumable with its category
+            $consumable = InventoryConsumable::with('category')->find($edit->item_id);
+            $subcategory = $consumable?->category;
+
+            if ($subcategory) {
+                // Determine category and subcategory IDs
+                if ($subcategory->parent_id) {
+                    // It's a subcategory
+                    $categoryId = $subcategory->parent_id;
+                    $subcategoryId = $subcategory->id;
+                } else {
+                    // It's a top-level category, no subcategory
+                    $categoryId = $subcategory->id;
+                    $subcategoryId = null;
+                }
+
+                // Fetch subcategories for the selected category
+                $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
+                    ->where('parent_id', $categoryId)
+                    ->get();
+            }
+        } else {
+            // For a new entry, optionally show all subcategories (or empty)
+            $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
+                ->whereNotNull('parent_id')
+                ->get();
+        }
+
+
+
         $fields = [
                     [
-                        'type' => 'select',
+                        'type' => 'select2',
+                        'label' => 'Category',
+                        'name' =>  'category',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('category', $id),
+                        //'value' => (isset($edit)) ? $edit->category : '',
+                        'value' => isset($edit) ? $categoryId : '',
+                        'options' => $optionsCategory
+                    ],
+                    [
+                        'type' => 'select2',
+                        'label' => 'Subcategory',
+                        'name' =>  'subcategory',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('subcategory', $id),
+                        //'value' => (isset($edit)) ? $edit->subcategory : '',
+                        'value' => isset($edit) ? $subcategoryId : '',
+                        'options' => $optionsSubcategory
+                    ],
+                    [
+                        'type' => 'select2',
                         'label' => 'Item',
                         'name' =>  'item_id',
                         'class' => 'col-md-12 my-2',
@@ -236,6 +307,10 @@ class InventoryConsumableMovementController extends DefaultController
             // Set harga
             $hargaSatuan = InventoryConsumable::where('id', $insert->item_id)->first()->harga_satuan;
             $insert->harga = $insert->qty * $hargaSatuan;
+
+            // unset
+            unset($insert->category);
+            unset($insert->subcategory);
 
             $insert->save();
 
@@ -441,6 +516,10 @@ class InventoryConsumableMovementController extends DefaultController
             if ($change->qty) {
                 unset($change->qty);
             }
+
+            // unset
+            unset($change->category);
+            unset($change->subcategory);
             
             $change->save();
 

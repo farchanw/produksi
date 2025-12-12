@@ -14,6 +14,10 @@ class InventoryConsumable extends Model
     protected $fillable = ["sku","name"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show', 'btn_inventory_consumable_history'];
 
+    public function category()
+    {
+        return $this->belongsTo(InventoryConsumableCategory::class, 'category_id');
+    }
 
     public function getBtnDeleteAttribute()
     {

@@ -50,16 +50,38 @@ $(document).ajaxStop(initCustomSelect2);
 
 
 
-
-$(document).on('change', 'select[name="category"]', function () {
+// Resolve dependent subcategory select2
+$(document).on('change', 'select[name="category"].support-live-select2-value-appendable', function () {
     const categoryId = $(this).val();
     const $sub = $('select[name="subcategory"]');
+
+    console.log($sub, $sub.val())
 
     $sub.empty().trigger('change');
 
     if (!categoryId) return;
 
     $.getJSON('inventory-consumable-fetch-category-subcategories-default', { category_id: categoryId }, function (data) {
+        data.forEach(function (item) {
+            const option = new Option(item.text, item.value, false, false);
+            $sub.append(option);
+        });
+
+        $sub.trigger('change');
+    });
+});
+
+
+// Resolve fetch items
+$(document).on('change', 'select[name="subcategory"]', function () {
+    const categoryId = $(this).val();
+    const $sub = $('select[name="item_id"]');
+
+    $sub.empty().trigger('change');
+
+    if (!categoryId) return;
+
+    $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
         data.forEach(function (item) {
             const option = new Option(item.text, item.value, false, false);
             $sub.append(option);

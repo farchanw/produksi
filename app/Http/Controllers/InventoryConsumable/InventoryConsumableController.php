@@ -62,7 +62,7 @@ class InventoryConsumableController extends DefaultController
 
         $this->importScripts = [
             ['source' => asset('vendor/select2/js/select2.min.js')],
-            ['source' => asset('vendor/select2/js/select2-init.js')],
+            ['source' => asset('vendor/select2/js/select2-module-inventory-consumable.js')],
         ];
         $this->importStyles = [
             ['source' => asset('vendor/select2/css/select2.min.css')],
@@ -673,5 +673,19 @@ class InventoryConsumableController extends DefaultController
 
 
 
+    public function fetchItemsByCategory(Request $request)
+    {
+        $categoryId = $request->category_id;
+
+        if (!$categoryId) {
+            return response()->json([]);
+        }
+
+        $items = InventoryConsumable::select('id as value', DB::raw("CONCAT(sku, ' - ', name) AS text"))
+            ->where('category_id', $categoryId)
+            ->get();
+
+        return response()->json($items);
+    }
 
 }
