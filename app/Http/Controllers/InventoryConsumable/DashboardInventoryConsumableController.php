@@ -18,7 +18,7 @@ class DashboardInventoryConsumableController extends Controller
     public function __construct()
     {
         $this->title = 'Dashboard Sistem Kartu Stok';
-        $this->generalUri = 'dashboard-inventory';
+        $this->generalUri = 'dashboard-inventory-consumable';
     }
 
 
