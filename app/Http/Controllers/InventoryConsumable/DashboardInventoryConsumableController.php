@@ -5,6 +5,7 @@ namespace App\Http\Controllers\InventoryConsumable;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableMovement;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryConsumableCategory;
 use Idev\EasyAdmin\app\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -38,8 +39,11 @@ class DashboardInventoryConsumableController extends Controller
             ->distinct()
             ->orderByDesc('year')
             ->pluck('year');
-        $data['dataInventoryConsumablesStock'] = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumables.id', '=', 'inventory_consumable_stocks.item_id')
-            ->select(DB::raw('CONCAT_WS(" - ", sku, name) as name'), 'stock')->get();
+        $data['dataInventoryConsumablesStockYears'] = InventoryConsumableMovement::selectRaw('YEAR(movement_datetime) year')
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year');
+        $data['dataInventoryConsumablesStockCategories'] = InventoryConsumableCategory::where('parent_id', null)->get();
 
         return view($layout, $data);
     }

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\InventoryConsumable;
 
 use App\Models\InventoryConsumableCategory;
+use Illuminate\Http\Request;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 
 class InventoryConsumableCategoryController extends DefaultController
@@ -80,5 +81,29 @@ class InventoryConsumableCategoryController extends DefaultController
 
         return $rules;
     }
+
+    protected function fetchCategories()
+    {
+        return $this->modelClass::where('parent_id', null)->get();
+    }
+
+
+
+    protected function fetchCategorySubcategories(Request $request)
+    {
+        $categoryId = $request->category_id;
+
+        if (!$categoryId) {
+            return response()->json([]);
+        }
+
+        $items = InventoryConsumableCategory::select('id as value', 'name as text')
+            ->where('parent_id', $categoryId)
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($items);
+    }
+
 
 }

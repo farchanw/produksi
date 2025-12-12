@@ -652,25 +652,7 @@ class InventoryConsumableController extends DefaultController
             'subcategory' => $subcategoryInsert,
         ];
     }
-
-
-
-    public function fetchCategorySubcategories(Request $request)
-    {
-        $categoryId = $request->category_id;
-
-        if (!$categoryId) {
-            return response()->json([]);
-        }
-
-        $items = InventoryConsumableCategory::select('id as value', 'name as text')
-            ->where('parent_id', $categoryId)
-            ->orderBy('name')
-            ->get();
-
-        return response()->json($items);
-    }
-
+    
 
 
     public function fetchItemsByCategory(Request $request)
@@ -684,6 +666,34 @@ class InventoryConsumableController extends DefaultController
         $items = InventoryConsumable::select('id as value', DB::raw("CONCAT(sku, ' - ', name) AS text"))
             ->where('category_id', $categoryId)
             ->get();
+
+        return response()->json($items);
+    }
+
+
+    public function fetchItemsStockData(Request $request)
+    {
+        $categoryId = $request->category_id;
+        $subcategoryId = $request->subcategory_id;
+
+        $query = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
+            ->select(
+                'inventory_consumables.id as value',
+                DB::raw("CONCAT(inventory_consumables.sku, ' - ', inventory_consumables.name) AS text"),
+                'inventory_consumable_stocks.stock as stock'
+            );
+
+        if ($categoryId) {
+            $query->with('category')->whereHas('category', function ($q) use ($categoryId) {
+                $q->where('parent_id', $categoryId);
+            });
+        }
+
+        if ($subcategoryId) {
+            $query->where('inventory_consumables.category_id', $subcategoryId);
+        }
+
+        $items = $query->get();
 
         return response()->json($items);
     }

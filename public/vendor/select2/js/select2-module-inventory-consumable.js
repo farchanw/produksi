@@ -98,7 +98,7 @@ $(document).on('change', '#edit_category', function () {
 
     if (!categoryId) return;
 
-    $.getJSON('inventory-consumable-fetch-category-subcategories-default',
+    $.getJSON('inventory-consumable-category-fetch-category-subcategories-default',
         { category_id: categoryId },
         function (data) {
 
