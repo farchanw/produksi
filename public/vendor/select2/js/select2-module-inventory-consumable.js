@@ -53,27 +53,46 @@ $(document).ajaxStop(initCustomSelect2);
 // Resolve dependent subcategory select2
 //const selectSelectors =  'select[name="category"].support-live-select2-value-appendable';
 $(document).on('shown.bs.modal', '#editModal', function () {
-    const $cat = $(this).find('select[name="category"]');
-    const $sub = $(this).find('select[name="subcategory"]');
+    const $modal = $(this);
+    const $cat   = $modal.find('select[name="category"]');
+    const $sub   = $modal.find('select[name="subcategory"]');
 
-    const originalCategory = $cat[0].dataset.originalValue;
+    const originalCategory    = $cat[0].dataset.originalValue;
     const originalSubcategory = $sub[0].dataset.originalValue;
 
-    // Save sub original value
     $sub.data('original-sub', originalSubcategory);
 
-    // Set category → triggers loading subcategories
+    // Delay is REQUIRED because Select2 inside modal isn't ready
+    setTimeout(() => {
+        if (originalCategory) {
+            $cat.val(originalCategory).trigger('change');
+        }
+    }, 10);
+});
+
+$(document).on('shown.bs.modal', '#editModal', function () {
+    const $cat = $('#edit_category');
+    const $sub = $('#edit_subcategory');
+
+    const originalCategory = $cat.data('original-value');
+    const originalSub = $sub.data('original-value');
+
+    // Save original subcategory for later
+    $sub.data('restore-sub', originalSub);
+
+    // Set category which triggers AJAX load
     if (originalCategory) {
         $cat.val(originalCategory).trigger('change');
     }
 });
 
-$(document).on('change', '#editModal select[name="category"]', function () {
-    const $modal = $(this).closest('#editModal');
-    const $sub = $modal.find('select[name="subcategory"]');
+
+// When category changes → reload subcategory
+$(document).on('change', '#edit_category', function () {
 
     const categoryId = $(this).val();
-    const originalSub = $sub.data('original-sub');
+    const $sub = $('#edit_subcategory');
+    const originalSub = $sub.data('restore-sub');
 
     $sub.empty().trigger('change');
 
@@ -84,15 +103,17 @@ $(document).on('change', '#editModal select[name="category"]', function () {
         function (data) {
 
             data.forEach(item => {
-                const isSelected = originalSub && originalSub == item.value;
-                const option = new Option(item.text, item.value, false, isSelected);
-                $sub.append(option);
+                const isSelected = (item.value == originalSub);
+                const opt = new Option(item.text, item.value, false, isSelected);
+                $sub.append(opt);
             });
 
-            $sub.trigger('change');
+            // Force Select2 to apply selected option
+            $sub.val(originalSub).trigger('change');
         }
     );
 });
+
 
 
 
