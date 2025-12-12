@@ -53,29 +53,45 @@ $(document).ajaxStop(initCustomSelect2);
 // Resolve dependent subcategory select2
 //const selectSelectors =  'select[name="category"].support-live-select2-value-appendable';
 $(document).on('shown.bs.modal', '#editModal', function () {
-    var $subcategory = $(this).find('select[name="subcategory"]');
-    var $category = $(this).find('select[name="category"]');
+    const $cat = $(this).find('select[name="category"]');
+    const $sub = $(this).find('select[name="subcategory"]');
 
-    // Read the original value set by the library
-    var originalSubcategoryValue = $subcategory[0]?.dataset?.originalValue;
+    const originalCategory = $cat[0].dataset.originalValue;
+    const originalSubcategory = $sub[0].dataset.originalValue;
 
-    // Category change handler
-    $category.off('change').on('change', function () {
-        var categoryId = $(this).val();
+    // Save sub original value
+    $sub.data('original-sub', originalSubcategory);
 
-        $subcategory.empty().trigger('change');
+    // Set category → triggers loading subcategories
+    if (originalCategory) {
+        $cat.val(originalCategory).trigger('change');
+    }
+});
 
-        if (!categoryId) return;
+$(document).on('change', '#editModal select[name="category"]', function () {
+    const $modal = $(this).closest('#editModal');
+    const $sub = $modal.find('select[name="subcategory"]');
 
-        $.getJSON('inventory-consumable-fetch-category-subcategories-default', { category_id: categoryId }, function (data) {
-            $.each(data, function (_, item) {
-                var isSelected = originalSubcategoryValue && originalSubcategoryValue == item.value;
-                var option = new Option(item.text, item.value, false, isSelected);
-                $subcategory.append(option);
+    const categoryId = $(this).val();
+    const originalSub = $sub.data('original-sub');
+
+    $sub.empty().trigger('change');
+
+    if (!categoryId) return;
+
+    $.getJSON('inventory-consumable-fetch-category-subcategories-default',
+        { category_id: categoryId },
+        function (data) {
+
+            data.forEach(item => {
+                const isSelected = originalSub && originalSub == item.value;
+                const option = new Option(item.text, item.value, false, isSelected);
+                $sub.append(option);
             });
-            $subcategory.trigger('change');
-        });
-    });
+
+            $sub.trigger('change');
+        }
+    );
 });
 
 
