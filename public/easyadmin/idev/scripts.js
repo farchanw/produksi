@@ -795,6 +795,13 @@ function idevSetEdit(id, uriKey, prefix = "") {
         var fields = response.fields;
 
         $.each(fields, function (key, field) {
+            if (field?.name && field?.value) {
+                let edit_ = document.getElementById("edit_" + field.name);
+                if (edit_) {
+                    edit_.dataset.originalValue = field.value;
+                }
+            }
+
             if (field.type == "onlyview") {
                 $("#edit_" + field.name).text(field.value);
                 if (field.options) {

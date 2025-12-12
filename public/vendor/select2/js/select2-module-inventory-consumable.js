@@ -51,25 +51,53 @@ $(document).ajaxStop(initCustomSelect2);
 
 
 // Resolve dependent subcategory select2
-$(document).on('change', 'select[name="category"].support-live-select2-value-appendable', function () {
-    const categoryId = $(this).val();
-    const $sub = $('select[name="subcategory"]');
+//const selectSelectors =  'select[name="category"].support-live-select2-value-appendable';
+$(document).ready(function () {
+    var $sub = $('#edit_subcategory');
 
-    console.log($sub, $sub.val())
+    // Wait until dataset.originalValue is set by the server/library
+    var observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-original-value') {
+                var selectedValue = $sub.data('original-value');
+                console.log('Selected Value for Subcategory:', selectedValue);
 
-    $sub.empty().trigger('change');
+                // Initialize category change handler now that original value exists
+                initCategoryChangeHandler(selectedValue);
 
-    if (!categoryId) return;
-
-    $.getJSON('inventory-consumable-fetch-category-subcategories-default', { category_id: categoryId }, function (data) {
-        data.forEach(function (item) {
-            const option = new Option(item.text, item.value, false, false);
-            $sub.append(option);
+                observer.disconnect(); // stop observing once we have the value
+            }
         });
-
-        $sub.trigger('change');
     });
+
+    observer.observe($sub[0], { attributes: true });
+    
+
+    function initCategoryChangeHandler(selectedValue) {
+        $('select[name="category"]').on('change', function () {
+            var categoryId = $(this).val();
+            var $sub = $('#edit_subcategory');
+
+            $sub.empty().trigger('change'); // clear old options
+
+            if (!categoryId) return;
+
+            $.getJSON('inventory-consumable-fetch-category-subcategories-default', { category_id: categoryId }, function (data) {
+                $.each(data, function (_, item) {
+                    var isSelected = selectedValue && selectedValue == item.value;
+                    var option = new Option(item.text, item.value, false, isSelected);
+                    $sub.append(option);
+                });
+
+                $sub.trigger('change'); // refresh Select2
+            });
+        });
+    }
 });
+
+
+
+
 
 
 // Resolve fetch items

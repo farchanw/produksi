@@ -114,7 +114,7 @@ class InventoryConsumableController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('category', $id),
                         //'value' => (isset($edit)) ? $edit->category : '',
-                        'value' => isset($edit) ? $categoryId : '',
+                        'value' => isset($categoryId) ? $categoryId : '',
                         'options' => $optionsCategory,
                     ],
                     [
@@ -123,8 +123,8 @@ class InventoryConsumableController extends DefaultController
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('subcategory', $id),
-                        //'value' => (isset($edit)) ? $edit->subcategory : '',
-                        'value' => isset($edit) ? $edit->subcategory_id : '',
+                        'value' => (isset($edit)) ? $edit->category_id : '', // category_id is subcategory
+                        //'value' => isset($subcategory->id) ? $subcategory->id : '',
                         'options' => $optionsSubcategory,
                     ],
                     [
