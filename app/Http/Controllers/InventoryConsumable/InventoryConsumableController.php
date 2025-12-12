@@ -273,21 +273,17 @@ class InventoryConsumableController extends DefaultController
                     $insert->{$as['name']} = $as['value'];
                 }
             }
-            
-            // Save kategori if not exists
-            $categoryInsert = InventoryConsumableCategory::firstOrCreate(
-                ['name' => $request['category']]
+
+
+
+            $resolveCategoryData = $this->resolveCategoryDataAndSubcategory(
+                $request['category'],
+                $request['subcategory']
             );
 
-            // Save subkategori if not exists
-            $subcategoryInsert = InventoryConsumableCategory::firstOrCreate(
-                [
-                    'name' => $request['subcategory'],
-                    'parent_id' => $categoryInsert->id
-                ]
-            );
+            $insert->category_id = $resolveCategoryData->subcategory->id;
 
-            $insert->category_id = $subcategoryInsert->id;
+
 
             $insert->save();
 
@@ -359,31 +355,12 @@ class InventoryConsumableController extends DefaultController
             }
 
 
-
-            // Save kategori and subkategori if not exists
-            // FIX: $request['category'] send id, try convert to name.
-            $category = InventoryConsumableCategory::find($request['category']);
-            if (!$category) {
-                $category = $request['category'];
-            }
-
-            $subcategory = InventoryConsumableCategory::find($request['subcategory']);
-            if (!$subcategory) {
-                $subcategory = $request['subcategory'];
-            }
-
-            $categoryInsert = InventoryConsumableCategory::firstOrCreate(
-                ['name' => $category->name]
-            );
-            $subcategoryInsert = InventoryConsumableCategory::firstOrCreate(
-                [
-                    'name' => $subcategory->name,
-                    'parent_id' => $categoryInsert->id
-                ]
+            $resolveCategoryData = $this->resolveCategoryDataAndSubcategory(
+                $request['category'],
+                $request['subcategory']
             );
 
-
-            $change->category_id = $subcategoryInsert->id;
+            $change->category_id = $resolveCategoryData->subcategory->id;
             
             $change->save();
 
@@ -618,6 +595,64 @@ class InventoryConsumableController extends DefaultController
 
         return view('easyadmin::backend.idev.show-default', $data);
     }
+
+    private function resolveCategoryDataAndSubcategory($categoryValue, $subcategoryValue)
+    {
+        /*  Resolve CATEGORY */
+        // Try lookup as ID (only root categories)
+        $categoryModel = InventoryConsumableCategory::whereNull('parent_id')
+            ->where('id', $categoryValue)
+            ->first();
+
+        // Try lookup as name if not ID match
+        if (!$categoryModel) {
+            $categoryModel = InventoryConsumableCategory::whereNull('parent_id')
+                ->where('name', $categoryValue)
+                ->first();
+        }
+
+        // If still not found use as is for new category name
+        $categoryName = $categoryModel?->name ?? $categoryValue;
+
+        // Create or fetch CATEGORY
+        $categoryInsert = InventoryConsumableCategory::firstOrCreate(
+            [
+                'name' => $categoryName,
+                'parent_id' => null,
+            ]
+        );
+
+
+        /* Resolve SUBCATEGORY (ID or NAME under CATEGORY) */
+        // Try lookup as ID under this category
+        $subcategoryModel = InventoryConsumableCategory::where('parent_id', $categoryInsert->id)
+            ->where('id', $subcategoryValue)
+            ->first();
+
+        // Try lookup by name under this category
+        if (!$subcategoryModel) {
+            $subcategoryModel = InventoryConsumableCategory::where('parent_id', $categoryInsert->id)
+                ->where('name', $subcategoryValue)
+                ->first();
+        }
+
+        // If still not found use as is for new subcategory name
+        $subcategoryName = $subcategoryModel?->name ?? $subcategoryValue;
+
+        // Create or fetch SUBCATEGORY under CATEGORY
+        $subcategoryInsert = InventoryConsumableCategory::firstOrCreate(
+            [
+                'name' => $subcategoryName,
+                'parent_id' => $categoryInsert->id,
+            ]
+        );
+
+        return (object)[
+            'category' => $categoryInsert,
+            'subcategory' => $subcategoryInsert,
+        ];
+    }
+
 
 
     public function fetchCategorySubcategories(Request $request)

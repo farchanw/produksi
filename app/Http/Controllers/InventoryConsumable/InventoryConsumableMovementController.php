@@ -65,7 +65,7 @@ class InventoryConsumableMovementController extends DefaultController
             $edit = $this->modelClass::where('id', $id)->first();
         }
 
-        $optionsItem = InventoryConsumable::select('id as value', DB::raw('CONCAT_WS(" - ", sku, category, subcategory,  name) as text'))
+        $optionsItem = InventoryConsumable::select('id as value', DB::raw('CONCAT_WS(" - ", sku, name) as text'))
             ->orderBy('name', 'ASC')
             ->get()
             ->toArray();
@@ -157,6 +157,8 @@ class InventoryConsumableMovementController extends DefaultController
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
+            ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
+            ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
             ->where($filters)
             ->where(function ($query) use ($orByMasterItemId) {
                 if ($orByMasterItemId) {
@@ -164,7 +166,7 @@ class InventoryConsumableMovementController extends DefaultController
                 }
             })
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'item'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category', 'subcategory'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -183,7 +185,7 @@ class InventoryConsumableMovementController extends DefaultController
                 $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
-            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item',   'inventory_consumables.category as category', 'inventory_consumables.subcategory as subcategory');
+            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item', 'category_child.name AS subcategory', 'category_parent.name AS category');
 
         return $dataQueries;
     }
