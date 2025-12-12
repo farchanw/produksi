@@ -52,48 +52,32 @@ $(document).ajaxStop(initCustomSelect2);
 
 // Resolve dependent subcategory select2
 //const selectSelectors =  'select[name="category"].support-live-select2-value-appendable';
-$(document).ready(function () {
-    var $sub = $('#edit_subcategory');
+$(document).on('shown.bs.modal', '#editModal', function () {
+    var $subcategory = $(this).find('select[name="subcategory"]');
+    var $category = $(this).find('select[name="category"]');
 
-    // Wait until dataset.originalValue is set by the server/library
-    var observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'data-original-value') {
-                var selectedValue = $sub.data('original-value');
-                console.log('Selected Value for Subcategory:', selectedValue);
+    // Read the original value set by the library
+    var originalSubcategoryValue = $subcategory[0]?.dataset?.originalValue;
 
-                // Initialize category change handler now that original value exists
-                initCategoryChangeHandler(selectedValue);
+    // Category change handler
+    $category.off('change').on('change', function () {
+        var categoryId = $(this).val();
 
-                observer.disconnect(); // stop observing once we have the value
-            }
+        $subcategory.empty().trigger('change');
+
+        if (!categoryId) return;
+
+        $.getJSON('inventory-consumable-fetch-category-subcategories-default', { category_id: categoryId }, function (data) {
+            $.each(data, function (_, item) {
+                var isSelected = originalSubcategoryValue && originalSubcategoryValue == item.value;
+                var option = new Option(item.text, item.value, false, isSelected);
+                $subcategory.append(option);
+            });
+            $subcategory.trigger('change');
         });
     });
-
-    observer.observe($sub[0], { attributes: true });
-    
-
-    function initCategoryChangeHandler(selectedValue) {
-        $('select[name="category"]').on('change', function () {
-            var categoryId = $(this).val();
-            var $sub = $('#edit_subcategory');
-
-            $sub.empty().trigger('change'); // clear old options
-
-            if (!categoryId) return;
-
-            $.getJSON('inventory-consumable-fetch-category-subcategories-default', { category_id: categoryId }, function (data) {
-                $.each(data, function (_, item) {
-                    var isSelected = selectedValue && selectedValue == item.value;
-                    var option = new Option(item.text, item.value, false, isSelected);
-                    $sub.append(option);
-                });
-
-                $sub.trigger('change'); // refresh Select2
-            });
-        });
-    }
 });
+
 
 
 
