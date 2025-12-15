@@ -20,7 +20,7 @@ class WelcomeController extends Controller
     {
         $modules = [
             [
-                'title' => 'Kartu Stok Consumable Part',
+                'title' => 'Kartu Stok',
                 'link' => url('inventory-consumable/dashboard-inventory-consumable'),
                 'active' => true,
                 'icon' => asset('module-icons/inventory.png')
