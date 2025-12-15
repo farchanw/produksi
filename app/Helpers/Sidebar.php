@@ -72,7 +72,7 @@ class Sidebar
         
         return [
             [
-                'name' => 'Kartu Stok Consumable Part',
+                'name' => 'Daftar Kartu Stok',
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable',
                 'base_key' => 'inventory-consumable',
@@ -81,7 +81,7 @@ class Sidebar
                 'childrens' => []
             ],
             [
-                'name' => 'Riwayat Kartu Stok Consumable Part',
+                'name' => 'Riwayat Kartu Stok',
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable-movement',
                 'base_key' => 'inventory-consumable-movement',
@@ -90,7 +90,7 @@ class Sidebar
                 'childrens' => []
             ],
             [
-                'name' => 'Setting Kategori',
+                'name' => 'Input Kategori',
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable-category',
                 'base_key' => 'inventory-consumable-category',

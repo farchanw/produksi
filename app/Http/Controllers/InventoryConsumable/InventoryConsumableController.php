@@ -22,11 +22,12 @@ class InventoryConsumableController extends DefaultController
     protected $tableHeaders;
     // protected $actionButtons;
     // protected $arrPermissions;
+    protected $dynamicPermission = true;
     protected $importExcelConfig;
 
     public function __construct()
     {
-        $this->title = 'Kartu Stok Consumable Part';
+        $this->title = 'Daftar Kartu Stok';
         $this->generalUri = 'inventory-consumable';
         // $this->arrPermissions = [];
         $this->actionButtons = ['btn_inventory_consumable_history', 'btn_edit', 'btn_show', 'btn_delete'];
@@ -234,7 +235,7 @@ class InventoryConsumableController extends DefaultController
             return response()->json([
                 'status' => false,
                 'alert' => 'danger',
-                'message' => 'Required Form',
+                'message' => 'Kolom tidak boleh kosong',
                 'validation_errors' => $messageErrors,
             ], 200);
         }
@@ -296,7 +297,7 @@ class InventoryConsumableController extends DefaultController
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Data Was Created Successfully',
+                'message' => 'Data Berhasil Disimpan',
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
@@ -318,7 +319,7 @@ class InventoryConsumableController extends DefaultController
             return response()->json([
                 'status' => false,
                 'alert' => 'danger',
-                'message' => 'Required Form',
+                'message' => 'Kolom tidak boleh kosong',
                 'validation_errors' => $messageErrors,
             ], 200);
         }
@@ -366,7 +367,7 @@ class InventoryConsumableController extends DefaultController
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Data Was Updated Successfully',
+                'message' => 'Data Berhasil Diupdate',
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
@@ -482,7 +483,7 @@ class InventoryConsumableController extends DefaultController
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
         }
         $permission[] = 'inventory_consumable_history';
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
@@ -497,6 +498,8 @@ class InventoryConsumableController extends DefaultController
         $data['url_store'] = route($this->generalUri . '.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
+        $data['buttonTextCreate'] = 'Input Kartu Stok';
+        $data['buttonTextCreateNew'] = 'Input Kartu Stok';
         
         /* Override edit button */
         // unset first

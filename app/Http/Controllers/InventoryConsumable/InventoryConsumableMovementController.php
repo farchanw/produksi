@@ -25,7 +25,7 @@ class InventoryConsumableMovementController extends DefaultController
 
     public function __construct()
     {
-        $this->title = 'Riwayat Kartu Stok Consumable Part';
+        $this->title = 'Riwayat Kartu Stok';
         $this->generalUri = 'inventory-consumable-movement';
         // $this->arrPermissions = [];
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
@@ -418,7 +418,7 @@ class InventoryConsumableMovementController extends DefaultController
         if ($this->dynamicPermission) {
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
         }
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
@@ -463,6 +463,8 @@ class InventoryConsumableMovementController extends DefaultController
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
+        $data['buttonTextCreate'] = 'Input Riwayat Kartu Stok';
+        $data['buttonTextCreateNew'] = 'Input Riwayat Kartu Stok';
         
         return view($layout, $data);
     }
