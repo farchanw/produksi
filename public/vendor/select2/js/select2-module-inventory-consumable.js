@@ -15,28 +15,6 @@ $( document ).ajaxStop(function() {
 
 
 
-// Resolve fetch items
-$(document).on('change', 'select[name="subcategory"]', function () {
-    const categoryId = $(this).val();
-    const $sub = $('select[name="item_id"]');
-
-    $sub.empty().trigger('change');
-
-    if (!categoryId) return;
-
-    $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
-        data.forEach(function (item) {
-            const option = new Option(item.text, item.value, false, false);
-            $sub.append(option);
-        });
-
-        $sub.trigger('change');
-    });
-});
-
-
-
-
 
 
 

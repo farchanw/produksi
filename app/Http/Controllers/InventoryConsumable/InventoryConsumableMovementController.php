@@ -59,12 +59,7 @@ class InventoryConsumableMovementController extends DefaultController
 
         
         $this->importScripts = [
-            ['source' => asset('vendor/select2/js/select2.min.js')],
-            ['source' => asset('vendor/select2/js/select2-module-inventory-consumable.js')],
-        ];
-        $this->importStyles = [
-            ['source' => asset('vendor/select2/css/select2.min.css')],
-            //['source' => asset('vendor/select2/css/select2-style.css')]
+            ['source' => asset('js/modules/module-inventory-consumable.js')],
         ];
     }
 
@@ -119,16 +114,14 @@ class InventoryConsumableMovementController extends DefaultController
             }
         } else {
             // For a new entry, optionally show all subcategories (or empty)
-            $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
-                ->whereNotNull('parent_id')
-                ->get();
+            $optionsSubcategory = [];
         }
 
 
 
         $fields = [
                     [
-                        'type' => 'select2',
+                        'type' => 'select',
                         'label' => 'Category',
                         'name' =>  'category',
                         'class' => 'col-md-12 my-2',
@@ -138,7 +131,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'options' => $optionsCategory
                     ],
                     [
-                        'type' => 'select2',
+                        'type' => 'select',
                         'label' => 'Subcategory',
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',

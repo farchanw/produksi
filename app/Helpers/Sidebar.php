@@ -89,6 +89,15 @@ class Sidebar
                 'ajax_load' => false,
                 'childrens' => []
             ],
+            [
+                'name' => 'Setting Kategori',
+                'icon' => 'ti ti-menu',
+                'key' => 'inventory-consumable-category',
+                'base_key' => 'inventory-consumable-category',
+                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
         ];
     }
 

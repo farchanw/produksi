@@ -61,12 +61,7 @@ class InventoryConsumableController extends DefaultController
         ];
 
         $this->importScripts = [
-            ['source' => asset('vendor/tom-select/tom-select.complete.min.js')],
-            ['source' => asset('vendor/tom-select/module-inventory-consumable.js')],
-        ];
-        $this->importStyles = [
-            ['source' => asset('vendor/tom-select/tom-select.css')],
-            ['source' => asset('vendor/tom-select/tom-select.fix.css')],
+            ['source' => asset('js/modules/module-inventory-consumable.js')],
         ];
     }
 
@@ -108,7 +103,7 @@ class InventoryConsumableController extends DefaultController
                         'value' => (isset($edit)) ? $edit->sku : ''
                     ],
                     [
-                        'type' => 'select_tomselect_value_appendable',
+                        'type' => 'select',
                         'label' => 'Category',
                         'name' =>  'category',
                         'class' => 'col-md-12 my-2',
@@ -118,14 +113,14 @@ class InventoryConsumableController extends DefaultController
                         'options' => $optionsCategory,
                     ],
                     [
-                        'type' => 'select_tomselect_value_appendable',
+                        'type' => 'select',
                         'label' => 'Subcategory',
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('subcategory', $id),
                         'value' => (isset($edit)) ? $edit->category_id : '', // category_id is subcategory
                         //'value' => isset($subcategory->id) ? $subcategory->id : '',
-                        'options' => $optionsSubcategory,
+                        'options' => [],
                     ],
                     [
                         'type' => 'text',

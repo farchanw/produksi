@@ -32,6 +32,12 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable
     Route::get('inventory-consumable-movement-export-excel-default', [InventoryConsumableMovementController::class, 'exportExcel'])->name('inventory-consumable-movement.export-excel-default');
     Route::post('inventory-consumable-movement-import-excel-default', [InventoryConsumableMovementController::class, 'importExcel'])->name('inventory-consumable-movement.import-excel-default');
 
+    
+    Route::resource('inventory-consumable-category', InventoryConsumableCategoryController::class);
+    Route::get('inventory-consumable-category-api', [InventoryConsumableCategoryController::class, 'indexApi'])->name('inventory-consumable-category.listapi');
+    Route::get('inventory-consumable-category-export-pdf-default', [InventoryConsumableCategoryController::class, 'exportPdf'])->name('inventory-consumable-category.export-pdf-default');
+    Route::get('inventory-consumable-category-export-excel-default', [InventoryConsumableCategoryController::class, 'exportExcel'])->name('inventory-consumable-category.export-excel-default');
+    Route::post('inventory-consumable-category-import-excel-default', [InventoryConsumableCategoryController::class, 'importExcel'])->name('inventory-consumable-category.import-excel-default');
     Route::get('inventory-consumable-category-fetch-category-subcategories-default', [InventoryConsumableCategoryController::class, 'fetchCategorySubcategories']);
     Route::get('inventory-consumable-category-fetch-categories', [InventoryConsumableCategoryController::class, 'fetchCategories']);
 });

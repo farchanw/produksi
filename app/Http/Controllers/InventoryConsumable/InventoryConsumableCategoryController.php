@@ -26,7 +26,7 @@ class InventoryConsumableCategoryController extends DefaultController
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Name', 'column' => 'name', 'order' => true],
-                    ['name' => 'Parent id', 'column' => 'parent_id', 'order' => true], 
+                    ['name' => 'Parent', 'column' => 'parent', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -49,6 +49,18 @@ class InventoryConsumableCategoryController extends DefaultController
             $edit = $this->modelClass::where('id', $id)->first();
         }
 
+        $optionsParent = InventoryConsumableCategory::where('parent_id', null)
+            ->orderBy('name')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'value' => $item->id,
+                    'text' => $item->name
+                ];
+            })->toArray();
+
+        array_unshift($optionsParent, ['value' => '', 'text' => '-- No Parent --']);
+
         $fields = [
                     [
                         'type' => 'text',
@@ -59,12 +71,13 @@ class InventoryConsumableCategoryController extends DefaultController
                         'value' => (isset($edit)) ? $edit->name : ''
                     ],
                     [
-                        'type' => 'text',
-                        'label' => 'Parent id',
+                        'type' => 'select',
+                        'label' => 'Parent',
                         'name' =>  'parent_id',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('parent_id', $id),
-                        'value' => (isset($edit)) ? $edit->parent_id : ''
+                        'value' => (isset($edit)) ? $edit->parent_id : '',
+                        'options' => $optionsParent,
                     ],
         ];
         
@@ -76,7 +89,7 @@ class InventoryConsumableCategoryController extends DefaultController
     {
         $rules = [
                     'name' => 'required|string',
-                    'parent_id' => 'required|string',
+                    'parent_id' => 'nullable|integer',
         ];
 
         return $rules;
@@ -103,6 +116,52 @@ class InventoryConsumableCategoryController extends DefaultController
             ->get();
 
         return response()->json($items);
+    }
+
+    protected function defaultDataQuery()
+    {
+        $filters = [];
+        $orThose = null;
+        $orderBy = 'inventory_consumable_categories.id';
+        $orderState = 'DESC';
+        if (request('search')) {
+            $orThose = request('search');
+        }
+        if (request('order')) {
+            $orderBy = request('order');
+            $orderState = request('order_state');
+        }
+
+        $dataQueries = $this->modelClass::leftJoin('inventory_consumable_categories as parent', 'inventory_consumable_categories.parent_id', '=', 'parent.id')
+            ->where($filters)
+            ->where(function ($query) use ($orThose) {
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'parent'];
+
+                foreach ($this->tableHeaders as $key => $th) {
+                    if (array_key_exists('search', $th) && $th['search'] == false) {
+                        $efc[] = $th['column'];
+                    }
+                    if(!in_array($th['column'], $efc))
+                    {
+                        if($key == 0){
+                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }else{
+                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }
+                    }
+                }
+
+                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
+            })
+            ->orderBy($orderBy, $orderState)
+            ->select(
+                'inventory_consumable_categories.name',
+                'inventory_consumable_categories.created_at',
+                'inventory_consumable_categories.updated_at',
+                'parent.name as parent'
+        );
+
+        return $dataQueries;
     }
 
 
