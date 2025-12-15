@@ -13,17 +13,21 @@ return new class extends Migration
     {
         Schema::create('inventory_consumable_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
 
+            $table->string('name');
             $table->unsignedBigInteger('parent_id')->nullable();
+
             $table->foreign('parent_id')
                 ->references('id')
                 ->on('inventory_consumable_categories')
-                ->onDelete('set null')
-                ->default(null);
+                ->nullOnDelete();
+            $table->unsignedBigInteger('parent_key')
+                ->storedAs('IFNULL(parent_id, 0)');
+            $table->unique(['name', 'parent_key']);
 
             $table->timestamps();
         });
+
     }
 
     /**

@@ -61,12 +61,12 @@ class InventoryConsumableController extends DefaultController
         ];
 
         $this->importScripts = [
-            ['source' => asset('vendor/select2/js/select2.min.js')],
-            ['source' => asset('vendor/select2/js/select2-module-inventory-consumable.js')],
+            ['source' => asset('vendor/tom-select/tom-select.complete.min.js')],
+            ['source' => asset('vendor/tom-select/module-inventory-consumable.js')],
         ];
         $this->importStyles = [
-            ['source' => asset('vendor/select2/css/select2.min.css')],
-            //['source' => asset('vendor/select2/css/select2-style.css')]
+            ['source' => asset('vendor/tom-select/tom-select.css')],
+            ['source' => asset('vendor/tom-select/tom-select.fix.css')],
         ];
     }
 
@@ -108,7 +108,7 @@ class InventoryConsumableController extends DefaultController
                         'value' => (isset($edit)) ? $edit->sku : ''
                     ],
                     [
-                        'type' => 'select2_value_appendable',
+                        'type' => 'select_tomselect_value_appendable',
                         'label' => 'Category',
                         'name' =>  'category',
                         'class' => 'col-md-12 my-2',
@@ -118,7 +118,7 @@ class InventoryConsumableController extends DefaultController
                         'options' => $optionsCategory,
                     ],
                     [
-                        'type' => 'select2_value_appendable',
+                        'type' => 'select_tomselect_value_appendable',
                         'label' => 'Subcategory',
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',

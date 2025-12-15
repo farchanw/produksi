@@ -1,0 +1,8 @@
+.ts-wrapper.form-control {
+    padding: 0!important;
+    border: 1px solid #ced4da!important;
+}
+
+.ts-wrapper .ts-control {
+    border: none!important;
+}
