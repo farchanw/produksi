@@ -34,11 +34,11 @@ class InventoryConsumableMovementController extends DefaultController
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Item', 'column' => 'item', 'order' => true],
-                    ['name' => 'Category', 'column' => 'category', 'order' => true],
-                    ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true],
+                    ['name' => 'Kategori', 'column' => 'category', 'order' => true],
+                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true],
                     ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => true],
-                    ['name' => 'Harga', 'column' => 'harga', 'order' => true],
+                    ['name' => 'Harga', 'column' => 'harga', 'order' => true, 'formatting' => 'toRupiah'],
                     ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],
                     ['name' => 'Catatan', 'column' => 'notes', 'order' => true], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
@@ -123,7 +123,7 @@ class InventoryConsumableMovementController extends DefaultController
         $fields = [
                     [
                         'type' => 'select',
-                        'label' => 'Category',
+                        'label' => 'Kategori',
                         'name' =>  'category',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('category', $id),
@@ -133,7 +133,7 @@ class InventoryConsumableMovementController extends DefaultController
                     ],
                     [
                         'type' => 'select',
-                        'label' => 'Subcategory',
+                        'label' => 'Subkategori',
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('subcategory', $id),

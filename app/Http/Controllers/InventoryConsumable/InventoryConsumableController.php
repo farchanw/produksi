@@ -34,11 +34,11 @@ class InventoryConsumableController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Sku', 'column' => 'sku', 'order' => true],
-                    ['name' => 'Name', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
-                    ['name' => 'Category', 'column' => 'category', 'order' => true], 
-                    ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true], 
-                    ['name' => 'Minimum Stock', 'column' => 'minimum_stock', 'order' => true],
+                    ['name' => 'Kode Item', 'column' => 'sku', 'order' => true],
+                    ['name' => 'Nama', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
+                    ['name' => 'Kategori', 'column' => 'category', 'order' => true], 
+                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true], 
+                    ['name' => 'Min. Stock', 'column' => 'minimum_stock', 'order' => true],
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
                     ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true, 'formatting' => 'toRupiah'], 
@@ -97,7 +97,7 @@ class InventoryConsumableController extends DefaultController
         $fields = [
                     [
                         'type' => 'text',
-                        'label' => 'Sku',
+                        'label' => 'Kode Item',
                         'name' =>  'sku',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('sku', $id),
@@ -105,7 +105,7 @@ class InventoryConsumableController extends DefaultController
                     ],
                     [
                         'type' => 'select',
-                        'label' => 'Category',
+                        'label' => 'Kategori',
                         'name' =>  'category',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('category', $id),
@@ -115,7 +115,7 @@ class InventoryConsumableController extends DefaultController
                     ],
                     [
                         'type' => 'select',
-                        'label' => 'Subcategory',
+                        'label' => 'Subkategori',
                         'name' =>  'subcategory',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('subcategory', $id),
@@ -125,7 +125,7 @@ class InventoryConsumableController extends DefaultController
                     ],
                     [
                         'type' => 'text',
-                        'label' => 'Name',
+                        'label' => 'Nama',
                         'name' =>  'name',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('name', $id),
@@ -133,7 +133,7 @@ class InventoryConsumableController extends DefaultController
                     ],
                     [
                         'type' => 'number',
-                        'label' => 'Minimum Stock',
+                        'label' => 'Min. Stock',
                         'name' =>  'minimum_stock',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('minimum_stock', $id),
@@ -149,7 +149,7 @@ class InventoryConsumableController extends DefaultController
                     ],
                     [
                         'type' => 'number',
-                        'label' => 'Harga satuan',
+                        'label' => 'Harga Satuan',
                         'name' =>  'harga_satuan',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('harga_satuan', $id),
@@ -535,8 +535,8 @@ class InventoryConsumableController extends DefaultController
         $data['headerLayout'] = $this->pageHeaderLayout;
         $data['table_headers'] = [
                     ['name' => 'Item', 'column' => 'item', 'order' => false],
-                    ['name' => 'Category', 'column' => 'category', 'order' => false],
-                    ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => false],
+                    ['name' => 'Kategori', 'column' => 'category', 'order' => false],
+                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => false],
                     ['name' => 'Type', 'column' => 'type', 'order' => false],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => false],
                     ['name' => 'Harga', 'column' => 'harga', 'order' => false, 'formatting' => 'toRupiah'],
