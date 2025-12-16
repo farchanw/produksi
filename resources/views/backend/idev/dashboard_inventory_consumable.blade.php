@@ -132,7 +132,7 @@ function chartInventoryConsumableLoad() {
         })
         .catch(error => {
             document.getElementById('inventoryChart').innerHTML = /*html*/`
-                <div style="color:red; font-weight:bold; ">Failed to get data: ${error}</div>
+                <div class="text-danger">Failed to get data: ${error}</div>
             `
         });
 }
@@ -170,7 +170,7 @@ function renderStockTable() {
             data.forEach(item => {
                 console.log(item)
                 rows += /*html*/`
-                    <tr style="${Number(item.stock) <= 0 ? 'color: red;' : ''}">
+                    <tr class="${Number(item.stock) <= 0 ? 'text-danger' : ''}">
                         <td>${item.text}</td>
                         <td>${item.stock}</td>
                     </tr>
@@ -181,7 +181,7 @@ function renderStockTable() {
         .catch(error => {
             document.getElementById('inventory-consumable-stock-tbody').innerHTML = /*html*/`
                 <tr>
-                    <td colspan="2" style="color:red; font-weight:bold;">Failed to load stock data: ${error}</td>
+                    <td colspan="2" class="text-danger">Failed to load stock data: ${error}</td>
                 </tr>
             `
         });

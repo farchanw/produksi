@@ -28,7 +28,7 @@ class InventoryConsumableMovementController extends DefaultController
         $this->title = 'Riwayat Kartu Stok';
         $this->generalUri = 'inventory-consumable-movement';
         // $this->arrPermissions = [];
-        $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
+        $this->actionButtons = [/*'btn_edit',*/ 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
@@ -168,7 +168,7 @@ class InventoryConsumableMovementController extends DefaultController
                     ],
                     [
                         'type' => 'datetime',
-                        'label' => 'Movement datetime',
+                        'label' => 'Tanggal',
                         'name' =>  'movement_datetime',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('movement_datetime', $id),
@@ -176,7 +176,7 @@ class InventoryConsumableMovementController extends DefaultController
                     ],
                     [
                         'type' => 'textarea',
-                        'label' => 'Notes',
+                        'label' => 'Catatan',
                         'name' =>  'notes',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('notes', $id),
