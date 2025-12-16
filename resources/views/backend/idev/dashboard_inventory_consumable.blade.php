@@ -193,7 +193,7 @@ function renderStockTable() {
             data.forEach(item => {
                 console.log(item)
                 rows += /*html*/`
-                    <tr class="${Number(item.stock) <= 0 ? 'text-danger' : ''}">
+                    <tr class="${Number(item.stock) <= Number(item.minimum_stock) ? 'text-danger' : ''}">
                         <td>${item.text}</td>
                         <td>${item.stock}</td>
                     </tr>

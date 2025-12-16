@@ -36,7 +36,7 @@ class InventoryConsumableMovementController extends DefaultController
                     ['name' => 'Item', 'column' => 'item', 'order' => true],
                     ['name' => 'Category', 'column' => 'category', 'order' => true],
                     ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true],
-                    ['name' => 'Type', 'column' => 'type', 'order' => true],
+                    ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => true],
                     ['name' => 'Harga', 'column' => 'harga', 'order' => true],
                     ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],

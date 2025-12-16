@@ -722,7 +722,9 @@ function formattingColumn(items, col, dcfs) {
     }
     if (dcf === "toInventoryConsumableNotifyStockLow") {
         mItem = formatToInventoryConsumableNotifyStockLow(item);
-        console.log(item)
+    }
+    if (dcf === "toInventoryInOutBadge") {
+        mItem = formatToInventoryInOutBadge(item);
     }
 
     return mItem;
@@ -734,20 +736,6 @@ const formatToRupiah = (number) => {
         currency: "IDR",
     }).format(number);
 };
-
-const formatToInventoryConsumableNotifyStockLow = (number) => {
-    return Number(number) < 10
-    ? `<span data-sp-name="low-stock-highlight">${number}</span>`
-    : number;
-}
-
-$(document).ajaxComplete(function () {
-    document
-        .querySelectorAll('span[data-sp-name="low-stock-highlight"]')
-        .forEach(span => {
-            span.closest('tr')?.classList.add('text-danger', 'font-bold');
-        });
-});
 
 
 const unitConversionRates = {
@@ -768,6 +756,65 @@ const unitConversionRates = {
         liter: 1 / 1000,
     },
 };
+
+const formatToInventoryConsumableNotifyStockLow = (number) => {
+    return `<span data-sp-name="minimum-stock-threshold">${number}</span>`
+}
+
+$(document).ajaxComplete(function () {
+    document
+        .querySelectorAll('span[data-sp-name="minimum-stock-threshold"]')
+        .forEach(span => {
+            const row = span.closest('tr');
+            if (!row) return;
+
+            const minTd = [...row.querySelectorAll('td')]
+                .find(td =>
+                    [...td.classList].some(cls => cls.endsWith('-minimum_stock'))
+                );
+
+            const stockTd = [...row.querySelectorAll('td')]
+                .find(td =>
+                    [...td.classList].some(cls => cls.endsWith('-stock'))
+                );
+
+            if (!minTd || !stockTd) return;
+
+            const minimumStock = Number(minTd.textContent.trim());
+            const stock = Number(stockTd.textContent.trim());
+
+            if (stock <= minimumStock) {
+                row.querySelectorAll('td').forEach(td => {
+                    td.classList.add('text-danger', 'font-bold');
+                });
+            }
+        });
+});
+
+const formatToInventoryInOutBadge = (text) => {
+    let badgeClass = 'bg-secondary';
+    if (text.toLowerCase() === 'in') {
+        badgeClass = 'bg-success';
+    } else if (text.toLowerCase() === 'out') {
+        badgeClass = 'bg-danger';
+    }
+    return `<span class="badge fs-6 ${badgeClass}"  style="width: 4rem;">${text.toUpperCase()}</span>`;
+}
+
+$(document).ajaxComplete(function () {
+    document
+        .querySelectorAll('[data-sp-name="ajax-column-type"]')
+        .forEach(el => {
+            el.innerHTML = formatToInventoryInOutBadge(el.textContent.trim());
+        });
+    
+    document
+        .querySelectorAll('[data-sp-name="ajax-column-harga"]')
+        .forEach(el => {
+            el.innerHTML = formatToRupiah(Number(el.textContent.trim()));
+        });
+});
+
 
 function showDetailPage(route, mClass, heightSkeleton = 10) {
     $(mClass).html(skeleton(heightSkeleton));
@@ -935,3 +982,4 @@ function idevSetEdit(id, uriKey, prefix = "") {
         });
     });
 }
+

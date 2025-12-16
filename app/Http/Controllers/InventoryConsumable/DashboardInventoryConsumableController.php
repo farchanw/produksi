@@ -34,7 +34,7 @@ class DashboardInventoryConsumableController extends Controller
         ];
 
         // InventoryConsumables Chart
-        $data['dataInventoryConsumablesChartItems'] = InventoryConsumable::all();
+        $data['dataInventoryConsumablesChartItems'] = InventoryConsumable::limit(10)->get();
         $data['dataInventoryConsumablesChartYears'] = InventoryConsumableMovement::selectRaw('YEAR(movement_datetime) year')
             ->distinct()
             ->orderByDesc('year')

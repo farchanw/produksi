@@ -30,7 +30,7 @@ class InventoryConsumableController extends DefaultController
         $this->title = 'Daftar Kartu Stok';
         $this->generalUri = 'inventory-consumable';
         // $this->arrPermissions = [];
-        $this->actionButtons = ['btn_inventory_consumable_history', 'btn_edit', 'btn_show', 'btn_delete'];
+        $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
@@ -532,13 +532,46 @@ class InventoryConsumableController extends DefaultController
 
     protected function show($id)
     {
-        $singleData = $this->defaultDataQuery()->where('inventory_consumables.id', $id)->first();
-        unset($singleData['id']);
-        $dataITEM = InventoryConsumableMovement::find($id);
-        dd($dataITEM);
-        $data['detail'] = $singleData;
+        $data['headerLayout'] = $this->pageHeaderLayout;
+        $data['table_headers'] = [
+                    ['name' => 'Item', 'column' => 'item', 'order' => false],
+                    ['name' => 'Category', 'column' => 'category', 'order' => false],
+                    ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => false],
+                    ['name' => 'Type', 'column' => 'type', 'order' => false],
+                    ['name' => 'Qty', 'column' => 'qty', 'order' => false],
+                    ['name' => 'Harga', 'column' => 'harga', 'order' => false, 'formatting' => 'toRupiah'],
+                    ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => false],
+                    ['name' => 'Catatan', 'column' => 'notes', 'order' => false], 
+                    //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+                    //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+        ];
+        $data['title'] = $this->title;
+        $data['uri_key'] = $this->generalUri;
+        $data['uri_list_api'] = route($this->generalUri . '.listapi');
+        $data['uri_create'] = route($this->generalUri . '.create');
+        $data['url_store'] = route($this->generalUri . '.store');
+        $data['edit_fields'] = $this->fields('edit');
 
-        return view('easyadmin::backend.idev.show-default', $data);
+        $data['actionButtonViews'] = $this->actionButtonViews;
+        $data['templateImportExcel'] = "#";
+        $data['import_scripts'] = $this->importScripts;
+        $data['import_styles'] = $this->importStyles;
+        $data['filters'] = $this->filters();
+        $data['dataList'] = InventoryConsumableMovement::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
+            ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
+            ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
+            ->select(
+                'inventory_consumable_movements.*', 
+                'inventory_consumables.name AS item',
+                'category_child.name AS subcategory',
+                'category_parent.name AS category',
+            )
+            ->where('item_id', $id)
+            ->orderBy('movement_datetime', 'DESC')
+            ->limit(100)
+            ->get();
+
+        return view('backend.idev.extend.show.show_inventory_consumable', $data);
     }
 
     private function resolveCategoryDataAndSubcategory($categoryValue, $subcategoryValue)
@@ -624,6 +657,7 @@ class InventoryConsumableController extends DefaultController
         $query = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
             ->select(
                 'inventory_consumables.id as value',
+                'inventory_consumables.minimum_stock',
                 DB::raw("CONCAT(inventory_consumables.sku, ' - ', inventory_consumables.name) AS text"),
                 'inventory_consumable_stocks.stock as stock'
             );
