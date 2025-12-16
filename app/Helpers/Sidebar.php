@@ -10,27 +10,36 @@ class Sidebar
 {
     
     public function generate()
-    {
-        $menus = $this->menus();
-        $constant = new Constant();
-        $permission = $constant->permissions();
-        
-        $arrMenu = [];
-        foreach ($menus as $key => $menu) {
-            $menu['url'] = (Route::has($menu['key'] . ".index")) ? route($menu['key'] . ".index") : "/idev-admin";
-            $menu['base_key'] = $menu['key'];
-            $menu['key'] = $menu['key'] . ".index";
-            
-            $arrMenu[] = $menu;
-        }
-        return $arrMenu;
+  {
+    $menus = $this->menus();
+    $arrMenu = [];
+
+    foreach ($menus as $menu) {
+
+      // 🔴 INI KUNCINYA
+      if (empty($menu['visibility'])) {
+        continue;
+      }
+
+      $menu['url'] = Route::has($menu['key'] . '.index')
+        ? route($menu['key'] . '.index')
+        : '/idev-admin';
+
+      $menu['base_key'] = $menu['key'];
+      $menu['key'] = $menu['key'] . '.index';
+
+      $arrMenu[] = $menu;
     }
+
+    return $arrMenu;
+  }
     
     
     public function menus()
     {
         $role = "admin";
         $currentModule = session()->get('module');
+        
         if (config('idev.enable_role', true)) {
             $role = Auth::user()->role->name;
         }
@@ -76,7 +85,7 @@ class Sidebar
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable',
                 'base_key' => 'inventory-consumable',
-                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('inventory-consumable') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
@@ -85,7 +94,7 @@ class Sidebar
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable-movement',
                 'base_key' => 'inventory-consumable-movement',
-                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('inventory-consumable-movement') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
@@ -94,7 +103,7 @@ class Sidebar
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable-category',
                 'base_key' => 'inventory-consumable-category',
-                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
@@ -113,7 +122,7 @@ class Sidebar
                 'icon' => 'ti ti-menu',
                 'key' => 'utilisation-production',
                 'base_key' => 'utilisation-production',
-                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('utilisation-production') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
@@ -132,7 +141,7 @@ class Sidebar
                 'icon' => 'ti ti-key',
                 'key' => 'role',
                 'base_key' => 'role',
-                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('role') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
@@ -141,7 +150,7 @@ class Sidebar
                 'icon' => 'ti ti-users',
                 'key' => 'user',
                 'base_key' => 'user',
-                'visibility' => in_array($role, ['admin']) && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('user') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
@@ -162,4 +171,21 @@ class Sidebar
         
         return $arrMenu[$menuKey] ?? $this->defaultAllAccess();
     }
+
+    
+  private function canAccessMenu($menuKey)
+  {
+    $permission = (new Constant())->permissions();
+
+    if (!isset($permission['list_access'])) {
+      return false;
+    }
+
+    // DEBUG (boleh aktifkan sementara)
+    // dd($menuKey, $permission['list_access']);
+
+    // cek minimal boleh list/index
+    return in_array($menuKey . '.index', $permission['list_access']);
+  }
+
 }

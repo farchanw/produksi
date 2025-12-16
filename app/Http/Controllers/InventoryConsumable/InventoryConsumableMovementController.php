@@ -21,6 +21,7 @@ class InventoryConsumableMovementController extends DefaultController
     protected $tableHeaders;
     // protected $actionButtons;
     // protected $arrPermissions;
+    protected $dynamicPermission = true;
     protected $importExcelConfig;
 
     public function __construct()

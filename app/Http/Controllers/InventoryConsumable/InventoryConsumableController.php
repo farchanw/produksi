@@ -35,14 +35,14 @@ class InventoryConsumableController extends DefaultController
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Sku', 'column' => 'sku', 'order' => true],
-                    ['name' => 'Name', 'column' => 'name', 'order' => true], 
+                    ['name' => 'Name', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
                     ['name' => 'Category', 'column' => 'category', 'order' => true], 
                     ['name' => 'Subcategory', 'column' => 'subcategory', 'order' => true], 
                     ['name' => 'Minimum Stock', 'column' => 'minimum_stock', 'order' => true],
-                    ['name' => 'Stock', 'column' => 'stock', 'order' => true], 
+                    ['name' => 'Stock', 'column' => 'stock', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
-                    ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true], 
-                    ['name' => 'Harga total', 'column' => 'harga_total', 'order' => true], 
+                    ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true, 'formatting' => 'toRupiah'], 
+                    ['name' => 'Harga total', 'column' => 'harga_total', 'order' => true, 'formatting' => 'toRupiah'], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -530,65 +530,12 @@ class InventoryConsumableController extends DefaultController
         return view($layout, $data);
     }
 
-    protected function indexApi()
-    {
-        $manyDatas = 10;
-        if (request('manydatas')) {
-            $manyDatas = request('manydatas');
-            if ($manyDatas == "All") {
-                $manyDatas = 10000; // we are using this boundaries to prevent lack of request
-            }
-        }
-        $permission =  $this->arrPermissions;
-        if ($this->dynamicPermission) {
-            $permission = (new Constant())->permissionByMenu($this->generalUri);
-        }
-        foreach ($this->extendPermissions as $keyE => $ep) {
-            $permission[] = $ep;
-        }
-        $permission[] = 'inventory_consumable_history';
-        $eb = [];
-        $dataColumns = [];
-        $dataColFormat = [];
-        foreach ($this->tableHeaders as $key => $col) {
-            if ($key > 0) {
-                $dataColumns[] = $col['column'];
-                if (array_key_exists("formatting", $col)) {
-                    $dataColFormat[$col['column']] = $col['formatting'];
-                }
-            }
-        }
-
-        foreach ($this->actionButtons as $key => $ab) {
-            if (in_array(str_replace("btn_", "", $ab), $permission)) {
-                $eb[] = $ab;
-            }
-        }
-
-        $dataQueries = $this->defaultDataQuery()->paginate($manyDatas);
-
-        $datas['extra_buttons'] = $eb;
-        $datas['data_columns'] = $dataColumns;
-        $datas['data_col_formatting'] = $dataColFormat;
-        $datas['data_queries'] = $dataQueries;
-        $datas['data_permissions'] = $permission;
-        $datas['uri_key'] = $this->generalUri;
-
-        foreach ($datas['data_queries'] as $key => $dq) {
-            if($dq->stock <= $dq->minimum_stock){
-                $dq->name = "<span class='text-danger fw-bold'>".$dq->name."</span>";
-                $dq->stock = "<span class='text-danger fw-bold'>".$dq->stock."</span>";
-            }
-        }
-
-        return $datas;
-    }
-
     protected function show($id)
     {
         $singleData = $this->defaultDataQuery()->where('inventory_consumables.id', $id)->first();
         unset($singleData['id']);
-
+        $dataITEM = InventoryConsumableMovement::find($id);
+        dd($dataITEM);
         $data['detail'] = $singleData;
 
         return view('easyadmin::backend.idev.show-default', $data);

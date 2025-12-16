@@ -720,6 +720,10 @@ function formattingColumn(items, col, dcfs) {
     if (dcf === "toRupiah") {
         mItem = formatToRupiah(item);
     }
+    if (dcf === "toInventoryConsumableNotifyStockLow") {
+        mItem = formatToInventoryConsumableNotifyStockLow(item);
+        console.log(item)
+    }
 
     return mItem;
 }
@@ -730,6 +734,21 @@ const formatToRupiah = (number) => {
         currency: "IDR",
     }).format(number);
 };
+
+const formatToInventoryConsumableNotifyStockLow = (number) => {
+    return Number(number) < 10
+    ? `<span data-sp-name="low-stock-highlight">${number}</span>`
+    : number;
+}
+
+$(document).ajaxComplete(function () {
+    document
+        .querySelectorAll('span[data-sp-name="low-stock-highlight"]')
+        .forEach(span => {
+            span.closest('tr')?.classList.add('text-danger', 'font-bold');
+        });
+});
+
 
 const unitConversionRates = {
     kg: {

@@ -5,95 +5,118 @@
 @endpush
 <div class="pc-container">
     <div class="pc-content">
-        <div class="page-header">
-            <div class="page-block">
-                <div class="row align-items-center">
-                    <div class="col-md-12">
-                        Hi, <b>{{ Auth::user()->name }} </b> 
-                        @if(config('idev.enable_role',true))
-                        Login bertindak sebagai <i>{{ Auth::user()->role->name }}</i> 
-                        @endif
-                    </div>
+
+        {{-- HEADER --}}
+        <div class="page-header mb-4">
+            <div class="row align-items-center">
+                <div class="col-12">
+                    <h5 class="mb-1">
+                        Hi, <b>{{ Auth::user()->name }}</b>
+                    </h5>
+                    @if(config('idev.enable_role',true))
+                        <small class="text-muted">
+                            Login bertindak sebagai <i>{{ Auth::user()->role->name }}</i>
+                        </small>
+                    @endif
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-body p-3">
 
-                        <section style="display:grid; grid-template-columns:repeat(2, 1fr); gap:4rem; margin-bottom:1rem;">
-                            <div class="card p-2">
-                                <h4>Out</h4>
-                                <form class="flex gap-3">
-                                    <select id="chart-data-inventory-consumable-year">
-                                        @foreach($dataInventoryConsumablesChartYears as $year)
-                                            <option value="{{ $year }}">{{ $year }}</option>
-                                        @endforeach
-                                    </select>
+        {{-- DASHBOARD CONTENT --}}
+        <div class="row g-4">
 
-                                    <select id="chart-data-inventory-consumable-item">
-                                        @foreach($dataInventoryConsumablesChartItems as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->sku }} - {{ $item->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+            {{-- OUT CHART --}}
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Out</h5>
+                    </div>
 
-                                    {{-- <button type="button" onclick="chartInventoryConsumableLoad()">View</button> --}}
-                                </form>
-
-                                <canvas id="inventoryChart" height="120"></canvas>
-
+                    <div class="card-body">
+                        <form class="row g-2 mb-3">
+                            <div class="col-md-4">
+                                <select
+                                    id="chart-data-inventory-consumable-year"
+                                    class="form-select"
+                                >
+                                    @foreach($dataInventoryConsumablesChartYears as $year)
+                                        <option value="{{ $year }}">{{ $year }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="card p-2">
-                                <h4>Stock</h4>
-                                <form class="flex gap-3">
-                                    <select id="data-inventory-consumable-stock-category">
-                                        <option value="0">-- Select Category --</option>
-                                        @foreach($dataInventoryConsumablesStockCategories as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
 
-                                    <select id="data-inventory-consumable-stock-subcategory"></select>
-                                </form>
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Stock</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="inventory-consumable-stock-tbody"></tbody>
-                                </table>
+                            <div class="col-md-8">
+                                <select
+                                    id="chart-data-inventory-consumable-item"
+                                    class="form-select"
+                                >
+                                    @foreach($dataInventoryConsumablesChartItems as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->sku }} - {{ $item->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="card p-2">
+                        </form>
 
-                            </div>
-                        </section>
-
+                        <div class="ratio ratio-16x9">
+                            <canvas id="inventoryChart"></canvas>
+                        </div>
                     </div>
                 </div>
-
-
-                <!--
-                <div class="card mb-4">
-                    <div class="card-body p-3">
-                        <h3>InventoryConsumable</h3>
-
-                    </div>
-                </div>
-                -->
-
-
             </div>
+
+            {{-- STOCK TABLE --}}
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Stock</h5>
+                    </div>
+
+                    <div class="card-body">
+                        <form class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <select
+                                    id="data-inventory-consumable-stock-category"
+                                    class="form-select"
+                                >
+                                    <option value="0">-- Select Category --</option>
+                                    @foreach($dataInventoryConsumablesStockCategories as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <select
+                                    id="data-inventory-consumable-stock-subcategory"
+                                    class="form-select"
+                                >
+                                    <option value="">-- Select Subcategory --</option>
+                                </select>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th class="text-end">Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-consumable-stock-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
-
 
 @if(isset($import_scripts))
 @foreach($import_scripts as $isc)

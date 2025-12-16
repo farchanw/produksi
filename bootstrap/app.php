@@ -11,12 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        /*
         $middleware->alias([
             'middlewareByAccess' =>
-                \Idev\EasyAdmin\App\Http\Middleware\MiddlewareByAccess::class,
+                \Idev\EasyAdmin\app\Http\Middleware\MiddlewareByAccess::class,
         ]);
-        */
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
