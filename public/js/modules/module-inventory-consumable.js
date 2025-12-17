@@ -2,7 +2,7 @@
 function loadSubcategories(category, sub, restoreValue = null) {
     const categoryId = category.value;
     if (!categoryId) {
-        sub.innerHTML = '<option value="">Select subcategory</option>';
+        sub.innerHTML = '<option value="">Pilih Subkategori...</option>';
         return;
     }
 
@@ -11,7 +11,7 @@ function loadSubcategories(category, sub, restoreValue = null) {
     const controller = new AbortController();
     sub.__abortController = controller;
 
-    sub.innerHTML = '<option value="">Loading...</option>';
+    sub.innerHTML = '<option value="">[ Loading... ]</option>';
 
     fetch(
         'inventory-consumable-category-fetch-category-subcategories-default?category_id=' + encodeURIComponent(categoryId),
@@ -19,7 +19,7 @@ function loadSubcategories(category, sub, restoreValue = null) {
     )
     .then(r => r.json())
     .then(rows => {
-        sub.innerHTML = '<option value="">Select subcategory</option>';
+        sub.innerHTML = '<option value="">Pilih Subkategori...</option>';
 
         rows.forEach(row => {
             const opt = document.createElement('option');
@@ -54,7 +54,7 @@ $(document).on('shown.bs.offcanvas', '.offcanvas', function () {
     const restoreValue = sub.value || null;
 
     // Reset placeholder
-    sub.innerHTML = '<option value="">Select subcategory</option>';
+    sub.innerHTML = '<option value="">Pilih Subkategori...</option>';
 
     // Wait until category value is set by other JS
     const check = setInterval(() => {
@@ -96,7 +96,7 @@ $(document).on('change', 'select[name="subcategory"]', function () {
 
     if (!categoryId) return;
 
-    $sub.html('<option value="">Loading...</option>');
+    $sub.html('<option value=""></option>');
 
 
     $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
@@ -147,7 +147,7 @@ function chartInventoryConsumableLoad() {
         })
         .catch(error => {
             document.getElementById('inventoryChart').innerHTML = /*html*/`
-                <div class="text-danger">Failed to get data: ${error}</div>
+                <div class="text-danger">ERROR: Failed to get data: ${error}</div>
             `
         });
 }
@@ -164,7 +164,7 @@ function getSubcategoryOptions() {
     const selectCategoryId = document.getElementById('data-inventory-consumable-stock-category');
     if (!selectCategoryId) return;
     const categoryId = selectCategoryId.value;
-    let options = '<option value="">-- Select Subcategory --</option>';
+    let options = '<option value="">Pilih Subkategori...</option>';
     fetch(`inventory-consumable-category-fetch-category-subcategories-default?category_id=${categoryId}`)
         .then(res => res.json())
         .then(data => {
@@ -175,7 +175,7 @@ function getSubcategoryOptions() {
         })
         .catch(error => {
             document.getElementById('data-inventory-consumable-stock-subcategory').innerHTML = /*html*/`
-                <option value="">Failed to load subcategories: ${error}</option>
+                <option value="">ERROR: Failed to load subcategories: ${error}</option>
             `
         });
 }
@@ -206,7 +206,7 @@ function renderStockTable() {
         .catch(error => {
             document.getElementById('inventory-consumable-stock-tbody').innerHTML = /*html*/`
                 <tr>
-                    <td colspan="2" class="text-danger">Failed to load stock data: ${error}</td>
+                    <td colspan="2" class="text-danger">ERROR: Failed to load stock data: ${error}</td>
                 </tr>
             `
         });
@@ -232,6 +232,6 @@ $(function () {
     $('#chart-data-inventory-consumable-item').select2({
         theme: 'bootstrap-5',
         width: '100%',
-        placeholder: 'Select...'
+        placeholder: 'Pilih...'
     });
 });

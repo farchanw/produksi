@@ -81,7 +81,7 @@
                                     id="data-inventory-consumable-stock-category"
                                     class="form-select"
                                 >
-                                    <option value="0">-- Select Category --</option>
+                                    <option value="0">Pilih Kategori...</option>
                                     @foreach($dataInventoryConsumablesStockCategories as $item)
                                         <option value="{{ $item->id }}">
                                             {{ $item->name }}
@@ -95,7 +95,7 @@
                                     id="data-inventory-consumable-stock-subcategory"
                                     class="form-select"
                                 >
-                                    <option value="">-- Select Subcategory --</option>
+                                    <option value="">Pilih Subkategori...</option>
                                 </select>
                             </div>
                         </form>
