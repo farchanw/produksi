@@ -82,7 +82,7 @@ class Sidebar
         return [
             [
                 'name' => 'Item',
-                'icon' => 'ti ti-menu',
+                'icon' => 'ti ti-box',
                 'key' => 'inventory-consumable',
                 'base_key' => 'inventory-consumable',
                 'visibility' => $this->canAccessMenu('inventory-consumable') && $module == $currentModule,
@@ -91,7 +91,7 @@ class Sidebar
             ],
             [
                 'name' => 'Kartu Stock',
-                'icon' => 'ti ti-menu',
+                'icon' => 'ti ti-book',
                 'key' => 'inventory-consumable-movement',
                 'base_key' => 'inventory-consumable-movement',
                 'visibility' => $this->canAccessMenu('inventory-consumable-movement') && $module == $currentModule,
@@ -100,7 +100,7 @@ class Sidebar
             ],
             [
                 'name' => 'Input Kategori',
-                'icon' => 'ti ti-menu',
+                'icon' => 'ti ti-tag',
                 'key' => 'inventory-consumable-category',
                 'base_key' => 'inventory-consumable-category',
                 'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
