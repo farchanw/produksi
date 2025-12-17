@@ -36,7 +36,7 @@ class InventoryConsumableController extends DefaultController
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Kode Item', 'column' => 'sku', 'order' => true],
-                    ['name' => 'Nama', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
+                    ['name' => 'Nama Item', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow',], 
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true], 
                     ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true], 
                     ['name' => 'Min. Stock', 'column' => 'minimum_stock', 'order' => true],

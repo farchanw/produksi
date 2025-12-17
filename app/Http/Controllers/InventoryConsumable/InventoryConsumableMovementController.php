@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use Carbon\Carbon;
 use Illuminate\Validation\Rules\In;
 
 class InventoryConsumableMovementController extends DefaultController
@@ -212,6 +213,12 @@ class InventoryConsumableMovementController extends DefaultController
                 'class' => 'col-md-2',
                 'options' => $optionsType,
             ],
+            [
+                'type' => 'monthrange',
+                'label' => 'Tanggal',
+                'name' =>  'tanggal',
+                'class' => 'col-md-2',
+            ],
         ];
 
         return $fields;
@@ -249,6 +256,21 @@ class InventoryConsumableMovementController extends DefaultController
         }
         if (request('category_parent_id')) {
             $filters[] = ['category_parent.id', '=', request('category_parent_id')];
+        }
+        if (request('tanggal_start') && request('tanggal_end')) {
+            $filters[] = [
+                'inventory_consumable_movements.movement_datetime',
+                '>=',
+                request('tanggal_start') . '-01 00:00:00'
+            ];
+
+            $filters[] = [
+                'inventory_consumable_movements.movement_datetime',
+                '<',
+                Carbon::parse(request('tanggal_end') . '-01')
+                    ->addMonth()
+                    ->format('Y-m-d 00:00:00')
+            ];
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
