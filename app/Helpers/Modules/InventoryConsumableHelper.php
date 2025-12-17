@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Modules;
 use App\Models\InventoryConsumable;
+use App\Models\InventoryConsumableCategory;
 use Illuminate\Support\Facades\DB;
 
 class InventoryConsumableHelper
@@ -18,6 +19,14 @@ class InventoryConsumableHelper
             ['value' => 'out', 'text' => 'Out'],
             ['value' => 'adjust', 'text' => 'Adjust'],
         ];
+    }
+
+    public static function optionsForCategories()
+    {
+        return InventoryConsumableCategory::select('id as value', 'name as text')
+            ->orderBy('name', 'ASC')
+            ->whereNull('parent_id')
+            ->get();
     }
 
     public static function optionsForItems()

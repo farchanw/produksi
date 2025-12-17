@@ -190,14 +190,27 @@ class InventoryConsumableMovementController extends DefaultController
 
     protected function filters()
     {
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
+        array_unshift($optionsCategory, ['value' => '', 'text' => 'Semua']);
+
+        $optionsType = InventoryConsumableHelper::optionsForMovementTypes();
+        array_unshift($optionsType, ['value' => '', 'text' => 'Semua']);
+
 
         $fields = [
+            [
+                'type' => 'select',
+                'label' => 'Kategori',
+                'name' =>  'category_parent_id',
+                'class' => 'col-md-2',
+                'options' => $optionsCategory,
+            ],
             [
                 'type' => 'select',
                 'label' => 'Type',
                 'name' =>  'type',
                 'class' => 'col-md-2',
-                'options' => InventoryConsumableHelper::optionsForMovementTypes()
+                'options' => $optionsType,
             ],
         ];
 
@@ -230,8 +243,12 @@ class InventoryConsumableMovementController extends DefaultController
             $orderBy = request('order');
             $orderState = request('order_state');
         }
+        // filters
         if (request('type')) {
             $filters[] = ['inventory_consumable_movements.type', '=', request('type')];
+        }
+        if (request('category_parent_id')) {
+            $filters[] = ['category_parent.id', '=', request('category_parent_id')];
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InventoryConsumable;
 
+use App\Helpers\Modules\InventoryConsumableHelper;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
 use App\Models\InventoryConsumableStock;
@@ -74,24 +75,18 @@ class InventoryConsumableController extends DefaultController
             $edit = $this->modelClass::where('id', $id)->first();
         }
 
-        $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')
-            ->whereNull('parent_id')
-            ->get();
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories();
+        $optionsSubcategory = [];
 
         if (isset($edit)) {
-            $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
-            ->where('parent_id', '=', $edit->category)
-            ->get();
-            
             // Get subcategory
             $subcategory = InventoryConsumableCategory::find($edit->category_id);
 
             // Get parent category (top-level)
             $categoryId = $subcategory?->parent_id ? $subcategory->parent_id : $subcategory->id;
-        } else {
-            $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
-            ->whereNotNull('parent_id')
-            ->get();
+            $optionsSubcategory = [
+                ['value' => $subcategory->id, 'text' => $subcategory->name]
+            ];
         }
 
         $fields = [
@@ -121,7 +116,7 @@ class InventoryConsumableController extends DefaultController
                         'required' => $this->flagRules('subcategory', $id),
                         'value' => (isset($edit)) ? $edit->category_id : '', // category_id is subcategory
                         //'value' => isset($subcategory->id) ? $subcategory->id : '',
-                        'options' => [],
+                        'options' => $optionsSubcategory,
                     ],
                     [
                         'type' => 'text',
@@ -161,6 +156,27 @@ class InventoryConsumableController extends DefaultController
     }
 
 
+
+    protected function filters()
+    {
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
+        array_unshift($optionsCategory, ['value' => '', 'text' => 'Semua']);
+
+        $fields = [
+            [
+                'type' => 'select',
+                'label' => 'Kategori',
+                'name' =>  'category_parent_id',
+                'class' => 'col-md-2',
+                'options' => $optionsCategory,
+            ],
+        ];
+
+        return $fields;
+    }
+
+
+
     protected function rules($id = null)
     {
         $rules = [
@@ -189,6 +205,10 @@ class InventoryConsumableController extends DefaultController
         if (request('order')) {
             $orderBy = request('order');
             $orderState = request('order_state');
+        }
+        // filters
+        if (request('category_parent_id')) {
+            $filters[] = ['category_parent.id', '=', request('category_parent_id')];
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
