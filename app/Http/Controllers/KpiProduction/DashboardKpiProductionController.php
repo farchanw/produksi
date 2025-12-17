@@ -24,7 +24,7 @@ class DashboardKpiProductionController extends Controller
         session(['module' => 'kpi-production']);
         $data['title'] = $this->title;
 
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.idev.dashboard_kpi_production';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.idev.extend.dashboard.dashboard_kpi_production';
 
         return view($layout, $data);
     }

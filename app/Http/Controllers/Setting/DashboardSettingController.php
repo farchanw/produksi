@@ -34,6 +34,6 @@ class DashboardSettingController extends Controller
 
         $data['title'] = $this->title;
 
-        return view('backend.idev.dashboard_setting', $data);
+        return view('backend.idev.extend.dashboard.dashboard_setting', $data);
     }
 }

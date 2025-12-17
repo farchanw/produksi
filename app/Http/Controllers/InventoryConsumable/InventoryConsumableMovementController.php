@@ -217,7 +217,7 @@ class InventoryConsumableMovementController extends DefaultController
                 'type' => 'monthrange',
                 'label' => 'Tanggal',
                 'name' =>  'tanggal',
-                'class' => 'col-md-2',
+                'class' => 'col-md-4',
             ],
         ];
 

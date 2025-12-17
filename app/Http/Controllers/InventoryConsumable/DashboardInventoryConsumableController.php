@@ -39,7 +39,7 @@ class DashboardInventoryConsumableController extends Controller
         session(['module' => 'inventory-consumable']);
         $data['title'] = $this->title;
 
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.idev.dashboard_inventory_consumable';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.idev.extend.dashboard.dashboard_inventory_consumable';
 
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
