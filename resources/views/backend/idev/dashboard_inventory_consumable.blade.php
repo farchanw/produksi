@@ -6,7 +6,7 @@
 <div class="pc-container">
     <div class="pc-content">
 
-        {{-- HEADER --}}
+        <!-- PAGE HEADER -->
         <div class="page-header mb-4">
             <div class="row align-items-center">
                 <div class="col-12">
@@ -22,10 +22,10 @@
             </div>
         </div>
 
-        {{-- DASHBOARD CONTENT --}}
+        <!-- DASHBOARD CONTENT -->
         <div class="row g-4">
 
-            {{-- OUT CHART --}}
+            <!-- OUT CHART -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="card-header">
@@ -39,9 +39,10 @@
                                     id="chart-data-inventory-consumable-year"
                                     class="form-select"
                                 >
-                                    @foreach($dataInventoryConsumablesChartYears as $year)
-                                        <option value="{{ $year }}">{{ $year }}</option>
-                                    @endforeach
+
+                                    @for ($year = now()->year; $year >= 1990; $year--)
+                                        <option value="{{ $year }}" @if($year == now()->year) selected @endif>{{ $year }}</option>
+                                    @endfor
                                 </select>
                             </div>
 
@@ -66,7 +67,7 @@
                 </div>
             </div>
 
-            {{-- STOCK TABLE --}}
+            <!-- STOCK TABLE -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="card-header">
@@ -104,7 +105,7 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Item</th>
-                                        <th class="text-end">Stock</th>
+                                        <th>Stock</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inventory-consumable-stock-tbody"></tbody>
@@ -118,105 +119,18 @@
     </div>
 </div>
 
-@if(isset($import_scripts))
-@foreach($import_scripts as $isc)
-<script src="{{$isc['source']}}"></script>
-@endforeach
-@endif
-<script>
-/* CHART INVENTORY CONSUMABLE */
-let chartInventoryConsumable;
+    @push('scripts')
+        @if(isset($import_scripts))
+        @foreach($import_scripts as $isc)
+        <script src="{{$isc['source']}}"></script>
+        @endforeach
+        @endif
 
-function chartInventoryConsumableLoad() {
-    const year   = document.getElementById('chart-data-inventory-consumable-year').value;
-    const itemId = document.getElementById('chart-data-inventory-consumable-item').value;
+        @if(isset($import_styles))
+        @foreach($import_styles as $ist)
+        <link rel="stylesheet" href="{{$ist['source']}}">
+        @endforeach
+        @endif
+    @endpush
 
-    fetch(`inventory-consumable-chart-data-out-default?year=${year}&item_id=${itemId}`)
-        .then(res => res.json())
-        .then(data => {
-            if (chartInventoryConsumable) {
-                chartInventoryConsumable.destroy();
-            }
-
-            const ctx = document.getElementById('inventoryChart');
-
-            chartInventoryConsumable = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Out Level',
-                        data: data.values,
-                        tension: 0.3,
-                        fill: true
-                    }]
-                }
-            });
-        })
-        .catch(error => {
-            document.getElementById('inventoryChart').innerHTML = /*html*/`
-                <div class="text-danger">Failed to get data: ${error}</div>
-            `
-        });
-}
-document.getElementById('chart-data-inventory-consumable-year').onchange = chartInventoryConsumableLoad
-document.getElementById('chart-data-inventory-consumable-item').onchange = chartInventoryConsumableLoad
-
-/* STOCK INVENTORY CONSUMABLE */
-function getSubcategoryOptions() {
-    const categoryId = document.getElementById('data-inventory-consumable-stock-category').value;
-    let options = '<option value="">-- Select Subcategory --</option>';
-    fetch(`inventory-consumable-category-fetch-category-subcategories-default?category_id=${categoryId}`)
-        .then(res => res.json())
-        .then(data => {
-            data.forEach(subcat => {
-                options += `<option value="${subcat.value}">${subcat.text}</option>`;
-            });
-            document.getElementById('data-inventory-consumable-stock-subcategory').innerHTML = options;
-        })
-        .catch(error => {
-            document.getElementById('data-inventory-consumable-stock-subcategory').innerHTML = /*html*/`
-                <option value="">Failed to load subcategories: ${error}</option>
-            `
-        });
-}
-
-function renderStockTable() {
-    const categoryId = document.getElementById('data-inventory-consumable-stock-category').value;
-    const subcategoryId = document.getElementById('data-inventory-consumable-stock-subcategory').value;
-
-    fetch(`inventory-consumable-fetch-items-stock-data-default?category_id=${categoryId ?? 0}&subcategory_id=${subcategoryId ?? 0}`)
-        .then(res => res.json())
-        .then(data => {
-            
-            let rows = '';
-            data.forEach(item => {
-                console.log(item)
-                rows += /*html*/`
-                    <tr class="${Number(item.stock) <= Number(item.minimum_stock) ? 'text-danger' : ''}">
-                        <td>${item.text}</td>
-                        <td>${item.stock}</td>
-                    </tr>
-                `;
-            });
-            document.getElementById('inventory-consumable-stock-tbody').innerHTML = rows;
-        })
-        .catch(error => {
-            document.getElementById('inventory-consumable-stock-tbody').innerHTML = /*html*/`
-                <tr>
-                    <td colspan="2" class="text-danger">Failed to load stock data: ${error}</td>
-                </tr>
-            `
-        });
-}
-
-document.getElementById('data-inventory-consumable-stock-category').onchange = getSubcategoryOptions
-document.getElementById('data-inventory-consumable-stock-subcategory').onchange = renderStockTable
-
-window.addEventListener('load', () => {
-    chartInventoryConsumableLoad()
-    getSubcategoryOptions()
-    renderStockTable()
-});
-</script>
 @endsection

@@ -14,11 +14,23 @@ class DashboardInventoryConsumableController extends Controller
 {
     private $title;
     private $generalUri;
+    protected $importScripts = [];
+    protected $importStyles = [];
 
     public function __construct()
     {
         $this->title = 'Dashboard Sistem Kartu Stok';
         $this->generalUri = 'dashboard-inventory-consumable';
+
+        $this->importScripts = [
+            ['source' => asset('js/modules/module-inventory-consumable.js')],
+            ['source' => asset('vendor/Chart.js/chart.umd.js')],
+            ['source' => asset('vendor/select2/js/select2.min.js')],
+        ];
+        $this->importStyles = [
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
+        ];
     }
 
 
@@ -29,20 +41,11 @@ class DashboardInventoryConsumableController extends Controller
 
         $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.dashboard_ajax' : 'backend.idev.dashboard_inventory_consumable';
 
-        $data['import_scripts'] = [
-             ['source' => asset('vendor/Chart.js/chart.umd.js')],
-        ];
+        $data['import_scripts'] = $this->importScripts;
+        $data['import_styles'] = $this->importStyles;
 
         // InventoryConsumables Chart
-        $data['dataInventoryConsumablesChartItems'] = InventoryConsumable::limit(10)->get();
-        $data['dataInventoryConsumablesChartYears'] = InventoryConsumableMovement::selectRaw('YEAR(movement_datetime) year')
-            ->distinct()
-            ->orderByDesc('year')
-            ->pluck('year');
-        $data['dataInventoryConsumablesStockYears'] = InventoryConsumableMovement::selectRaw('YEAR(movement_datetime) year')
-            ->distinct()
-            ->orderByDesc('year')
-            ->pluck('year');
+        $data['dataInventoryConsumablesChartItems'] = InventoryConsumable::limit(100)->get();
         $data['dataInventoryConsumablesStockCategories'] = InventoryConsumableCategory::where('parent_id', null)->get();
 
         return view($layout, $data);

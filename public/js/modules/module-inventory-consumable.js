@@ -1,6 +1,4 @@
-/**
- * Load subcategories for a given category
- */
+/* LIST DRAWER FORM */
 function loadSubcategories(category, sub, restoreValue = null) {
     const categoryId = category.value;
     if (!categoryId) {
@@ -38,9 +36,6 @@ function loadSubcategories(category, sub, restoreValue = null) {
     .catch(err => { if (err.name !== 'AbortError') console.error(err); });
 }
 
-/**
- * Wait until category value is set by other JS, then load subcategories
- */
 function waitForCategoryAndLoad(category, sub, restoreValue = null) {
     const check = setInterval(() => {
         if (category.value) {
@@ -50,10 +45,6 @@ function waitForCategoryAndLoad(category, sub, restoreValue = null) {
     }, 50); // check every 50ms
 }
 
-/**
- * OFFCANVAS OPEN
- */
-// Offcanvas open
 $(document).on('shown.bs.offcanvas', '.offcanvas', function () {
     const category = this.querySelector('select[name="category"]');
     const sub = this.querySelector('select[name="subcategory"]');
@@ -80,10 +71,6 @@ $(document).on('shown.bs.offcanvas', '.offcanvas', function () {
     category.addEventListener('change', category.__handler);
 });
 
-
-/**
- * OFFCANVAS CLOSE / CLEANUP
- */
 $(document).on('hidden.bs.offcanvas', '.offcanvas', function () {
     this.querySelectorAll('select').forEach(select => {
         // Abort pending fetch
@@ -101,10 +88,6 @@ $(document).on('hidden.bs.offcanvas', '.offcanvas', function () {
     });
 });
 
-
-
-
-// Resolve fetch items
 $(document).on('change', 'select[name="subcategory"]', function () {
     const categoryId = $(this).val();
     const $sub = $('select[name="item_id"]');
@@ -128,8 +111,105 @@ $(document).on('change', 'select[name="subcategory"]', function () {
 });
 
 
+/* DASHBOARD */
+let chartInventoryConsumable;
 
+function chartInventoryConsumableLoad() {
+    const year   = document.getElementById('chart-data-inventory-consumable-year').value;
+    const itemId = document.getElementById('chart-data-inventory-consumable-item').value;
 
+    fetch(`inventory-consumable-chart-data-out-default?year=${year}&item_id=${itemId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (chartInventoryConsumable) {
+                chartInventoryConsumable.destroy();
+            }
 
+            const ctx = document.getElementById('inventoryChart');
 
+            chartInventoryConsumable = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Out Level',
+                        data: data.values,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                }
+            });
+        })
+        .catch(error => {
+            document.getElementById('inventoryChart').innerHTML = /*html*/`
+                <div class="text-danger">Failed to get data: ${error}</div>
+            `
+        });
+}
+document.getElementById('chart-data-inventory-consumable-year').onchange = chartInventoryConsumableLoad
+document.getElementById('chart-data-inventory-consumable-item').onchange = chartInventoryConsumableLoad
 
+/* STOCK INVENTORY CONSUMABLE */
+function getSubcategoryOptions() {
+    const categoryId = document.getElementById('data-inventory-consumable-stock-category').value;
+    let options = '<option value="">-- Select Subcategory --</option>';
+    fetch(`inventory-consumable-category-fetch-category-subcategories-default?category_id=${categoryId}`)
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(subcat => {
+                options += `<option value="${subcat.value}">${subcat.text}</option>`;
+            });
+            document.getElementById('data-inventory-consumable-stock-subcategory').innerHTML = options;
+        })
+        .catch(error => {
+            document.getElementById('data-inventory-consumable-stock-subcategory').innerHTML = /*html*/`
+                <option value="">Failed to load subcategories: ${error}</option>
+            `
+        });
+}
+
+function renderStockTable() {
+    const categoryId = document.getElementById('data-inventory-consumable-stock-category').value;
+    const subcategoryId = document.getElementById('data-inventory-consumable-stock-subcategory').value;
+
+    fetch(`inventory-consumable-fetch-items-stock-data-default?category_id=${categoryId ?? 0}&subcategory_id=${subcategoryId ?? 0}`)
+        .then(res => res.json())
+        .then(data => {
+            
+            let rows = '';
+            data.forEach(item => {
+                console.log(item)
+                rows += /*html*/`
+                    <tr class="${Number(item.stock) <= Number(item.minimum_stock) ? 'text-danger' : ''}">
+                        <td>${item.text}</td>
+                        <td>${item.stock}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('inventory-consumable-stock-tbody').innerHTML = rows;
+        })
+        .catch(error => {
+            document.getElementById('inventory-consumable-stock-tbody').innerHTML = /*html*/`
+                <tr>
+                    <td colspan="2" class="text-danger">Failed to load stock data: ${error}</td>
+                </tr>
+            `
+        });
+}
+
+document.getElementById('data-inventory-consumable-stock-category').onchange = getSubcategoryOptions
+document.getElementById('data-inventory-consumable-stock-subcategory').onchange = renderStockTable
+
+window.addEventListener('load', () => {
+    chartInventoryConsumableLoad()
+    getSubcategoryOptions()
+    renderStockTable()
+});
+
+$(function () {
+    $('#chart-data-inventory-consumable-item').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Select...'
+    });
+});
