@@ -130,3 +130,17 @@ form label {
 .form-control {
     font-size: 1rem;
 }
+
+/* === */
+.dashboard-inventory-consumable-stock-table.table-scroll tbody {
+  display: block;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.dashboard-inventory-consumable-stock-table.table-scroll thead,
+.dashboard-inventory-consumable-stock-table.table-scroll tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}

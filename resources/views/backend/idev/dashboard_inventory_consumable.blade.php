@@ -23,7 +23,7 @@
         </div>
 
         <!-- DASHBOARD CONTENT -->
-        <div class="row g-4">
+        <div class="row g-4 mb-4">
 
             <!-- OUT CHART -->
             <div class="col-12 col-lg-6">
@@ -101,7 +101,7 @@
                         </form>
 
                         <div class="table-responsive">
-                            <table class="table table-bordered table-sm align-middle">
+                            <table class="table table-bordered table-sm table-scroll align-middle dashboard-inventory-consumable-stock-table">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Item</th>
@@ -116,6 +116,8 @@
             </div>
 
         </div>
+
+        <div class="mb-8"></div>
     </div>
 </div>
 
