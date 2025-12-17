@@ -511,8 +511,8 @@ class InventoryConsumableMovementController extends DefaultController
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
-        $data['buttonTextCreate'] = 'Input Riwayat Kartu Stock';
-        $data['buttonTextCreateNew'] = 'Input Riwayat Kartu Stock';
+        $data['buttonTextCreate'] = 'Input Kartu Stock';
+        $data['buttonTextCreateNew'] = 'Input Kartu Stock';
         
         return view($layout, $data);
     }

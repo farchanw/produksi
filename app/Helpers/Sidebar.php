@@ -81,7 +81,7 @@ class Sidebar
         
         return [
             [
-                'name' => 'Daftar Kartu Stock',
+                'name' => 'Item',
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable',
                 'base_key' => 'inventory-consumable',
@@ -90,7 +90,7 @@ class Sidebar
                 'childrens' => []
             ],
             [
-                'name' => 'Riwayat Kartu Stock',
+                'name' => 'Kartu Stock',
                 'icon' => 'ti ti-menu',
                 'key' => 'inventory-consumable-movement',
                 'base_key' => 'inventory-consumable-movement',
