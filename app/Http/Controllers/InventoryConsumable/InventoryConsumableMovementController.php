@@ -5,6 +5,7 @@ namespace App\Http\Controllers\InventoryConsumable;
 use App\Models\InventoryConsumableMovement;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
+use App\Helpers\Modules\InventoryConsumableHelper;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Validation;
 use Idev\EasyAdmin\app\Helpers\Constant;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use Illuminate\Validation\Rules\In;
 
 class InventoryConsumableMovementController extends DefaultController
 {
@@ -76,11 +78,6 @@ class InventoryConsumableMovementController extends DefaultController
             ->orderBy('name', 'ASC')
             ->get()
             ->toArray();
-        $optionsType = [
-            ['value' => 'in', 'text' => 'In'],
-            ['value' => 'out', 'text' => 'Out'],
-            ['value' => 'adjust', 'text' => 'Adjust'],
-        ];
 
         // Top-level categories
         $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')
@@ -157,7 +154,8 @@ class InventoryConsumableMovementController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('type', $id),
                         'value' => (isset($edit)) ? $edit->type : '',
-                        'options' => $optionsType
+                        'options' => InventoryConsumableHelper::optionsForMovementTypes(),
+                        'filter' => true,
                     ],
                     [
                         'type' => 'number',
@@ -189,6 +187,24 @@ class InventoryConsumableMovementController extends DefaultController
     }
 
 
+
+    protected function filters()
+    {
+
+        $fields = [
+            [
+                'type' => 'select',
+                'label' => 'Type',
+                'name' =>  'type',
+                'class' => 'col-md-2',
+                'options' => InventoryConsumableHelper::optionsForMovementTypes()
+            ],
+        ];
+
+        return $fields;
+    }
+
+
     protected function rules($id = null)
     {
         $rules = [
@@ -205,7 +221,6 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $filters = [];
         $orThose = null;
-        $orByMasterItemId = null;
         $orderBy = 'id';
         $orderState = 'DESC';
         if (request('search')) {
@@ -215,21 +230,14 @@ class InventoryConsumableMovementController extends DefaultController
             $orderBy = request('order');
             $orderState = request('order_state');
         }
-
-
-        if (request('inventory_consumable_id')) {
-            $orByMasterItemId = request('inventory_consumable_id');
+        if (request('type')) {
+            $filters[] = ['inventory_consumable_movements.type', '=', request('type')];
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
             ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
             ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
             ->where($filters)
-            ->where(function ($query) use ($orByMasterItemId) {
-                if ($orByMasterItemId) {
-                    $query->where('inventory_consumables.id', '=', $orByMasterItemId);
-                }
-            })
             ->where(function ($query) use ($orThose) {
                 $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category', 'subcategory'];
 

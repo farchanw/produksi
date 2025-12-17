@@ -211,6 +211,10 @@ class InventoryConsumableController extends DefaultController
                         }
                     }
                 }
+
+                $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('category_child.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('category_parent.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
             ->select(
