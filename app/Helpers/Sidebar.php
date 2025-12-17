@@ -23,7 +23,7 @@ class Sidebar
 
       $menu['url'] = Route::has($menu['key'] . '.index')
         ? route($menu['key'] . '.index')
-        : '/idev-admin';
+        : '/home-admin';
 
       $menu['base_key'] = $menu['key'];
       $menu['key'] = $menu['key'] . '.index';
@@ -48,8 +48,8 @@ class Sidebar
             [
                 'name' => 'Back Home',
                 'icon' => 'ti ti-arrow-left',
-                'key' => 'idev-admin',
-                'base_key' => 'idev-admin',
+                'key' => 'home-admin',
+                'base_key' => 'home-admin',
                 'visibility' => true,
                 'ajax_load' => false,
                 'childrens' => []

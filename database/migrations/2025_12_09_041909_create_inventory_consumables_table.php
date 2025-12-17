@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreign('category_id')
                 ->references('id')
                 ->on('inventory_consumable_categories')
-                ->onDelete('set null');
+                ->nullOnDelete();
 
             $table->integer('minimum_stock')->default(0);
             $table->string('satuan');

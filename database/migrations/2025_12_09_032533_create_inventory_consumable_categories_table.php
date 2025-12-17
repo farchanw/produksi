@@ -11,22 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventory_consumable_categories', function (Blueprint $table) {
-            $table->id();
 
+        Schema::create('inventory_consumable_categories', function (Blueprint $table) {
+            $table->engine('InnoDB');
+
+            $table->id();
             $table->string('name');
+
             $table->unsignedBigInteger('parent_id')->nullable();
 
+            $table->timestamps();
+        });
+
+        Schema::table('inventory_consumable_categories', function (Blueprint $table) {
             $table->foreign('parent_id')
                 ->references('id')
                 ->on('inventory_consumable_categories')
                 ->nullOnDelete();
-            $table->unsignedBigInteger('parent_key')
-                ->storedAs('IFNULL(parent_id, 0)');
-            $table->unique(['name', 'parent_key']);
-
-            $table->timestamps();
         });
+
+
 
     }
 
