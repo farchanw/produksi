@@ -28,8 +28,8 @@
             <!-- OUT CHART -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">Out</h5>
+                    <div class="card-header bg-secondary text-white ">
+                        <h5 class="mb-0 text-white">Out</h5>
                     </div>
 
                     <div class="card-body">
@@ -70,8 +70,8 @@
             <!-- STOCK TABLE -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="mb-0">Stock</h5>
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0 text-white">Stock</h5>
                     </div>
 
                     <div class="card-body">

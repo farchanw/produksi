@@ -115,8 +115,13 @@ $(document).on('change', 'select[name="subcategory"]', function () {
 let chartInventoryConsumable;
 
 function chartInventoryConsumableLoad() {
-    const year   = document.getElementById('chart-data-inventory-consumable-year').value;
-    const itemId = document.getElementById('chart-data-inventory-consumable-item').value;
+    const selectYear   = document.getElementById('chart-data-inventory-consumable-year');
+    const selectItemId = document.getElementById('chart-data-inventory-consumable-item');
+
+    if (!selectItemId) return
+
+    const year = selectYear.value;
+    const itemId = selectItemId.value;
 
     fetch(`inventory-consumable-chart-data-out-default?year=${year}&item_id=${itemId}`)
         .then(res => res.json())
@@ -146,12 +151,19 @@ function chartInventoryConsumableLoad() {
             `
         });
 }
-document.getElementById('chart-data-inventory-consumable-year').onchange = chartInventoryConsumableLoad
-document.getElementById('chart-data-inventory-consumable-item').onchange = chartInventoryConsumableLoad
+if (document.getElementById('chart-data-inventory-consumable-year')) {
+    document.getElementById('chart-data-inventory-consumable-year').onchange = chartInventoryConsumableLoad
+}
+
+if (document.getElementById('chart-data-inventory-consumable-item')) {
+    document.getElementById('chart-data-inventory-consumable-item').onchange = chartInventoryConsumableLoad
+}
 
 /* STOCK INVENTORY CONSUMABLE */
 function getSubcategoryOptions() {
-    const categoryId = document.getElementById('data-inventory-consumable-stock-category').value;
+    const selectCategoryId = document.getElementById('data-inventory-consumable-stock-category');
+    if (!selectCategoryId) return;
+    const categoryId = selectCategoryId.value;
     let options = '<option value="">-- Select Subcategory --</option>';
     fetch(`inventory-consumable-category-fetch-category-subcategories-default?category_id=${categoryId}`)
         .then(res => res.json())
@@ -169,8 +181,12 @@ function getSubcategoryOptions() {
 }
 
 function renderStockTable() {
-    const categoryId = document.getElementById('data-inventory-consumable-stock-category').value;
-    const subcategoryId = document.getElementById('data-inventory-consumable-stock-subcategory').value;
+    const selectCategoryId = document.getElementById('data-inventory-consumable-stock-category');
+    if (!selectCategoryId) return;
+    const categoryId = selectCategoryId.value;
+    const selectSubcategoryId = document.getElementById('data-inventory-consumable-stock-subcategory');
+    if (!selectSubcategoryId) return;
+    const subcategoryId = selectSubcategoryId.value;
 
     fetch(`inventory-consumable-fetch-items-stock-data-default?category_id=${categoryId ?? 0}&subcategory_id=${subcategoryId ?? 0}`)
         .then(res => res.json())
@@ -178,7 +194,6 @@ function renderStockTable() {
             
             let rows = '';
             data.forEach(item => {
-                console.log(item)
                 rows += /*html*/`
                     <tr class="${Number(item.stock) <= Number(item.minimum_stock) ? 'text-danger' : ''}">
                         <td>${item.text}</td>
@@ -197,8 +212,13 @@ function renderStockTable() {
         });
 }
 
-document.getElementById('data-inventory-consumable-stock-category').onchange = getSubcategoryOptions
-document.getElementById('data-inventory-consumable-stock-subcategory').onchange = renderStockTable
+if (document.getElementById('data-inventory-consumable-stock-category')) {
+    document.getElementById('data-inventory-consumable-stock-category').onchange = getSubcategoryOptions
+}
+
+if (document.getElementById('data-inventory-consumable-stock-subcategory')) {
+    document.getElementById('data-inventory-consumable-stock-subcategory').onchange = renderStockTable
+}
 
 window.addEventListener('load', () => {
     chartInventoryConsumableLoad()
@@ -206,7 +226,9 @@ window.addEventListener('load', () => {
     renderStockTable()
 });
 
+
 $(function () {
+    if ($('#chart-data-inventory-consumable-year').length === 0) return;
     $('#chart-data-inventory-consumable-item').select2({
         theme: 'bootstrap-5',
         width: '100%',

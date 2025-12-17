@@ -27,7 +27,7 @@ class InventoryConsumableController extends DefaultController
 
     public function __construct()
     {
-        $this->title = 'Daftar Kartu Stok';
+        $this->title = 'Daftar Kartu Stock';
         $this->generalUri = 'inventory-consumable';
         // $this->arrPermissions = [];
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
@@ -285,7 +285,7 @@ class InventoryConsumableController extends DefaultController
 
             $this->afterMainInsert($insert, $request);
 
-            // Save stok
+            // Save stock
             $stockInsert = new InventoryConsumableStock();
             $stockInsert->stock = 0;
             $stockInsert->item_id = $insert->id;
@@ -498,8 +498,8 @@ class InventoryConsumableController extends DefaultController
         $data['url_store'] = route($this->generalUri . '.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
-        $data['buttonTextCreate'] = 'Input Kartu Stok';
-        $data['buttonTextCreateNew'] = 'Input Kartu Stok';
+        $data['buttonTextCreate'] = 'Input Kartu Stock';
+        $data['buttonTextCreateNew'] = 'Input Kartu Stock';
         
         /* Override edit button */
         // unset first
