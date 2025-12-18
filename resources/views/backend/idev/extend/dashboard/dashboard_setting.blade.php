@@ -19,6 +19,7 @@
                 </div>
             </div>
 
+            <!--
             <section class="row">
                 <div class="col-12 col-lg-12">
                     <div class="card">
@@ -90,6 +91,7 @@
                     </div>
                 </div>
             </section>
+            -->
         </div>
     </div>
 
