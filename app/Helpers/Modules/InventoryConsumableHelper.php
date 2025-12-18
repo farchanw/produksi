@@ -25,7 +25,6 @@ class InventoryConsumableHelper
     {
         return InventoryConsumableCategory::select('id as value', 'name as text')
             ->orderBy('name', 'ASC')
-            ->whereNull('parent_id')
             ->get();
     }
 

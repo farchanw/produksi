@@ -27,8 +27,7 @@ class InventoryConsumableCategoryController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Kategori', 'column' => 'name', 'order' => true],
-                    ['name' => 'Nama', 'column' => 'parent', 'order' => true], 
+                    ['name' => 'Nama', 'column' => 'name', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -38,7 +37,6 @@ class InventoryConsumableCategoryController extends DefaultController
             'primaryKeys' => ['name'],
             'headers' => [
                     ['name' => 'Name', 'column' => 'name'],
-                    ['name' => 'Parent id', 'column' => 'parent_id'], 
             ]
         ];
     }
@@ -51,28 +49,7 @@ class InventoryConsumableCategoryController extends DefaultController
             $edit = $this->modelClass::where('id', $id)->first();
         }
 
-        $optionsParent = InventoryConsumableCategory::where('parent_id', null)
-            ->orderBy('name')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'value' => $item->id,
-                    'text' => $item->name
-                ];
-            })->toArray();
-
-        array_unshift($optionsParent, ['value' => '', 'text' => '-- Kategori Utama --']);
-
         $fields = [
-                    [
-                        'type' => 'select',
-                        'label' => 'Kategori',
-                        'name' =>  'parent_id',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('parent_id', $id),
-                        'value' => (isset($edit)) ? $edit->parent_id : '',
-                        'options' => $optionsParent,
-                    ],
                     [
                         'type' => 'text',
                         'label' => 'Nama',
@@ -91,7 +68,6 @@ class InventoryConsumableCategoryController extends DefaultController
     {
         $rules = [
                     'name' => 'required|string',
-                    'parent_id' => 'nullable|integer',
         ];
 
         return $rules;
@@ -152,10 +128,6 @@ class InventoryConsumableCategoryController extends DefaultController
         // set new delete button
         $this->actionButtonViews[] = 'backend.idev.buttons.delete';
 
-        /* Create new button */
-        $this->actionButtonViews[] = 'backend.idev.buttons.inventory_consumable_history';
-        
-
 
         $data['uri_create'] = route($this->generalUri . '.create');
         $data['url_store'] = route($this->generalUri . '.store');
@@ -174,26 +146,10 @@ class InventoryConsumableCategoryController extends DefaultController
 
     protected function fetchCategories()
     {
-        return $this->modelClass::where('parent_id', null)->get();
+        return $this->modelClass::all();
     }
 
 
-
-    protected function fetchCategorySubcategories(Request $request)
-    {
-        $categoryId = $request->category_id;
-
-        if (!$categoryId) {
-            return response()->json([]);
-        }
-
-        $items = InventoryConsumableCategory::select('id as value', 'name as text')
-            ->where('parent_id', $categoryId)
-            ->orderBy('name')
-            ->get();
-
-        return response()->json($items);
-    }
 
     protected function defaultDataQuery()
     {
@@ -209,10 +165,9 @@ class InventoryConsumableCategoryController extends DefaultController
             $orderState = request('order_state');
         }
 
-        $dataQueries = $this->modelClass::leftJoin('inventory_consumable_categories as parent', 'inventory_consumable_categories.parent_id', '=', 'parent.id')
-            ->where($filters)
+        $dataQueries = $this->modelClass::where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'parent'];
+                $efc = ['#', 'created_at', 'updated_at', 'id'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -227,16 +182,13 @@ class InventoryConsumableCategoryController extends DefaultController
                         }
                     }
                 }
-
-                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
             ->select(
                 'inventory_consumable_categories.id',
                 'inventory_consumable_categories.name',
                 'inventory_consumable_categories.created_at',
-                'inventory_consumable_categories.updated_at',
-                'parent.name as parent'
+                'inventory_consumable_categories.updated_at'
         );
 
         return $dataQueries;

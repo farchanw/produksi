@@ -15,13 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('sku')->unique();
             $table->string('name');
-            $table->unsignedBigInteger('category_id')->nullable();
-
-            $table->foreign('category_id')
-                ->references('id')
-                ->on('inventory_consumable_categories')
-                ->nullOnDelete();
-
+            $table->foreignId('category_id')->constrained('inventory_consumable_categories')->cascadeOnDelete();
             $table->integer('minimum_stock')->default(0);
             $table->string('satuan');
             $table->integer('harga_satuan')->default(0);

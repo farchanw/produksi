@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('item_id')->constrained('inventory_consumables')->cascadeOnDelete();
             $table->integer('qty');
             $table->string('type');
+            $table->integer('stock_awal');
+            $table->integer('stock_akhir');
             $table->unsignedBigInteger('harga')->default(0);
             $table->datetime('movement_datetime');
             $table->string('notes')->nullable();

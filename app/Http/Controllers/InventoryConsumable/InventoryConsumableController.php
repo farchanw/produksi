@@ -38,7 +38,6 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Kode Item', 'column' => 'sku', 'order' => true],
                     ['name' => 'Nama Item', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow',], 
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true], 
-                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true], 
                     ['name' => 'Min. Stock', 'column' => 'minimum_stock', 'order' => true],
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
@@ -55,7 +54,6 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Sku', 'column' => 'sku'],
                     ['name' => 'Name', 'column' => 'name'], 
                     ['name' => 'Category', 'column' => 'category'], 
-                    ['name' => 'Subcategory', 'column' => 'subcategory'], 
                     ['name' => 'Minimum Stock', 'column' => 'minimum_stock'],
                     ['name' => 'Satuan', 'column' => 'satuan'], 
                     ['name' => 'Harga Satuan', 'column' => 'harga_satuan'],
@@ -76,17 +74,9 @@ class InventoryConsumableController extends DefaultController
         }
 
         $optionsCategory = InventoryConsumableHelper::optionsForCategories();
-        $optionsSubcategory = [];
 
         if (isset($edit)) {
-            // Get subcategory
-            $subcategory = InventoryConsumableCategory::find($edit->category_id);
-
-            // Get parent category (top-level)
-            $categoryId = $subcategory?->parent_id ? $subcategory->parent_id : $subcategory->id;
-            $optionsSubcategory = [
-                ['value' => $subcategory->id, 'text' => $subcategory->name]
-            ];
+            //
         }
 
         $fields = [
@@ -101,22 +91,12 @@ class InventoryConsumableController extends DefaultController
                     [
                         'type' => 'select',
                         'label' => 'Kategori',
-                        'name' =>  'category',
+                        'name' =>  'category_id',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('category', $id),
                         //'value' => (isset($edit)) ? $edit->category : '',
-                        'value' => isset($categoryId) ? $categoryId : '',
+                        'value' => isset($edit->category_id) ? $edit->category_id : '',
                         'options' => $optionsCategory,
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Subkategori',
-                        'name' =>  'subcategory',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('subcategory', $id),
-                        'value' => (isset($edit)) ? $edit->category_id : '', // category_id is subcategory
-                        //'value' => isset($subcategory->id) ? $subcategory->id : '',
-                        'options' => $optionsSubcategory,
                     ],
                     [
                         'type' => 'text',
@@ -166,7 +146,7 @@ class InventoryConsumableController extends DefaultController
             [
                 'type' => 'select',
                 'label' => 'Kategori',
-                'name' =>  'category_parent_id',
+                'name' =>  'category_id',
                 'class' => 'col-md-2',
                 'options' => $optionsCategory,
             ],
@@ -182,8 +162,7 @@ class InventoryConsumableController extends DefaultController
         $rules = [
                     'sku' => 'required|string',
                     'name' => 'required|string',
-                    'category' => 'required|string',
-                    'subcategory' => 'required|string',
+                    'category_id' => 'required|string',
                     'minimum_stock' => 'required|integer',
                     'satuan' => 'required|string',
                     'harga_satuan' => 'required|integer',
@@ -207,16 +186,15 @@ class InventoryConsumableController extends DefaultController
             $orderState = request('order_state');
         }
         // filters
-        if (request('category_parent_id')) {
-            $filters[] = ['category_parent.id', '=', request('category_parent_id')];
+        if (request('category_id')) {
+            $filters[] = ['inventory_consumable_categories.id', '=', request('category_id')];
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
-            ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
-            ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
+            ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'harga_total', 'name', 'category', 'subcategory'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'harga_total', 'name', 'category'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -233,15 +211,13 @@ class InventoryConsumableController extends DefaultController
                 }
 
                 $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
-                $query->orWhere('category_child.name', 'LIKE', '%' . $orThose . '%');
-                $query->orWhere('category_parent.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
             ->select(
                 'inventory_consumables.*', 
                 'inventory_consumable_stocks.stock',
-                'category_child.name AS subcategory',
-                'category_parent.name AS category',
+                'inventory_consumable_categories.name AS category',
                 DB::raw('(inventory_consumables.harga_satuan * inventory_consumable_stocks.stock) AS harga_total')
             );
 
@@ -280,7 +256,7 @@ class InventoryConsumableController extends DefaultController
 
             $insert = new $this->modelClass();
             foreach ($this->fields('create') as $key => $th) {
-                if($th['name'] === 'category' || $th['name'] === 'subcategory') {
+                if($th['name'] === 'category') {
                     continue;
                 }
 
@@ -294,17 +270,6 @@ class InventoryConsumableController extends DefaultController
                 }
             }
 
-
-
-            $resolveCategoryData = $this->resolveCategoryDataAndSubcategory(
-                $request['category'],
-                $request['subcategory']
-            );
-
-            $insert->category_id = $resolveCategoryData->subcategory->id;
-
-
-
             $insert->save();
 
             $this->afterMainInsert($insert, $request);
@@ -314,7 +279,6 @@ class InventoryConsumableController extends DefaultController
             $stockInsert->stock = 0;
             $stockInsert->item_id = $insert->id;
             $stockInsert->save();
-
 
             DB::commit();
 
@@ -360,7 +324,7 @@ class InventoryConsumableController extends DefaultController
 
             $change = $this->modelClass::where('id', $id)->first();
             foreach ($this->fields('edit', $id) as $key => $th) {
-                if($th['name'] === 'category' || $th['name'] === 'subcategory') {
+                if($th['name'] === 'category') {
                     continue;
                 }
 
@@ -374,14 +338,6 @@ class InventoryConsumableController extends DefaultController
                 }
             }
 
-
-            $resolveCategoryData = $this->resolveCategoryDataAndSubcategory(
-                $request['category'],
-                $request['subcategory']
-            );
-
-            $change->category_id = $resolveCategoryData->subcategory->id;
-            
             $change->save();
 
             $this->afterMainUpdate($change, $request);
@@ -541,10 +497,6 @@ class InventoryConsumableController extends DefaultController
         // set new delete button
         $this->actionButtonViews[] = 'backend.idev.buttons.delete';
 
-        /* Create new button */
-        $this->actionButtonViews[] = 'backend.idev.buttons.inventory_consumable_history';
-        
-
         $data['actionButtonViews'] = $this->actionButtonViews;
         $data['templateImportExcel'] = "#";
         $data['import_scripts'] = $this->importScripts;
@@ -560,9 +512,10 @@ class InventoryConsumableController extends DefaultController
         $data['table_headers'] = [
                     ['name' => 'Item', 'column' => 'item', 'order' => false],
                     ['name' => 'Kategori', 'column' => 'category', 'order' => false],
-                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => false],
                     ['name' => 'Type', 'column' => 'type', 'order' => false],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => false],
+                    ['name' => 'Awal', 'column' => 'stock_awal', 'order' => false],
+                    ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => false],
                     ['name' => 'Harga', 'column' => 'harga', 'order' => false, 'formatting' => 'toRupiah'],
                     ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => false],
                     ['name' => 'Catatan', 'column' => 'notes', 'order' => false], 
@@ -582,80 +535,20 @@ class InventoryConsumableController extends DefaultController
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
         $data['dataList'] = InventoryConsumableMovement::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
-            ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
-            ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
+            ->join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
+            ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
             ->select(
                 'inventory_consumable_movements.*', 
                 'inventory_consumables.name AS item',
-                'category_child.name AS subcategory',
-                'category_parent.name AS category',
+                'inventory_consumable_categories.name AS category',
             )
-            ->where('item_id', $id)
+            ->where('inventory_consumable_movements.item_id', $id)
             ->orderBy('movement_datetime', 'DESC')
             ->limit(100)
             ->get();
 
         return view('backend.idev.extend.show.show_inventory_consumable', $data);
     }
-
-    private function resolveCategoryDataAndSubcategory($categoryValue, $subcategoryValue)
-    {
-        /*  Resolve CATEGORY */
-        // Try lookup as ID (only root categories)
-        $categoryModel = InventoryConsumableCategory::whereNull('parent_id')
-            ->where('id', $categoryValue)
-            ->first();
-
-        // Try lookup as name if not ID match
-        if (!$categoryModel) {
-            $categoryModel = InventoryConsumableCategory::whereNull('parent_id')
-                ->where('name', $categoryValue)
-                ->first();
-        }
-
-        // If still not found use as is for new category name
-        $categoryName = $categoryModel?->name ?? $categoryValue;
-
-        // Create or fetch CATEGORY
-        $categoryInsert = InventoryConsumableCategory::firstOrCreate(
-            [
-                'name' => $categoryName,
-                'parent_id' => null,
-            ]
-        );
-
-
-        /* Resolve SUBCATEGORY (ID or NAME under CATEGORY) */
-        // Try lookup as ID under this category
-        $subcategoryModel = InventoryConsumableCategory::where('parent_id', $categoryInsert->id)
-            ->where('id', $subcategoryValue)
-            ->first();
-
-        // Try lookup by name under this category
-        if (!$subcategoryModel) {
-            $subcategoryModel = InventoryConsumableCategory::where('parent_id', $categoryInsert->id)
-                ->where('name', $subcategoryValue)
-                ->first();
-        }
-
-        // If still not found use as is for new subcategory name
-        $subcategoryName = $subcategoryModel?->name ?? $subcategoryValue;
-
-        // Create or fetch SUBCATEGORY under CATEGORY
-        $subcategoryInsert = InventoryConsumableCategory::firstOrCreate(
-            [
-                'name' => $subcategoryName,
-                'parent_id' => $categoryInsert->id,
-            ]
-        );
-
-        return (object)[
-            'category' => $categoryInsert,
-            'subcategory' => $subcategoryInsert,
-        ];
-    }
-    
-
 
     public function fetchItemsByCategory(Request $request)
     {
@@ -676,7 +569,6 @@ class InventoryConsumableController extends DefaultController
     public function fetchItemsStockData(Request $request)
     {
         $categoryId = $request->category_id;
-        $subcategoryId = $request->subcategory_id;
 
         $query = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
             ->select(
@@ -687,13 +579,7 @@ class InventoryConsumableController extends DefaultController
             );
 
         if ($categoryId) {
-            $query->with('category')->whereHas('category', function ($q) use ($categoryId) {
-                $q->where('parent_id', $categoryId);
-            });
-        }
-
-        if ($subcategoryId) {
-            $query->where('inventory_consumables.category_id', $subcategoryId);
+            $query->with('category')->where('inventory_consumables.category_id', $categoryId);
         }
 
         $items = $query->get();

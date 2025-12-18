@@ -25,11 +25,11 @@ class DashboardInventoryConsumableController extends Controller
         $this->importScripts = [
             ['source' => asset('js/modules/module-inventory-consumable.js')],
             ['source' => asset('vendor/Chart.js/chart.umd.js')],
-            ['source' => asset('vendor/select2/js/select2.min.js')],
+            //['source' => asset('vendor/select2/js/select2.min.js')],
         ];
         $this->importStyles = [
-            ['source' => asset('vendor/select2/css/select2.min.css')],
-            ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
+            //['source' => asset('vendor/select2/css/select2.min.css')],
+            //['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
         ];
     }
 
@@ -46,7 +46,7 @@ class DashboardInventoryConsumableController extends Controller
 
         // InventoryConsumables Chart
         $data['dataInventoryConsumablesChartItems'] = InventoryConsumable::limit(100)->get();
-        $data['dataInventoryConsumablesStockCategories'] = InventoryConsumableCategory::where('parent_id', null)->get();
+        $data['dataInventoryConsumablesStockCategories'] = InventoryConsumableCategory::select('id', 'name')->get();
 
         return view($layout, $data);
     }

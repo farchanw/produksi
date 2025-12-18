@@ -6,6 +6,7 @@ use App\Models\InventoryConsumableMovement;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
 use App\Helpers\Modules\InventoryConsumableHelper;
+use App\Models\InventoryConsumableStock;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Validation;
 use Idev\EasyAdmin\app\Helpers\Constant;
@@ -38,9 +39,10 @@ class InventoryConsumableMovementController extends DefaultController
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Item', 'column' => 'item', 'order' => true],
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true],
-                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true],
                     ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => true],
+                    ['name' => 'Awal', 'column' => 'stock_awal', 'order' => true],
+                    ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => true],
                     ['name' => 'Harga', 'column' => 'harga', 'order' => true, 'formatting' => 'toRupiah'],
                     ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],
                     ['name' => 'Catatan', 'column' => 'notes', 'order' => true], 
@@ -81,39 +83,10 @@ class InventoryConsumableMovementController extends DefaultController
             ->toArray();
 
         // Top-level categories
-        $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')
-            ->whereNull('parent_id')
-            ->get();
-
-        $categoryId = null;
-        $subcategoryId = null;
-        $optionsSubcategory = collect();
+        $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')->get();
 
         if (isset($edit)) {
-            // Load the consumable with its category
-            $consumable = InventoryConsumable::with('category')->find($edit->item_id);
-            $subcategory = $consumable?->category;
-
-            if ($subcategory) {
-                // Determine category and subcategory IDs
-                if ($subcategory->parent_id) {
-                    // It's a subcategory
-                    $categoryId = $subcategory->parent_id;
-                    $subcategoryId = $subcategory->id;
-                } else {
-                    // It's a top-level category, no subcategory
-                    $categoryId = $subcategory->id;
-                    $subcategoryId = null;
-                }
-
-                // Fetch subcategories for the selected category
-                $optionsSubcategory = InventoryConsumableCategory::select('id as value', 'name as text')
-                    ->where('parent_id', $categoryId)
-                    ->get();
-            }
-        } else {
-            // For a new entry, optionally show all subcategories (or empty)
-            $optionsSubcategory = [];
+            // 
         }
 
 
@@ -122,22 +95,11 @@ class InventoryConsumableMovementController extends DefaultController
                     [
                         'type' => 'select',
                         'label' => 'Kategori',
-                        'name' =>  'category',
+                        'name' =>  'category_id',
                         'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('category', $id),
-                        //'value' => (isset($edit)) ? $edit->category : '',
-                        'value' => isset($edit) ? $categoryId : '',
+                        'required' => $this->flagRules('category_id', $id),
+                        'value' => isset($edit) ? $edit->category_id : '',
                         'options' => $optionsCategory
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Subkategori',
-                        'name' =>  'subcategory',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('subcategory', $id),
-                        //'value' => (isset($edit)) ? $edit->subcategory : '',
-                        'value' => isset($edit) ? $subcategoryId : '',
-                        'options' => $optionsSubcategory
                     ],
                     [
                         'type' => 'select2',
@@ -202,7 +164,7 @@ class InventoryConsumableMovementController extends DefaultController
             [
                 'type' => 'select',
                 'label' => 'Kategori',
-                'name' =>  'category_parent_id',
+                'name' =>  'category_id',
                 'class' => 'col-md-2',
                 'options' => $optionsCategory,
             ],
@@ -254,8 +216,8 @@ class InventoryConsumableMovementController extends DefaultController
         if (request('type')) {
             $filters[] = ['inventory_consumable_movements.type', '=', request('type')];
         }
-        if (request('category_parent_id')) {
-            $filters[] = ['category_parent.id', '=', request('category_parent_id')];
+        if (request('category_id')) {
+            $filters[] = ['inventory_consumable_categories.id', '=', request('category_id')];
         }
         if (request('tanggal_start') && request('tanggal_end')) {
             $filters[] = [
@@ -274,11 +236,10 @@ class InventoryConsumableMovementController extends DefaultController
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
-            ->leftJoin('inventory_consumable_categories AS category_child', 'inventory_consumables.category_id', '=', 'category_child.id')
-            ->leftJoin('inventory_consumable_categories AS category_parent', 'category_child.parent_id', '=', 'category_parent.id')
+            ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category', 'subcategory'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -295,9 +256,10 @@ class InventoryConsumableMovementController extends DefaultController
                 }
 
                 $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
-            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item', 'category_child.name AS subcategory', 'category_parent.name AS category');
+            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item',  'inventory_consumable_categories.name AS category');
 
         return $dataQueries;
     }
@@ -348,79 +310,72 @@ class InventoryConsumableMovementController extends DefaultController
             // Set harga
             $hargaSatuan = InventoryConsumable::where('id', $insert->item_id)->first()->harga_satuan;
             $insert->harga = $insert->qty * $hargaSatuan;
+            
+            // Set stock awal
+            $insert->stock_awal = InventoryConsumableStock::where('item_id', $insert->item_id)->first()->stock ?? 0;
+
+            // Set stock akhir
+            if ($insert->type == 'out') {
+                $insert->stock_akhir = $insert->stock_awal - abs((int) $insert->qty);
+            } elseif ($insert->type == 'in') {
+                $insert->stock_akhir = $insert->stock_awal + abs((int) $insert->qty);
+            } elseif ($insert->type == 'adjust') {
+                $insert->stock_akhir = (int) $insert->qty;
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'danger',
+                    'message' => 'Kolom type tidak valid',
+                ], 200);
+            }
 
             // unset
-            unset($insert->category);
-            unset($insert->subcategory);
+            unset($insert->category_id);
 
             $insert->save();
 
             $this->afterMainInsert($insert, $request);
 
-            // Save stock
-            if ($insert->type == 'out') {
-                $insert->qty = -1 * abs((int) $insert->qty);
-            } elseif ($insert->type == 'in') {
-                $insert->qty = abs((int) $insert->qty);
-            } elseif ($insert->type == 'adjust') {
-                $insert->qty = (int) $insert->qty;
-            } else {
+            // Normalize qty based on type
+            $qty = match ($insert->type) {
+                'out'    => -abs((int) $insert->qty),
+                'in'     =>  abs((int) $insert->qty),
+                'adjust' => (int) $insert->qty,
+                default  => null,
+            };
+
+            if ($qty === null) {
                 return response()->json([
                     'status' => false,
-                    'alert' => 'danger',
-                    'message' => 'Invalid value',
+                    'alert'  => 'danger',
+                    'message'=> 'Kolom type tidak valid',
                 ], 200);
             }
 
+            $insert->qty = $qty;
 
-            $rowStock = DB::table('inventory_consumable_stocks')
+            // Get current stock
+            $currentStock = (int) DB::table('inventory_consumable_stocks')
                 ->where('item_id', $insert->item_id)
-                ->first();
+                ->value('stock') ?? 0;
 
-            $currentStock = $rowStock ? (int) $rowStock->stock : 0;
-            $newStock = $currentStock;
+            // Calculate new stock
+            $newStock = $insert->type === 'adjust'
+                ? $insert->qty
+                : $currentStock + $insert->qty;
 
-            if ($rowStock) {
-
-                if ($insert->type == 'adjust') {
-                    // Adjusting means the new stock is exactly qty
-                    $newStock = (int) $insert->qty;
-
-                } else {
-                    // Increment/decrement operation
-                    $newStock = $currentStock + (int) $insert->qty;
-                }
-
-                // ❗ Prevent negative stock
-                if ($newStock < 0) {
-                    return response()->json([
-                        'status' => false,
-                        'alert' => 'danger',
-                        'message' => 'Invalid value',
-                    ], 200);
-                }
-
-                DB::table('inventory_consumable_stocks')
-                    ->where('item_id', $insert->item_id)
-                    ->update(['stock' => $newStock]);
-
-            } else {
-
-                // When no existing stock exists, also ensure not negative
-                if ((int) $insert->qty < 0) {
-                    return response()->json([
-                        'status' => false,
-                        'alert' => 'danger',
-                        'message' => 'Invalid value',
-                    ], 200);
-                }
-
-                DB::table('inventory_consumable_stocks')->insert([
-                    'item_id' => $insert->item_id,
-                    'stock' => (int) $insert->qty,
-                ]);
+            if ($newStock < 0) {
+                return response()->json([
+                    'status' => false,
+                    'alert'  => 'danger',
+                    'message'=> 'Nilai value tidak valid',
+                ], 200);
             }
 
+            DB::table('inventory_consumable_stocks')->updateOrInsert(
+                ['item_id' => $insert->item_id],
+                ['stock' => $newStock]
+            );
 
             
             DB::commit();
@@ -428,7 +383,7 @@ class InventoryConsumableMovementController extends DefaultController
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Data Was Created Successfully',
+                'message' => 'Data Berhasil Dibuat',
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
@@ -528,7 +483,7 @@ class InventoryConsumableMovementController extends DefaultController
             return response()->json([
                 'status' => false,
                 'alert' => 'danger',
-                'message' => 'Required Form',
+                'message' => 'Kolom wajib diisi',
                 'validation_errors' => $messageErrors,
             ], 200);
         }
@@ -562,7 +517,6 @@ class InventoryConsumableMovementController extends DefaultController
 
             // unset
             unset($change->category);
-            unset($change->subcategory);
             
             $change->save();
 
@@ -573,7 +527,7 @@ class InventoryConsumableMovementController extends DefaultController
             return response()->json([
                 'status' => true,
                 'alert' => 'success',
-                'message' => 'Data Was Updated Successfully',
+                'message' => 'Data Berhasil Diperbarui',
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
@@ -595,7 +549,4 @@ class InventoryConsumableMovementController extends DefaultController
 
         return view('easyadmin::backend.idev.show-default', $data);
     }
-
-    
-
 }

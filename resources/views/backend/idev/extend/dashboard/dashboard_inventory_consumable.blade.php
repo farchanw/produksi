@@ -34,7 +34,7 @@
 
                     <div class="card-body">
                         <form class="row g-2 mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <select
                                     id="chart-data-inventory-consumable-year"
                                     class="form-select"
@@ -46,16 +46,28 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-8">
+                            <div class="col">
+                                <select
+                                    class="form-select"
+                                    name="category_id"
+                                >
+                                    <option value="0">Pilih Kategori...</option>
+                                    @foreach($dataInventoryConsumablesStockCategories as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col">
                                 <select
                                     id="chart-data-inventory-consumable-item"
                                     class="form-select"
+                                    name="item_id"
+                                    disabled
                                 >
-                                    @foreach($dataInventoryConsumablesChartItems as $item)
-                                        <option value="{{ $item->id }}">
-                                            {{ $item->sku }} - {{ $item->name }}
-                                        </option>
-                                    @endforeach
+                                    <option value="0">Pilih Item...</option>
                                 </select>
                             </div>
                         </form>
@@ -76,7 +88,7 @@
 
                     <div class="card-body">
                         <form class="row g-2 mb-3">
-                            <div class="col-md-6">
+                            <div class="col">
                                 <select
                                     id="data-inventory-consumable-stock-category"
                                     class="form-select"
@@ -87,15 +99,6 @@
                                             {{ $item->name }}
                                         </option>
                                     @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <select
-                                    id="data-inventory-consumable-stock-subcategory"
-                                    class="form-select"
-                                >
-                                    <option value="">Pilih Subkategori...</option>
                                 </select>
                             </div>
                         </form>

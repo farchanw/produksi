@@ -33,10 +33,20 @@ class DatabaseSeeder extends Seeder
 
         Role::updateOrCreate(
             [
-                'name' => 'customer'
+                'name' => 'operator'
             ],
             [
-                'name' => 'customer',
+                'name' => 'operator',
+                'access' => '[{"route":"dashboard","access":["list"]}]',
+            ]
+        );
+
+        Role::updateOrCreate(
+            [
+                'name' => 'staff-admin'
+            ],
+            [
+                'name' => 'staff-admin',
                 'access' => '[{"route":"dashboard","access":["list"]}]',
             ]
         );
@@ -49,25 +59,37 @@ class DatabaseSeeder extends Seeder
     {
         User::updateOrCreate(
             [
-                'email' => 'admin@idev.com',
+                'email' => 'admin',
             ],
             [
                 'name' => 'Admin',
-                'email' => 'admin@idev.com',
-                'password' => bcrypt('qwerty'),
+                'email' => 'admin',
+                'password' => bcrypt('produksi@123'),
                 'role_id' => Role::where('name', 'admin')->first()->id,
             ]
         );
 
         User::updateOrCreate(
             [
-                'email' => 'johny@idev.com',
+                'email' => 'operator',
             ],
             [
-                'name' => 'Johny Nur Ahmad',
-                'email' => 'johny@idev.com',
-                'password' => bcrypt('qwerty'),
-                'role_id' => Role::where('name', 'customer')->first()->id,
+                'name' => 'Operator',
+                'email' => 'operator',
+                'password' => bcrypt('123'),
+                'role_id' => Role::where('name', 'operator')->first()->id,
+            ]
+        );
+
+        User::updateOrCreate(
+            [
+                'email' => 'staff-admin',
+            ],
+            [
+                'name' => 'Staff Admin',
+                'email' => 'staff-admin',
+                'password' => bcrypt('asdasd123'),
+                'role_id' => Role::where('name', 'staff-admin')->first()->id,
             ]
         );
     }
