@@ -6,6 +6,7 @@ use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableMovement;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryConsumableCategory;
+use App\Models\InventoryConsumableSubcategory;
 use Idev\EasyAdmin\app\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +26,11 @@ class DashboardInventoryConsumableController extends Controller
         $this->importScripts = [
             ['source' => asset('js/modules/module-inventory-consumable.js')],
             ['source' => asset('vendor/Chart.js/chart.umd.js')],
-            //['source' => asset('vendor/select2/js/select2.min.js')],
+            ['source' => asset('vendor/select2/js/select2.min.js')],
         ];
         $this->importStyles = [
-            //['source' => asset('vendor/select2/css/select2.min.css')],
-            //['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
         ];
     }
 

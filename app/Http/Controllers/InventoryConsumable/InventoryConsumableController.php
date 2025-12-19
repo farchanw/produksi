@@ -544,7 +544,11 @@ class InventoryConsumableController extends DefaultController
             return response()->json([]);
         }
 
-        $items = InventoryConsumable::select('id as value', DB::raw("CONCAT(sku, ' - ', name) AS text"))
+        $items = InventoryConsumable::select(
+                'id as value',
+                //DB::raw("CONCAT(sku, ' - ', name) AS text")
+                'name as text'
+            )
             ->where('category_id', $categoryId)
             ->get();
 
@@ -555,13 +559,13 @@ class InventoryConsumableController extends DefaultController
     public function fetchItemsStockData(Request $request)
     {
         $categoryId = $request->category_id;
-
         $query = InventoryConsumable::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
             ->select(
                 'inventory_consumables.id as value',
                 'inventory_consumables.minimum_stock',
                 'inventory_consumables.satuan',
-                DB::raw("CONCAT(inventory_consumables.sku, ' - ', inventory_consumables.name) AS text"),
+                //DB::raw("CONCAT(inventory_consumables.sku, ' - ', inventory_consumables.name) AS text"),
+                'inventory_consumables.name as text',
                 'inventory_consumable_stocks.stock as stock'
             );
 

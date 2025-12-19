@@ -63,7 +63,7 @@
                             <div class="col">
                                 <select
                                     id="chart-data-inventory-consumable-item"
-                                    class="form-select"
+                                    class="form-select support-live-select2"
                                     name="item_id"
                                     disabled
                                 >
@@ -73,7 +73,10 @@
                         </form>
 
                         <div class="ratio ratio-16x9">
-                            <canvas id="inventoryChart"></canvas>
+                            <figure id="chart-data-inventory-consumable-item-default">
+                                <figcaption class="font-bold fs-5"></figcaption>
+                                <canvas></canvas>
+                            </figure>
                         </div>
                     </div>
                 </div>
@@ -93,7 +96,7 @@
                                     id="data-inventory-consumable-stock-category"
                                     class="form-select"
                                 >
-                                    <option value="0">Pilih Kategori...</option>
+                                    <option value="">Semua Kategori</option>
                                     @foreach($dataInventoryConsumablesStockCategories as $item)
                                         <option value="{{ $item->id }}">
                                             {{ $item->name }}

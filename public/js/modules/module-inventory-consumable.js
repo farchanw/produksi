@@ -17,7 +17,11 @@ function chartInventoryConsumableLoad() {
                 chartInventoryConsumable.destroy();
             }
 
-            const ctx = document.getElementById('inventoryChart');
+            const figure = document.getElementById('chart-data-inventory-consumable-item-default');
+            if (selectItemId.value) {
+                figure.querySelector('figcaption').innerText = selectItemId.options[selectItemId.selectedIndex].text;
+            }
+            const ctx = figure.querySelector('canvas');
 
             chartInventoryConsumable = new Chart(ctx, {
                 type: 'bar',
@@ -101,12 +105,12 @@ $(document).on('change', 'select[name="category_id"]', function () {
 
     if (!categoryId) return;
 
-    //$sub.prop('disabled', true);
+    $sub.prop('disabled', true);
     $sub.html('<option value=""> [Loading...] </option>');
 
 
     $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
-        //$sub.prop('disabled', false);
+        $sub.prop('disabled', false);
         $sub.empty()
         data.forEach(function (item) {
             const option = new Option(item.text, item.value, false, false);

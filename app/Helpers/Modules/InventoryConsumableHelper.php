@@ -38,7 +38,11 @@ class InventoryConsumableHelper
 
     public static function optionsForItems()
     {
-        return InventoryConsumable::select('id as value', DB::raw('CONCAT_WS(" - ", sku, name) as text'))
+        return InventoryConsumable::select(
+                'id as value', 
+                //DB::raw('CONCAT_WS(" - ", sku, name) as text')
+                'name as text'
+            )
             ->orderBy('name', 'ASC')
             ->get()
             ->toArray();
