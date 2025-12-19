@@ -68,7 +68,13 @@ class InventoryConsumableMovementController extends DefaultController
 
         
         $this->importScripts = [
+            ['source' => asset('vendor/select2/js/select2.min.js')],
             ['source' => asset('js/modules/module-inventory-consumable.js')],
+        ];
+
+        $this->importStyles = [
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
         ];
     }
 

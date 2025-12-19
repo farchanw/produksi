@@ -101,12 +101,12 @@ $(document).on('change', 'select[name="category_id"]', function () {
 
     if (!categoryId) return;
 
-    $sub.prop('disabled', true);
+    //$sub.prop('disabled', true);
     $sub.html('<option value=""> [Loading...] </option>');
 
 
     $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
-        $sub.prop('disabled', false);
+        //$sub.prop('disabled', false);
         $sub.empty()
         data.forEach(function (item) {
             const option = new Option(item.text, item.value, false, false);
@@ -115,4 +115,15 @@ $(document).on('change', 'select[name="category_id"]', function () {
 
         $sub.trigger('change');
     });
+});
+
+
+
+$( document ).ajaxStop(function() {
+    $('.support-live-select2').each(function () {
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $(this).parent(),// fix select2 search input focus bug
+        })
+    })
 });
