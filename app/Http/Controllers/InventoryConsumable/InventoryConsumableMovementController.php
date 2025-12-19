@@ -246,6 +246,9 @@ class InventoryConsumableMovementController extends DefaultController
         if (request('category_id')) {
             $filters[] = ['inventory_consumable_categories.id', '=', request('category_id')];
         }
+        if (request('subcategory_id')) {
+            $filters[] = ['inventory_consumable_subcategories.id', '=', request('subcategory_id')];
+        }
         if (request('tanggal_start') && request('tanggal_end')) {
             $filters[] = [
                 'inventory_consumable_movements.movement_datetime',
