@@ -28,7 +28,7 @@
 
 @section('contentfrontend')
     {{-- Section: Logo & Brand --}}
-    <section class="page-section py-4 bg-light">
+    <section class="page-section py-4 bg-whiten">
         <div class="container text-center">
             <img src="{{ asset('images/logo-brand.png') }}" alt="Brand Logo" class="mb-3" style="max-height: 100px;">
             @if(Auth::user())
@@ -45,10 +45,10 @@
     {{-- Section: Modules Grid --}}
     <section class="page-section py-5 bg-whiten">
         <div class="container">
-            <div class="row">
+            <div class="row justify-content-center">
                 @foreach ($modules as $key => $module)
                     <div class="col-lg-2 col-md-3 col-6 d-flex align-items-stretch">
-                        <div class="item-module @if ($module['active'] && Auth::user()) active @endif card shadow border-0 w-100 mx-2 my-3 text-center">
+                        <div class="item-module @if ($module['active'] && Auth::user()) active @endif card shadow border w-100 mx-2 my-3 text-center">
                             <a 
                                 @if ($module['active']) 
                                     href="{{ $module['link'] }}" 
