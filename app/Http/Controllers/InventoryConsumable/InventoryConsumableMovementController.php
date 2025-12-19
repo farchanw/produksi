@@ -189,6 +189,13 @@ class InventoryConsumableMovementController extends DefaultController
             ],
             [
                 'type' => 'select',
+                'label' => 'Subkategori',
+                'name' =>  'subcategory_id',
+                'class' => 'col-md-2',
+                'options' => $optionsSubcategory,
+            ],
+            [
+                'type' => 'select',
                 'label' => 'Type',
                 'name' =>  'type',
                 'class' => 'col-md-2',

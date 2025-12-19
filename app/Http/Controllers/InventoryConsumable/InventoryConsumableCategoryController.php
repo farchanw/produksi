@@ -73,7 +73,9 @@ class InventoryConsumableCategoryController extends DefaultController
         return $rules;
     }
 
-        public function index()
+
+    
+    public function index()
     {
         $baseUrlExcel = route($this->generalUri.'.export-excel-default');
         $baseUrlPdf = route($this->generalUri.'.export-pdf-default');
