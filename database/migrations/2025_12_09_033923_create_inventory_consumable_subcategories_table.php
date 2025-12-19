@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventory_consumable_categories', function (Blueprint $table) {
+        Schema::create('inventory_consumable_subcategories', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
             $table->timestamps();
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventory_consumable_categories');
+        Schema::dropIfExists('inventory_consumable_subcategories');
     }
 };

@@ -4,6 +4,7 @@ use App\Http\Controllers\InventoryConsumable\InventoryConsumableController;
 use App\Http\Controllers\InventoryConsumable\InventoryConsumableMovementController;
 use App\Http\Controllers\InventoryConsumable\DashboardInventoryConsumableController;
 use App\Http\Controllers\InventoryConsumable\InventoryConsumableCategoryController;
+use App\Http\Controllers\InventoryConsumable\InventoryConsumableSubcategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable'], function () {
@@ -46,4 +47,12 @@ Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' =>
     Route::get('inventory-consumable-category-export-pdf-default', [InventoryConsumableCategoryController::class, 'exportPdf'])->name('inventory-consumable-category.export-pdf-default');
     Route::get('inventory-consumable-category-export-excel-default', [InventoryConsumableCategoryController::class, 'exportExcel'])->name('inventory-consumable-category.export-excel-default');
     Route::post('inventory-consumable-category-import-excel-default', [InventoryConsumableCategoryController::class, 'importExcel'])->name('inventory-consumable-category.import-excel-default');
+
+
+
+    Route::resource('inventory-consumable-subcategory', InventoryConsumableSubcategoryController::class);
+    Route::get('inventory-consumable-subcategory-api', [InventoryConsumableSubcategoryController::class, 'indexApi'])->name('inventory-consumable-subcategory.listapi');        
+    Route::get('inventory-consumable-subcategory-export-pdf-default', [InventoryConsumableSubcategoryController::class, 'exportPdf'])->name('inventory-consumable-subcategory.export-pdf-default');
+    Route::get('inventory-consumable-subcategory-export-excel-default', [InventoryConsumableSubcategoryController::class, 'exportExcel'])->name('inventory-consumable-subcategory.export-excel-default');
+    Route::post('inventory-consumable-subcategory-import-excel-default', [InventoryConsumableSubcategoryController::class, 'importExcel'])->name('inventory-consumable-subcategory.import-excel-default');
 });

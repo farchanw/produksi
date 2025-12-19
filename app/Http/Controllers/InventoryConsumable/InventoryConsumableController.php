@@ -41,8 +41,6 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Min. Stock', 'column' => 'minimum_stock', 'order' => true],
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
-                    ['name' => 'Harga satuan', 'column' => 'harga_satuan', 'order' => true, 'formatting' => 'toRupiah'], 
-                    ['name' => 'Harga total', 'column' => 'harga_total', 'order' => true, 'formatting' => 'toRupiah'], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -55,8 +53,7 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Name', 'column' => 'name'], 
                     ['name' => 'Category', 'column' => 'category'], 
                     ['name' => 'Minimum Stock', 'column' => 'minimum_stock'],
-                    ['name' => 'Satuan', 'column' => 'satuan'], 
-                    ['name' => 'Harga Satuan', 'column' => 'harga_satuan'],
+                    ['name' => 'Satuan', 'column' => 'satuan'],
             ]
         ];
 
@@ -122,14 +119,6 @@ class InventoryConsumableController extends DefaultController
                         'required' => $this->flagRules('satuan', $id),
                         'value' => (isset($edit)) ? $edit->satuan : ''
                     ],
-                    [
-                        'type' => 'number',
-                        'label' => 'Harga Satuan',
-                        'name' =>  'harga_satuan',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('harga_satuan', $id),
-                        'value' => (isset($edit)) ? $edit->harga_satuan : ''
-                    ],
         ];
         
         return $fields;
@@ -165,7 +154,6 @@ class InventoryConsumableController extends DefaultController
                     'category_id' => 'required|string',
                     'minimum_stock' => 'required|integer',
                     'satuan' => 'required|string',
-                    'harga_satuan' => 'required|integer',
         ];
 
         return $rules;
@@ -194,7 +182,7 @@ class InventoryConsumableController extends DefaultController
             ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'harga_total', 'name', 'category'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'category'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -217,8 +205,7 @@ class InventoryConsumableController extends DefaultController
             ->select(
                 'inventory_consumables.*', 
                 'inventory_consumable_stocks.stock',
-                'inventory_consumable_categories.name AS category',
-                DB::raw('(inventory_consumables.harga_satuan * inventory_consumable_stocks.stock) AS harga_total')
+                'inventory_consumable_categories.name AS category'
             );
 
         return $dataQueries;
@@ -516,7 +503,6 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Qty', 'column' => 'qty', 'order' => false],
                     ['name' => 'Awal', 'column' => 'stock_awal', 'order' => false],
                     ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => false],
-                    ['name' => 'Harga', 'column' => 'harga', 'order' => false, 'formatting' => 'toRupiah'],
                     ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => false],
                     ['name' => 'Catatan', 'column' => 'notes', 'order' => false], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
@@ -574,6 +560,7 @@ class InventoryConsumableController extends DefaultController
             ->select(
                 'inventory_consumables.id as value',
                 'inventory_consumables.minimum_stock',
+                'inventory_consumables.satuan',
                 DB::raw("CONCAT(inventory_consumables.sku, ' - ', inventory_consumables.name) AS text"),
                 'inventory_consumable_stocks.stock as stock'
             );

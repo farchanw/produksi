@@ -18,7 +18,6 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained('inventory_consumable_categories')->cascadeOnDelete();
             $table->integer('minimum_stock')->default(0);
             $table->string('satuan');
-            $table->integer('harga_satuan')->default(0);
             $table->timestamps();
         });
 

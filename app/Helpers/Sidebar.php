@@ -107,6 +107,15 @@ class Sidebar
                 'ajax_load' => false,
                 'childrens' => []
             ],
+            [
+                'name' => 'Input Subcategory',
+                'icon' => 'ti ti-tag',
+                'key' => 'inventory-consumable-subcategory',
+                'base_key' => 'inventory-consumable-subcategory',
+                'visibility' => $this->canAccessMenu('inventory-consumable-subcategory') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
         ];
     }
 

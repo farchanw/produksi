@@ -24,7 +24,7 @@ function chartInventoryConsumableLoad() {
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: 'Out Level',
+                        label: 'Pemakaian',
                         data: data.values,
                         tension: 0.3,
                         fill: true
@@ -54,7 +54,7 @@ function renderStockTable() {
 
     document.getElementById('inventory-consumable-stock-tbody').innerHTML = /*html*/`
         <tr>
-            <td colspan="2" class="font-bold text-center"> <i>[Loading...]</i> </td>
+            <td colspan="3" class="font-bold text-center"> <i>[Loading...]</i> </td>
         </tr>
     `
 
@@ -68,6 +68,7 @@ function renderStockTable() {
                     <tr class="${Number(item.stock) <= Number(item.minimum_stock) ? 'text-danger' : ''}">
                         <td>${item.text}</td>
                         <td>${item.stock}</td>
+                        <td>${item.satuan}</td>
                     </tr>
                 `;
             });
@@ -76,7 +77,7 @@ function renderStockTable() {
         .catch(error => {
             document.getElementById('inventory-consumable-stock-tbody').innerHTML = /*html*/`
                 <tr>
-                    <td colspan="2" class="text-danger">ERROR: Failed to load stock data: ${error}</td>
+                    <td colspan="3" class="text-danger">ERROR: Failed to load stock data: ${error}</td>
                 </tr>
             `
         });

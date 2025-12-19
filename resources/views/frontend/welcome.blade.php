@@ -30,7 +30,7 @@
     {{-- Section: Logo & Brand --}}
     <section class="page-section py-4 bg-whiten">
         <div class="container text-center">
-            <img src="{{ asset('images/logo-brand.png') }}" alt="Brand Logo" class="mb-3" style="max-height: 100px;">
+            <img src="{{ asset('images/logo-brand.png') }}" alt="Brand Logo" class="mb-3 w-100" style="max-height: 100px; object-fit: contain;">
             @if(Auth::user())
                 <h1 class="fw-bold text-green-idev">Hi, {{Auth::user()->name}}</h1>
                 <p>you are logged in as {{Auth::user()->role->name}}</p>

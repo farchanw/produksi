@@ -5,6 +5,7 @@ namespace App\Http\Controllers\InventoryConsumable;
 use App\Models\InventoryConsumableMovement;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
+use App\Models\InventoryConsumableSubcategory;
 use App\Helpers\Modules\InventoryConsumableHelper;
 use App\Models\InventoryConsumableStock;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
@@ -37,13 +38,15 @@ class InventoryConsumableMovementController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Item', 'column' => 'item', 'order' => true],
+                    ['name' => 'Nama Item          ', 'column' => 'item', 'order' => true],
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true],
+                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true],
                     ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => true],
                     ['name' => 'Awal', 'column' => 'stock_awal', 'order' => true],
                     ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => true],
-                    ['name' => 'Harga', 'column' => 'harga', 'order' => true, 'formatting' => 'toRupiah'],
+                    ['name' => 'Harga Satuan', 'column' => 'harga_satuan', 'order' => true, 'formatting' => 'toRupiah'],
+                    ['name' => 'Harga Total', 'column' => 'harga_total', 'order' => true, 'formatting' => 'toRupiah'],
                     ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],
                     ['name' => 'Catatan', 'column' => 'notes', 'order' => true], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
@@ -83,13 +86,9 @@ class InventoryConsumableMovementController extends DefaultController
             ->toArray();
 
         // Top-level categories
-        $optionsCategory = InventoryConsumableCategory::select('id as value', 'name as text')->get();
-
-        if (isset($edit)) {
-            // 
-        }
-
-
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
+        $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
+        array_unshift($optionsSubcategory, ['value' => '', 'text' => 'Tidak ada Subkategori']);
 
         $fields = [
                     [
@@ -103,12 +102,21 @@ class InventoryConsumableMovementController extends DefaultController
                     ],
                     [
                         'type' => 'select2',
-                        'label' => 'Item',
+                        'label' => 'Nama Item',
                         'name' =>  'item_id',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('item_id', $id),
                         'value' => (isset($edit)) ? $edit->item_id : '',
                         'options' => $optionsItem
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => 'Subkategori',
+                        'name' =>  'subcategory_id',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('subcategory_id', $id),
+                        'value' => isset($edit) ? $edit->subcategory_id : '',
+                        'options' => $optionsSubcategory
                     ],
                     [
                         'type' => 'select',
@@ -127,6 +135,14 @@ class InventoryConsumableMovementController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('qty', $id),
                         'value' => (isset($edit)) ? $edit->qty : ''
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => 'Harga Satuan',
+                        'name' =>  'harga_satuan',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('harga_satuan', $id),
+                        'value' => (isset($edit)) ? $edit->harga_satuan : ''
                     ],
                     [
                         'type' => 'datetime',
@@ -155,6 +171,9 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
         array_unshift($optionsCategory, ['value' => '', 'text' => 'Semua']);
+
+        $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
+        array_unshift($optionsSubcategory, ['value' => '', 'text' => 'Semua']);
 
         $optionsType = InventoryConsumableHelper::optionsForMovementTypes();
         array_unshift($optionsType, ['value' => '', 'text' => 'Semua']);
@@ -194,6 +213,7 @@ class InventoryConsumableMovementController extends DefaultController
                     'qty' => 'required|numeric',
                     'type' => 'required|string',
                     'movement_datetime' => 'required|string',
+                    'harga_satuan' => 'required|integer',
         ];
 
         return $rules;
@@ -237,9 +257,10 @@ class InventoryConsumableMovementController extends DefaultController
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
             ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
+            ->leftJoin('inventory_consumable_subcategories', 'inventory_consumable_movements.subcategory_id', '=', 'inventory_consumable_subcategories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category', 'subcategory'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -257,9 +278,10 @@ class InventoryConsumableMovementController extends DefaultController
 
                 $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
                 $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('inventory_consumable_subcategories.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
-            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item',  'inventory_consumable_categories.name AS category');
+            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item',  'inventory_consumable_categories.name AS category', 'inventory_consumable_subcategories.name AS subcategory');
 
         return $dataQueries;
     }
@@ -308,8 +330,7 @@ class InventoryConsumableMovementController extends DefaultController
             }
 
             // Set harga
-            $hargaSatuan = InventoryConsumable::where('id', $insert->item_id)->first()->harga_satuan;
-            $insert->harga = $insert->qty * $hargaSatuan;
+            $insert->harga_total = $insert->qty * $insert->harga_satuan;
             
             // Set stock awal
             $insert->stock_awal = InventoryConsumableStock::where('item_id', $insert->item_id)->first()->stock ?? 0;

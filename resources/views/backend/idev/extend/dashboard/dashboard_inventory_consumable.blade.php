@@ -29,7 +29,7 @@
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="card-header bg-secondary text-white ">
-                        <h5 class="mb-0 text-white">Out</h5>
+                        <h5 class="mb-0 text-white">Pemakaian</h5>
                     </div>
 
                     <div class="card-body">
@@ -103,12 +103,29 @@
                             </div>
                         </form>
 
+                        <style>
+                            .dashboard-inventory-consumable-stock-table tr th:nth-child(1),
+                            .dashboard-inventory-consumable-stock-table tr td:nth-child(1) {
+                                width: 60%;
+                            }
+
+                            .dashboard-inventory-consumable-stock-table tr th:nth-child(2),
+                            .dashboard-inventory-consumable-stock-table tr td:nth-child(2) {
+                                width: 20%;
+                            }
+
+                            .dashboard-inventory-consumable-stock-table tr th:nth-child(3),
+                            .dashboard-inventory-consumable-stock-table tr td:nth-child(3) {
+                                width: 20%;
+                            }
+                        </style>
                         <div class="table-responsive">
                             <table class="table table-bordered table-sm table-scroll align-middle dashboard-inventory-consumable-stock-table">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Item</th>
                                         <th>Stock</th>
+                                        <th>Satuan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inventory-consumable-stock-tbody"></tbody>

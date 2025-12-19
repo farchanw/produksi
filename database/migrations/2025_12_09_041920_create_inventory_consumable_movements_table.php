@@ -14,11 +14,13 @@ return new class extends Migration
         Schema::create('inventory_consumable_movements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('item_id')->constrained('inventory_consumables')->cascadeOnDelete();
+            $table->foreignId('subcategory_id')->nullable()->constrained('inventory_consumable_subcategories')->nullOnDelete();
             $table->integer('qty');
             $table->string('type');
             $table->integer('stock_awal');
             $table->integer('stock_akhir');
-            $table->unsignedBigInteger('harga')->default(0);
+            $table->unsignedBigInteger('harga_satuan')->default(0);
+            $table->unsignedBigInteger('harga_total')->default(0);
             $table->datetime('movement_datetime');
             $table->string('notes')->nullable();
             $table->timestamps();
