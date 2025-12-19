@@ -34,7 +34,7 @@ class InventoryConsumableMovementController extends DefaultController
         $this->title = 'Riwayat Kartu Stok';
         $this->generalUri = 'inventory-consumable-movement';
         // $this->arrPermissions = [];
-        $this->actionButtons = [/*'btn_edit',*/ 'btn_show', 'btn_delete'];
+        $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
@@ -330,7 +330,15 @@ class InventoryConsumableMovementController extends DefaultController
             }
 
             // Set harga
-            $insert->harga_total = $insert->qty * $insert->harga_satuan;
+            if ($insert->type === 'out' || $insert->type === 'adjust') {
+                // Set 0 karena harga untuk pengeluaran atau penyesuaian tidak dihitung
+                $insert->harga_total = 0;
+            }
+
+            if ($insert->type === 'in') {
+                // Hitung harga total untuk pemasukan
+                $insert->harga_total = $insert->qty * $insert->harga_satuan;
+            }
             
             // Set stock awal
             $insert->stock_awal = InventoryConsumableStock::where('item_id', $insert->item_id)->first()->stock ?? 0;
