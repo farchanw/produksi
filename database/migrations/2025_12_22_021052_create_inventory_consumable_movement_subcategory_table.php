@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventory_consumable_subcategories', function (Blueprint $table) {
+        Schema::create('inventory_consumable_movement_subcategory', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('inventory_consumable_categories')->cascadeOnDelete();
-            $table->string('name');
-            $table->unique(['category_id', 'name']);
+            $table->foreignId('movement_id')->constrained('inventory_consumable_movements')->cascadeOnDelete();
+            $table->foreignId('subcategory_id')->constrained('inventory_consumable_subcategories')->cascadeOnDelete();
+
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventory_consumable_subcategories');
+        Schema::dropIfExists('inventory_consumable_movement_subcategory');
     }
 };

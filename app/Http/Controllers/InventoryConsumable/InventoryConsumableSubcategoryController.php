@@ -25,7 +25,8 @@ class InventoryConsumableSubcategoryController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Name', 'column' => 'name', 'order' => true], 
+                    ['name' => 'Kategori', 'column' => 'category', 'order' => true], 
+                    ['name' => 'Subkategori', 'column' => 'name', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -48,6 +49,15 @@ class InventoryConsumableSubcategoryController extends DefaultController
         }
 
         $fields = [
+                    [
+                        'type' => 'select',
+                        'label' => 'Kategori',
+                        'name' =>  'category_id',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('category_id', $id),
+                        'value' => (isset($edit)) ? $edit->category_id : '',
+                        'options' => \App\Helpers\Modules\InventoryConsumableHelper::optionsForCategories(),
+                    ],
                     [
                         'type' => 'text',
                         'label' => 'Name',
@@ -123,6 +133,65 @@ class InventoryConsumableSubcategoryController extends DefaultController
         $data['buttonTextCreateNew'] = 'Input Subkategori';
         
         return view($layout, $data);
+    }
+
+    protected function defaultDataQuery()
+    {
+        $filters = [];
+        $orThose = null;
+        $orderBy = 'inventory_consumable_subcategories.id';
+        $orderState = 'DESC';
+        if (request('search')) {
+            $orThose = request('search');
+        }
+        if (request('order')) {
+            $orderBy = request('order');
+            $orderState = request('order_state');
+        }
+
+        $dataQueries = $this->modelClass::join('inventory_consumable_categories', 'inventory_consumable_subcategories.category_id', '=', 'inventory_consumable_categories.id')
+            ->where($filters)
+            ->where(function ($query) use ($orThose) {
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'category', 'name'];
+
+                foreach ($this->tableHeaders as $key => $th) {
+                    if (array_key_exists('search', $th) && $th['search'] == false) {
+                        $efc[] = $th['column'];
+                    }
+                    if(!in_array($th['column'], $efc))
+                    {
+                        if($key == 0){
+                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }else{
+                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }
+                    }
+                }
+                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
+            })
+            ->orderBy($orderBy, $orderState)
+            ->select('inventory_consumable_subcategories.*', 'inventory_consumable_categories.name as category');
+
+        return $dataQueries;
+    }
+
+    public function fetchSubcategories()
+    {
+        $categoryId = request('category_id');
+        $subcategories = [];
+
+        if ($categoryId) {
+            $subcategoriesQuery = $this->modelClass::where('category_id', $categoryId)->get();
+
+            foreach ($subcategoriesQuery as $subcategory) {
+                $subcategories[] = [
+                    'value' => $subcategory->id,
+                    'text' => $subcategory->name,
+                ];
+            }
+        }
+
+        return response()->json($subcategories);
     }
 
 }

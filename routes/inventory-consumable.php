@@ -17,6 +17,7 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable
 
     Route::get('inventory-consumable-category-fetch-category-subcategories-default', [InventoryConsumableCategoryController::class, 'fetchCategorySubcategories']);
     Route::get('inventory-consumable-category-fetch-categories', [InventoryConsumableCategoryController::class, 'fetchCategories']);
+    Route::get('inventory-consumable-subcategory-fetch-subcategories-data-default', [InventoryConsumableSubcategoryController::class, 'fetchSubcategories']);
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'inventory-consumable'], function () {

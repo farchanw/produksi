@@ -5,4 +5,5 @@
 
 .ts-wrapper .ts-control {
     border: none!important;
+    padding: .75rem .5rem;
 }

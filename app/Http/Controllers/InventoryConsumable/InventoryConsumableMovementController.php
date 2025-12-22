@@ -69,12 +69,16 @@ class InventoryConsumableMovementController extends DefaultController
         
         $this->importScripts = [
             ['source' => asset('vendor/select2/js/select2.min.js')],
+            ['source' => asset('vendor/tom-select/tom-select.complete.min.js')],
             ['source' => asset('js/modules/module-inventory-consumable.js')],
+            
         ];
 
         $this->importStyles = [
             ['source' => asset('vendor/select2/css/select2.min.css')],
             ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
+            ['source' => asset('vendor/tom-select/tom-select.css')],
+            ['source' => asset('vendor/tom-select/tom-select.fix.css')],
         ];
     }
 
@@ -116,7 +120,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'options' => $optionsItem
                     ],
                     [
-                        'type' => 'select',
+                        'type' => 'select_tomselect_multiple',
                         'label' => 'Subkategori',
                         'name' =>  'subcategory_id',
                         'class' => 'col-md-12 my-2',
@@ -177,10 +181,6 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
         array_unshift($optionsCategory, ['value' => '', 'text' => 'Semua']);
-
-        $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
-        array_unshift($optionsSubcategory, ['value' => '', 'text' => 'Semua']);
-
         $optionsType = InventoryConsumableHelper::optionsForMovementTypes();
         array_unshift($optionsType, ['value' => '', 'text' => 'Semua']);
 
@@ -192,13 +192,6 @@ class InventoryConsumableMovementController extends DefaultController
                 'name' =>  'category_id',
                 'class' => 'col-md-2',
                 'options' => $optionsCategory,
-            ],
-            [
-                'type' => 'select',
-                'label' => 'Subkategori',
-                'name' =>  'subcategory_id',
-                'class' => 'col-md-2',
-                'options' => $optionsSubcategory,
             ],
             [
                 'type' => 'select',
@@ -238,23 +231,31 @@ class InventoryConsumableMovementController extends DefaultController
         $orThose = null;
         $orderBy = 'id';
         $orderState = 'DESC';
+
+        // Search keyword
         if (request('search')) {
             $orThose = request('search');
         }
+
+        // Ordering
         if (request('order')) {
             $orderBy = request('order');
             $orderState = request('order_state');
         }
-        // filters
+
+        // Filters
         if (request('type')) {
             $filters[] = ['inventory_consumable_movements.type', '=', request('type')];
         }
+
         if (request('category_id')) {
             $filters[] = ['inventory_consumable_categories.id', '=', request('category_id')];
         }
+
         if (request('subcategory_id')) {
-            $filters[] = ['inventory_consumable_subcategories.id', '=', request('subcategory_id')];
+            $filters[] = ['subcategories.id', '=', request('subcategory_id')];
         }
+
         if (request('tanggal_start') && request('tanggal_end')) {
             $filters[] = [
                 'inventory_consumable_movements.movement_datetime',
@@ -273,7 +274,8 @@ class InventoryConsumableMovementController extends DefaultController
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
             ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
-            ->leftJoin('inventory_consumable_subcategories', 'inventory_consumable_movements.subcategory_id', '=', 'inventory_consumable_subcategories.id')
+            ->leftJoin('inventory_consumable_movement_subcategory as pivot', 'inventory_consumable_movements.id', '=', 'pivot.movement_id')
+            ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
                 $efc = ['#', 'created_at', 'updated_at', 'id', 'item', 'category', 'subcategory'];
@@ -294,13 +296,20 @@ class InventoryConsumableMovementController extends DefaultController
 
                 $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
                 $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
-                $query->orWhere('inventory_consumable_subcategories.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('subcategories.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
-            ->select('inventory_consumable_movements.*', 'inventory_consumables.name as item',  'inventory_consumable_categories.name AS category', 'inventory_consumable_subcategories.name AS subcategory');
+            ->groupBy('inventory_consumable_movements.id') // Group because of multiple subcategories
+            ->select(
+                'inventory_consumable_movements.*',
+                'inventory_consumables.name as item',
+                'inventory_consumable_categories.name AS category',
+                DB::raw('GROUP_CONCAT(subcategories.name SEPARATOR ", ") as subcategory')
+            );
 
         return $dataQueries;
     }
+
 
     
     protected function store(Request $request)
@@ -344,6 +353,10 @@ class InventoryConsumableMovementController extends DefaultController
                     $insert->{$as['name']} = $as['value'];
                 }
             }
+
+            // Save SUBCATEGORY
+            $dataSubcategory = $request->subcategory_id ?? [];
+            unset($insert->subcategory_id);
 
             // Set harga
             if ($insert->type === 'out' || $insert->type === 'adjust') {
@@ -421,6 +434,11 @@ class InventoryConsumableMovementController extends DefaultController
                 ['item_id' => $insert->item_id],
                 ['stock' => $newStock]
             );
+
+            // Save subcategories
+            if (!empty($dataSubcategory)) {
+                $insert->subcategories()->sync($dataSubcategory);
+            }
 
             
             DB::commit();

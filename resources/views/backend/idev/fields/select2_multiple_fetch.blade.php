@@ -12,9 +12,8 @@ $preffix_method = (isset($method))? $method."_": "";
     </label>
     <select 
         id="{{$preffix_method}}{{$select_id}}" 
-        name="{{$select_name}}" 
-        data-original-value="{{ $field['value'] ?? '' }}"
-        class="form-control idev-form support-live-select2-value-appendable @if($prefix_repeatable) field-repeatable @endif">
+        name="{{$select_name}}[]" 
+        class="form-control idev-form @if($prefix_repeatable) field-repeatable @endif" multiple>
         @foreach($field['options'] as $key => $opt)
         <option value="{{$opt['value']}}" 
         @if($opt['value'] == $field['value'] || $opt['value'] == request($select_name)) selected @endif
@@ -22,20 +21,3 @@ $preffix_method = (isset($method))? $method."_": "";
         @endforeach
     </select>
 </div>
-
-@if(isset($field['filter']))
-@push('scripts')
-<script>
-    var currentUrl = "{{url()->current()}}"
-
-$('#{{$select_id}}').on('change', function() {
-    if (currentUrl.includes("?")) {
-        currentUrl += "&{{$select_name}}="+$(this).val()
-    }else{
-        currentUrl += "?{{$select_name}}="+$(this).val()
-    }
-    window.location.replace(currentUrl);
-})
-</script>
-@endpush
-@endif

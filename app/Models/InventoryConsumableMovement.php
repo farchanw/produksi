@@ -14,6 +14,15 @@ class InventoryConsumableMovement extends Model
     protected $fillable = ["item_id","qty","type","movement_datetime","notes"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show'];
 
+    public function subcategories()
+    {
+        return $this->belongsToMany(
+            InventoryConsumableSubcategory::class, 
+            'inventory_consumable_movement_subcategory', 
+            'movement_id', 
+            'subcategory_id'
+        );
+    }
 
     public function getBtnDeleteAttribute()
     {

@@ -99,25 +99,27 @@ window.addEventListener('load', () => {
 
 $(document).on('change', 'select[name="category_id"]', function () {
     const categoryId = $(this).val();
-    const $sub = $('select[name="item_id"]');
 
-    $sub.empty().trigger('change');
+    // Item
+    const selectItem = $('select[name="item_id"]');
+
+    selectItem.empty().trigger('change');
 
     if (!categoryId) return;
 
-    $sub.prop('disabled', true);
-    $sub.html('<option value=""> [Loading...] </option>');
+    selectItem.prop('disabled', true);
+    selectItem.html('<option value=""> [Loading...] </option>');
 
 
     $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
-        $sub.prop('disabled', false);
-        $sub.empty()
+        selectItem.prop('disabled', false);
+        selectItem.empty()
         data.forEach(function (item) {
             const option = new Option(item.text, item.value, false, false);
-            $sub.append(option);
+            selectItem.append(option);
         });
 
-        $sub.trigger('change');
+        selectItem.trigger('change');
     });
 });
 
@@ -130,4 +132,68 @@ $( document ).ajaxStop(function() {
             dropdownParent: $(this).parent(),// fix select2 search input focus bug
         })
     })
+});
+
+function initTomSelect(selectEl) {
+    if (!selectEl) return;
+    if (tomSelects.has(selectEl)) return;
+
+    const ts = new TomSelect(selectEl, {
+        plugins: ['remove_button'],
+        placeholder: 'Pilih Subkategori',
+        persist: false,
+        create: false
+    });
+
+    tomSelects.set(selectEl, ts);
+
+    return ts;
+}
+
+
+const tomSelects = new Map();
+
+document.querySelectorAll('.support-tomselect').forEach(el => {
+    tomSelects.set(el, new TomSelect(el, {
+        plugins: ['remove_button'],
+        placeholder: 'Pilih Subkategori',
+        persist: false,
+        create: false
+    }));
+});
+function loadSubcategories(categoryId, selectEl) {
+    if (!selectEl) return;
+
+    // GET or INIT Tom Select
+    let ts = tomSelects.get(selectEl);
+    if (!ts) ts = initTomSelect(selectEl);
+
+    ts.clear();
+    ts.clearOptions();
+    ts.disable();
+
+    if (!categoryId) return;
+
+    fetch(`inventory-consumable-subcategory-fetch-subcategories-data-default?category_id=${categoryId}`)
+        .then(r => r.json())
+        .then(data => {
+            ts.enable();
+
+            ts.addOptions(data.map(item => ({
+                value: item.value,
+                text: item.text
+            })));
+
+            ts.refreshOptions(false);
+        });
+}
+
+document.addEventListener('change', function (e) {
+    if (e.target.matches('[name="category_id"]')) {
+        const row = e.target.closest('form');
+        const subSelect = row.querySelector('.support-tomselect');
+
+        // safely load subcategories
+        loadSubcategories(e.target.value, subSelect);
+    }
 });
