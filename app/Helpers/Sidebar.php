@@ -101,21 +101,31 @@ class Sidebar
             [
                 'name' => 'Input Kategori',
                 'icon' => 'ti ti-tag',
-                'key' => 'inventory-consumable-category',
-                'base_key' => 'inventory-consumable-category',
+                'key' => '',
                 'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [
+                    [
+                        'name' => 'Input Kategori',
+                        'icon' => 'ti ti-tag',
+                        'key' => 'inventory-consumable-category.index',
+                        'base_key' => '',
+                        'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                    [
+                        'name' => 'Subkategori',
+                        'icon' => 'ti ti-tag',
+                        'key' => 'inventory-consumable-subcategory.index',
+                        'base_key' => '',
+                        'visibility' => $this->canAccessMenu('inventory-consumable-subcategory') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                ]
             ],
-            [
-                'name' => 'Input Subcategory',
-                'icon' => 'ti ti-tag',
-                'key' => 'inventory-consumable-subcategory',
-                'base_key' => 'inventory-consumable-subcategory',
-                'visibility' => $this->canAccessMenu('inventory-consumable-subcategory') && $module == $currentModule,
-                'ajax_load' => false,
-                'childrens' => []
-            ],
+            
         ];
     }
 
