@@ -813,6 +813,30 @@ $(document).ajaxComplete(function () {
         .forEach(el => {
             el.innerHTML = formatToRupiah(Number(el.textContent.trim()));
         });
+    
+    document
+        .querySelectorAll('[class^="form-field-checklist-searchable-"]')
+        .forEach(el => {
+            el.querySelector('.form-field-checklist-searchable-filter').oninput = () => {
+                const val = el.querySelector('.form-field-checklist-searchable-filter').value                
+                const search = val ? val.toLowerCase() : '';
+
+                el.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    // if val is empty, show all
+                    if (!search) {
+                        cb.closest('.form-check').style.display = '';
+                        return;
+                    }
+
+                    const text = `${cb.value} ${cb.dataset.textForSearchable}`.toLowerCase();
+                    const match = text.includes(search);
+
+                    cb.closest('.form-check').style.display = match ? '' : 'none';
+                });
+
+
+            }
+        });
 });
 
 
@@ -975,6 +999,13 @@ function idevSetEdit(id, uriKey, prefix = "") {
                 });
             } else if (field.type == "repeatable_bom") {
                 handleRepeatableBom(field.value)
+            } else if (field.type === "checklist_base" || field.type === "checklist_searchable") {
+                $('input[type="checkbox"][id^="edit_' + field.name + '"]').each(function () {
+                    const checkboxValue = Number(this.value);
+                    $(this).prop("checked", field.value.includes(checkboxValue));
+                });
+
+
             } else {
                 $("#edit_" + field.name).val(field.value);
                 $("#edit_" + field.name).trigger("change");

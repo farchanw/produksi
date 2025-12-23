@@ -19,6 +19,16 @@ class InventoryConsumable extends Model
         return $this->belongsTo(InventoryConsumableCategory::class, 'category_id');
     }
 
+    public function subcategories()
+    {
+        return $this->belongsToMany(
+            InventoryConsumableSubcategory::class, 
+            'inventory_consumable_item_subcategory', 
+            'item_id', 
+            'subcategory_id'
+        );
+    }
+
     public function getBtnDeleteAttribute()
     {
         $html = "<button type='button' class='btn btn-outline-danger btn-sm radius-6' style='margin:1px;' data-bs-toggle='modal' data-bs-target='#modalDelete' onclick='setDelete(" . json_encode($this->id) . ")'>

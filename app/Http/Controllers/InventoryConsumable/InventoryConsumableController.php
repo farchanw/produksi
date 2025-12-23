@@ -58,7 +58,17 @@ class InventoryConsumableController extends DefaultController
         ];
 
         $this->importScripts = [
+            ['source' => asset('vendor/select2/js/select2.min.js')],
+            ['source' => asset('vendor/tom-select/tom-select.complete.min.js')],
             ['source' => asset('js/modules/module-inventory-consumable.js')],
+            
+        ];
+
+        $this->importStyles = [
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
+            ['source' => asset('vendor/tom-select/tom-select.css')],
+            ['source' => asset('vendor/tom-select/tom-select.fix.css')],
         ];
     }
 
@@ -71,9 +81,12 @@ class InventoryConsumableController extends DefaultController
         }
 
         $optionsCategory = InventoryConsumableHelper::optionsForCategories();
+        $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
 
         if (isset($edit)) {
-            //
+            $edit->subcategory_id = DB::table('inventory_consumable_item_subcategory')
+                ->where('item_id', $edit->id)
+                ->pluck('subcategory_id');
         }
 
         $fields = [
@@ -102,6 +115,15 @@ class InventoryConsumableController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('name', $id),
                         'value' => (isset($edit)) ? $edit->name : ''
+                    ],
+                    [
+                        'type' => 'checklist_searchable',
+                        'label' => 'Subkategori',
+                        'name' =>  'subcategory_id',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('subcategory_id', $id),
+                        'value' => isset($edit) ? $edit->subcategory_id : '',
+                        'options' => $optionsSubcategory
                     ],
                     [
                         'type' => 'number',
@@ -180,6 +202,8 @@ class InventoryConsumableController extends DefaultController
 
         $dataQueries = $this->modelClass::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
             ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
+            ->leftJoin('inventory_consumable_item_subcategory as pivot', 'inventory_consumables.id', '=', 'pivot.item_id')
+            ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
                 $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'category'];
@@ -202,6 +226,10 @@ class InventoryConsumableController extends DefaultController
                 $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
             })
             ->orderBy($orderBy, $orderState)
+            ->groupBy(
+                'inventory_consumables.id',
+                'inventory_consumable_stocks.stock'
+            )
             ->select(
                 'inventory_consumables.*', 
                 'inventory_consumable_stocks.stock',
@@ -257,15 +285,24 @@ class InventoryConsumableController extends DefaultController
                 }
             }
 
+             // Save SUBCATEGORY
+            $dataSubcategory = $request->subcategory_id ?? [];
+            unset($insert->subcategory_id);
+
             $insert->save();
 
             $this->afterMainInsert($insert, $request);
 
             // Save stock
-            $stockInsert = new InventoryConsumableStock();
-            $stockInsert->stock = 0;
-            $stockInsert->item_id = $insert->id;
-            $stockInsert->save();
+            $insertStock = InventoryConsumableStock::updateOrCreate(
+                ['item_id' => $insert->id],
+                ['stock' => 0]
+            );
+
+            // Save subcategories
+            if (!empty($dataSubcategory)) {
+                $insert->subcategories()->sync($dataSubcategory);
+            }
 
             DB::commit();
 
@@ -325,9 +362,18 @@ class InventoryConsumableController extends DefaultController
                 }
             }
 
+            // Save SUBCATEGORY
+            $dataSubcategory = $request->subcategory_id ?? [];
+            unset($change->subcategory_id);
+
             $change->save();
 
             $this->afterMainUpdate($change, $request);
+
+            // Save subcategories
+            if (!empty($dataSubcategory)) {
+                $change->subcategories()->sync($dataSubcategory);
+            }
 
             DB::commit();
 

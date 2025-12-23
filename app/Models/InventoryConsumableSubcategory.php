@@ -24,6 +24,16 @@ class InventoryConsumableSubcategory extends Model
         );
     }
 
+    public function items()
+    {
+        return $this->belongsToMany(
+            InventoryConsumable::class,
+            'inventory_consumable_item_subcategory',
+            'subcategory_id',
+            'item_id'
+        );
+    }
+
 
     public function getBtnDeleteAttribute()
     {
