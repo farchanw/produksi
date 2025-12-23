@@ -98,7 +98,6 @@ class InventoryConsumableMovementController extends DefaultController
         // Top-level categories
         $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
         $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
-        array_unshift($optionsSubcategory, ['value' => '', 'text' => 'Tidak ada Subkategori']);
 
         $fields = [
                     [
@@ -120,7 +119,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'options' => $optionsItem
                     ],
                     [
-                        'type' => 'select_tomselect_multiple',
+                        'type' => 'checklist_searchable',
                         'label' => 'Subkategori',
                         'name' =>  'subcategory_id',
                         'class' => 'col-md-12 my-2',

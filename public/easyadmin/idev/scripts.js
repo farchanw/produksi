@@ -815,26 +815,44 @@ $(document).ajaxComplete(function () {
         });
     
     document
-        .querySelectorAll('[class^="form-field-checklist-searchable-"]')
+        .querySelectorAll('[class^="form-field-checklist-searchable-container-"]')
         .forEach(el => {
             el.querySelector('.form-field-checklist-searchable-filter').oninput = () => {
                 const val = el.querySelector('.form-field-checklist-searchable-filter').value                
                 const search = val ? val.toLowerCase() : '';
 
                 el.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    const container = cb.closest('.form-check');
+
                     // if val is empty, show all
                     if (!search) {
-                        cb.closest('.form-check').style.display = '';
+                        container.classList.remove('d-none');
                         return;
                     }
 
                     const text = `${cb.value} ${cb.dataset.textForSearchable}`.toLowerCase();
                     const match = text.includes(search);
 
-                    cb.closest('.form-check').style.display = match ? '' : 'none';
+                    container.classList.toggle('d-none', !match);
                 });
+            }
 
+            el.querySelector('.form-field-checklist-searchable-select-all').onclick = () => {
+                el.querySelectorAll('.form-check input[type="checkbox"]').forEach(cb => {
+                    const container = cb.closest('.form-check');
+                    if (!container.classList.contains('d-none')) {
+                        cb.checked = true;
+                    }
+                });
+            }
 
+            el.querySelector('.form-field-checklist-searchable-select-none').onclick = () => {
+                el.querySelectorAll('.form-check input[type="checkbox"]').forEach(cb => {
+                    const container = cb.closest('.form-check');
+                    if (!container.classList.contains('d-none')) {
+                        cb.checked = false;
+                    }
+                });
             }
         });
 });
