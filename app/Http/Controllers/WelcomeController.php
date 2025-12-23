@@ -15,7 +15,6 @@ class WelcomeController extends Controller
         $this->generalUri = 'welcome';
     }
 
-
     public function index()
     {
         $modules = [
