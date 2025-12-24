@@ -102,14 +102,12 @@ $(document).on('change', 'select[name="category_id"]', function () {
 
     // Item
     const selectItem = $('select[name="item_id"]');
-
     selectItem.empty().trigger('change');
 
     if (!categoryId) return;
 
     selectItem.prop('disabled', true);
     selectItem.html('<option value=""> [Loading...] </option>');
-
 
     $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
         selectItem.prop('disabled', false);
@@ -134,39 +132,6 @@ $( document ).ajaxStop(function() {
         
     })
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 $(document).on('change select2:select select2:clear', '[name="item_id"]', function (e) {

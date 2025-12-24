@@ -95,6 +95,7 @@ class InventoryConsumableMovementController extends DefaultController
             ->orderBy('name', 'ASC')
             ->get()
             ->toArray();
+        array_unshift($optionsItem, ['value' => '', 'text' => 'Pilih Item']);
 
         $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
         $optionsSubcategory = [];

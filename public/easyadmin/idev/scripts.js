@@ -1027,6 +1027,7 @@ function idevSetEdit(id, uriKey, prefix = "") {
             } else {
                 $("#edit_" + field.name).val(field.value);
                 $("#edit_" + field.name).trigger("change");
+
             }
         });
     });
