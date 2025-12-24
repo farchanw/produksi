@@ -14,7 +14,7 @@ $selectedValues = isset($field['value'])
         @endif
     </label>
 
-    <div class="form-control mt-2" style="height: 8rem; overflow-y: auto">
+    <div class="form-control mt-2" style="max-height: 8rem; overflow-y: auto">
         @foreach($field['options'] as $key => $opt)
             <div class="form-check">
                 <input 

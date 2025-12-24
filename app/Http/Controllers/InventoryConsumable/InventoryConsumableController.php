@@ -624,4 +624,13 @@ class InventoryConsumableController extends DefaultController
         return response()->json($items);
     }
 
+
+    public function fetchItemSubcategories(Request $request)
+    {
+        $id = $request->id;
+        $items = InventoryConsumableHelper::getItemSubcategories($id);
+
+        return response()->json($items);
+    }
+
 }

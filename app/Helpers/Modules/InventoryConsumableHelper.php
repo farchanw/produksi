@@ -47,4 +47,19 @@ class InventoryConsumableHelper
             ->get()
             ->toArray();
     }
+
+    public static function getItemSubcategories($id = null)
+    {
+        $query = InventoryConsumable::leftJoin('inventory_consumable_item_subcategory as pivot', 'inventory_consumables.id', '=', 'pivot.item_id')
+            ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
+            ;
+
+        if ($id) {
+            $query->where('inventory_consumables.id', $id);
+        }
+
+        $query->select('subcategory_id as value', 'subcategories.name as text');
+
+        return $query->get();
+    }
 }

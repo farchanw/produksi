@@ -87,7 +87,8 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $edit = null;
         if ($id != '-') {
-            $edit = $this->modelClass::where('id', $id)->first();
+            $edit = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
+            ->where('inventory_consumable_movements.id', $id)->first();
         }
 
         $optionsItem = InventoryConsumable::select('id as value', DB::raw('CONCAT_WS(" - ", sku, name) as text'))
@@ -95,9 +96,15 @@ class InventoryConsumableMovementController extends DefaultController
             ->get()
             ->toArray();
 
-        // Top-level categories
         $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
-        $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
+        $optionsSubcategory = [];
+        
+        if (isset($edit->item_id)) {
+            $edit->subcategory_id = DB::table('inventory_consumable_movement_subcategory')
+                ->where('movement_id', $edit->id)
+                ->pluck('subcategory_id');
+            $optionsSubcategory = InventoryConsumableHelper::getItemSubcategories($edit->item_id)->toArray();
+        }
 
         $fields = [
                     [
@@ -125,7 +132,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('subcategory_id', $id),
                         'value' => isset($edit) ? $edit->subcategory_id : '',
-                        'options' => $optionsSubcategory
+                        'options' => $optionsSubcategory,
                     ],
                     [
                         'type' => 'select',

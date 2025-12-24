@@ -131,69 +131,84 @@ $( document ).ajaxStop(function() {
             theme: 'bootstrap-5',
             dropdownParent: $(this).parent(),// fix select2 search input focus bug
         })
+        
     })
 });
 
-function initTomSelect(selectEl) {
-    if (!selectEl) return;
-    if (tomSelects.has(selectEl)) return;
-
-    const ts = new TomSelect(selectEl, {
-        plugins: ['remove_button'],
-        placeholder: 'Pilih Subkategori',
-        persist: false,
-        create: false
-    });
-
-    tomSelects.set(selectEl, ts);
-
-    return ts;
-}
 
 
-const tomSelects = new Map();
 
-document.querySelectorAll('.support-tomselect').forEach(el => {
-    tomSelects.set(el, new TomSelect(el, {
-        plugins: ['remove_button'],
-        placeholder: 'Pilih Subkategori',
-        persist: false,
-        create: false
-    }));
-});
-function loadSubcategories(categoryId, selectEl) {
-    if (!selectEl) return;
 
-    // GET or INIT Tom Select
-    let ts = tomSelects.get(selectEl);
-    if (!ts) ts = initTomSelect(selectEl);
 
-    ts.clear();
-    ts.clearOptions();
-    ts.disable();
 
-    if (!categoryId) return;
 
-    fetch(`inventory-consumable-subcategory-fetch-subcategories-data-default?category_id=${categoryId}`)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$(document).on('change select2:select select2:clear', '[name="item_id"]', function (e) {
+    const form = this.closest('form');
+
+    if (
+        form.id !== 'form-edit-inventory-consumable-movement' &&
+        form.id !== 'form-create-inventory-consumable-movement'
+    ) {
+        return;
+    }
+
+    const itemId = $(this).val();
+    if (!itemId) return;
+
+    const subCheckItemList = form.querySelector(
+        '.form-field-checklist-searchable-check-item-list'
+    );
+
+    fetch(`inventory-consumable-fetch-item-subcategories-default?id=${itemId}`)
         .then(r => r.json())
         .then(data => {
-            ts.enable();
+            subCheckItemList.replaceChildren();
 
-            ts.addOptions(data.map(item => ({
-                value: item.value,
-                text: item.text
-            })));
-
-            ts.refreshOptions(false);
+            data.forEach((dt, index) => {
+                subCheckItemList.insertAdjacentHTML('beforeend', `
+                    <div class="form-check">
+                        <input 
+                            class="form-check-input"
+                            type="checkbox"
+                            id="live_subcategory_edit_${index}"
+                            name="subcategory_id[]"
+                            value="${dt.value}"
+                            data-text-for-searchable="${dt.text}"
+                        >
+                        <label 
+                            class="form-check-label fw-normal" 
+                            for="live_subcategory_edit_${index}">
+                            ${dt.text}
+                        </label>
+                    </div>
+                `);
+            });
         });
-}
-
-document.addEventListener('change', function (e) {
-    if (e.target.matches('[name="category_id"]')) {
-        const row = e.target.closest('form');
-        const subSelect = row.querySelector('.support-tomselect');
-
-        // safely load subcategories
-        loadSubcategories(e.target.value, subSelect);
-    }
 });
