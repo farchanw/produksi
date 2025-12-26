@@ -6,7 +6,7 @@ $selectedValues = isset($field['value'])
     : [];
 @endphp
 
-<div class="{{ $field['class'] ?? 'form-group' }}" data-selected-values="{{ json_encode($selectedValues) }}">
+<div class="{{ $field['class'] ?? 'form-group' }}">
     <div class="form-field-checklist-searchable-container-{{ $field['name'] }}">
         <label>
             {{ $field['label'] ?? 'Label '.$key }}
