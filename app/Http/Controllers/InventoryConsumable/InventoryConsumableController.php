@@ -38,6 +38,7 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'Kode Item', 'column' => 'sku', 'order' => true],
                     ['name' => 'Nama Item', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow',], 
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true], 
+                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true], 
                     ['name' => 'Min. Stock', 'column' => 'minimum_stock', 'order' => true],
                     ['name' => 'Stock', 'column' => 'stock', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow'], 
                     ['name' => 'Satuan', 'column' => 'satuan', 'order' => true], 
@@ -206,7 +207,7 @@ class InventoryConsumableController extends DefaultController
             ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'category'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'category', 'subcategory'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -233,7 +234,9 @@ class InventoryConsumableController extends DefaultController
             ->select(
                 'inventory_consumables.*', 
                 'inventory_consumable_stocks.stock',
-                'inventory_consumable_categories.name AS category'
+                'inventory_consumable_categories.name AS category',
+                DB::raw('GROUP_CONCAT(subcategories.name SEPARATOR ", ") as subcategory')
+
             );
 
         return $dataQueries;
@@ -543,13 +546,14 @@ class InventoryConsumableController extends DefaultController
     {
         $data['headerLayout'] = $this->pageHeaderLayout;
         $data['table_headers'] = [
+                    ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => false],
                     ['name' => 'Item', 'column' => 'item', 'order' => false],
                     ['name' => 'Kategori', 'column' => 'category', 'order' => false],
+                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => false],
                     ['name' => 'Type', 'column' => 'type', 'order' => false],
                     ['name' => 'Qty', 'column' => 'qty', 'order' => false],
                     ['name' => 'Awal', 'column' => 'stock_awal', 'order' => false],
                     ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => false],
-                    ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => false],
                     ['name' => 'Catatan', 'column' => 'notes', 'order' => false], 
                     //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
@@ -566,19 +570,60 @@ class InventoryConsumableController extends DefaultController
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
-        $data['dataList'] = InventoryConsumableMovement::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
-            ->join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
-            ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
-            ->select(
-                'inventory_consumable_movements.*', 
-                'inventory_consumables.name AS item',
-                'inventory_consumable_categories.name AS category',
-            )
-            ->where('inventory_consumable_movements.item_id', $id)
-            ->orderBy('movement_datetime', 'DESC')
-            ->limit(100)
-            ->get();
+        $data['dataList'] = InventoryConsumableMovement::join(
+            'inventory_consumables',
+            'inventory_consumables.id',
+            '=',
+            'inventory_consumable_movements.item_id'
+        )
+        ->join(
+            'inventory_consumable_stocks',
+            'inventory_consumable_stocks.item_id',
+            '=',
+            'inventory_consumables.id'
+        )
+        ->join(
+            'inventory_consumable_categories',
+            'inventory_consumables.category_id',
+            '=',
+            'inventory_consumable_categories.id'
+        )
+        ->leftJoin(
+            'inventory_consumable_item_subcategory as pivot',
+            'inventory_consumables.id',
+            '=',
+            'pivot.item_id'
+        )
+        ->leftJoin(
+            'inventory_consumable_subcategories as subcategories',
+            'pivot.subcategory_id',
+            '=',
+            'subcategories.id'
+        )
+        ->select(
+            'inventory_consumable_movements.id',
+            'inventory_consumable_movements.item_id',
+            'inventory_consumable_movements.qty',
+            'inventory_consumable_movements.type',
+            'inventory_consumable_movements.created_at',
+            'inventory_consumable_movements.updated_at',
+            'inventory_consumable_movements.qty',
+            'inventory_consumable_movements.stock_awal',
+            'inventory_consumable_movements.stock_akhir',
+            'inventory_consumable_movements.movement_datetime',
+            'inventory_consumable_movements.notes',
+            'inventory_consumable_movements.updated_at',
+            'inventory_consumables.name as item',
+            'inventory_consumable_categories.name as category',
+            DB::raw('GROUP_CONCAT(DISTINCT subcategories.name SEPARATOR ", ") as subcategory')
+        )
+        ->where('inventory_consumable_movements.item_id', $id)
+        ->groupBy('inventory_consumable_movements.id')
+        ->orderBy('inventory_consumable_movements.id', 'DESC')
+        ->limit(100)
+        ->get();
 
+            
         return view('backend.idev.extend.show.show_inventory_consumable', $data);
     }
 

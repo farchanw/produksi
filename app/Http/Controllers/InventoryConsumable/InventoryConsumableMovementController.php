@@ -318,151 +318,7 @@ class InventoryConsumableMovementController extends DefaultController
     }
 
 
-    
-    protected function store(Request $request)
-    {
-        $rules = $this->rules();
 
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            $messageErrors = (new Validation)->modify($validator, $rules);
-
-            return response()->json([
-                'status' => false,
-                'alert' => 'danger',
-                'message' => 'Required Form',
-                'validation_errors' => $messageErrors,
-            ], 200);
-        }
-
-        $beforeInsertResponse = $this->beforeMainInsert($request);
-        if ($beforeInsertResponse !== null) {
-            return $beforeInsertResponse; // Return early if there's a response
-        }
-
-        DB::beginTransaction();
-
-        try {
-            $appendStore = $this->appendStore($request);
-            
-            if (array_key_exists('error', $appendStore)) {
-                return response()->json($appendStore['error'], 200);
-            }
-
-            $insert = new $this->modelClass();
-            foreach ($this->fields('create') as $key => $th) {
-                if ($request[$th['name']]) {
-                    $insert->{$th['name']} = $request[$th['name']];
-                }
-            }
-            if (array_key_exists('columns', $appendStore)) {
-                foreach ($appendStore['columns'] as $key => $as) {
-                    $insert->{$as['name']} = $as['value'];
-                }
-            }
-
-            // Save SUBCATEGORY
-            $dataSubcategory = $request->subcategory_id ?? [];
-            unset($insert->subcategory_id);
-
-            // Set harga
-            if ($insert->type === 'out' || $insert->type === 'adjust') {
-                // Set 0 karena harga untuk pengeluaran atau penyesuaian tidak dihitung
-                $insert->harga_total = 0;
-            }
-
-            if ($insert->type === 'in') {
-                // Hitung harga total untuk pemasukan
-                $insert->harga_total = $insert->qty * $insert->harga_satuan;
-            }
-            
-            // Set stock awal
-            $insert->stock_awal = InventoryConsumableStock::where('item_id', $insert->item_id)->first()->stock ?? 0;
-
-            // Set stock akhir
-            if ($insert->type == 'out') {
-                $insert->stock_akhir = $insert->stock_awal - abs((int) $insert->qty);
-            } elseif ($insert->type == 'in') {
-                $insert->stock_akhir = $insert->stock_awal + abs((int) $insert->qty);
-            } elseif ($insert->type == 'adjust') {
-                $insert->stock_akhir = (int) $insert->qty;
-            } else {
-                return response()->json([
-                    'status' => false,
-                    'alert' => 'danger',
-                    'message' => 'Kolom type tidak valid',
-                ], 200);
-            }
-
-            // unset
-            unset($insert->category_id);
-
-            $insert->save();
-
-            $this->afterMainInsert($insert, $request);
-
-            // Normalize qty based on type
-            $qty = match ($insert->type) {
-                'out'    => -abs((int) $insert->qty),
-                'in'     =>  abs((int) $insert->qty),
-                'adjust' => (int) $insert->qty,
-                default  => null,
-            };
-
-            if ($qty === null) {
-                return response()->json([
-                    'status' => false,
-                    'alert'  => 'danger',
-                    'message'=> 'Kolom type tidak valid',
-                ], 200);
-            }
-
-            $insert->qty = $qty;
-
-            // Get current stock
-            $currentStock = (int) DB::table('inventory_consumable_stocks')
-                ->where('item_id', $insert->item_id)
-                ->value('stock') ?? 0;
-
-            // Calculate new stock
-            $newStock = $insert->type === 'adjust'
-                ? $insert->qty
-                : $currentStock + $insert->qty;
-
-            if ($newStock < 0) {
-                return response()->json([
-                    'status' => false,
-                    'alert'  => 'danger',
-                    'message'=> 'Nilai value tidak valid',
-                ], 200);
-            }
-
-            DB::table('inventory_consumable_stocks')->updateOrInsert(
-                ['item_id' => $insert->item_id],
-                ['stock' => $newStock]
-            );
-
-            // Save subcategories
-            if (!empty($dataSubcategory)) {
-                $insert->subcategories()->sync($dataSubcategory);
-            }
-
-            
-            DB::commit();
-
-            return response()->json([
-                'status' => true,
-                'alert' => 'success',
-                'message' => 'Data Berhasil Dibuat',
-            ], 200);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
 
     public function index()
     {
@@ -542,10 +398,138 @@ class InventoryConsumableMovementController extends DefaultController
         return view($layout, $data);
     }
 
+    
+    protected function store(Request $request)
+    {
+        $rules = $this->rules();
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeInsertResponse = $this->beforeMainInsert($request);
+        if ($beforeInsertResponse !== null) {
+            return $beforeInsertResponse;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendStore = $this->appendStore($request);
+            if (array_key_exists('error', $appendStore)) {
+                return response()->json($appendStore['error'], 200);
+            }
+
+            // GET STOCK
+            $currentStock = (int) InventoryConsumableStock::where('item_id', $request->item_id)
+                ->value('stock') ?? 0;
+
+            $inputQty       = (int) $request->qty;
+            $hargaSatuan    = (int) ($request->harga_satuan ?? 0);
+            $type           = $request->type;
+
+            // SET QTY & STOCK
+            if ($type === 'in') {
+                $qty        = abs($inputQty);
+                $stockAkhir = $currentStock + $qty;
+                $hargaTotal = $qty * $hargaSatuan;
+
+            } elseif ($type === 'out') {
+                $qty        = -abs($inputQty);
+                $stockAkhir = $currentStock + $qty;
+
+                if ($stockAkhir < 0) {
+                    throw new Exception('Stock tidak mencukupi');
+                }
+
+                $hargaTotal = 0;
+
+            } elseif ($type === 'adjust') {
+                $stockAkhir = $inputQty;
+
+                if ($stockAkhir < 0) {
+                    throw new Exception('Stock tidak valid');
+                }
+
+                $qty        = $stockAkhir - $currentStock;
+                $hargaTotal = 0;
+
+            } else {
+                throw new Exception('Kolom type tidak valid');
+            }
+
+            $insert = new $this->modelClass();
+
+            foreach ($this->fields('create') as $th) {
+                if ($request->filled($th['name'])) {
+                    $insert->{$th['name']} = $request->{$th['name']};
+                }
+            }
+
+            if (array_key_exists('columns', $appendStore)) {
+                foreach ($appendStore['columns'] as $as) {
+                    $insert->{$as['name']} = $as['value'];
+                }
+            }
+
+            $insert->qty               = $qty;
+            $insert->stock_awal        = $currentStock;
+            $insert->stock_akhir       = $stockAkhir;
+            $insert->harga_satuan      = $hargaSatuan;
+            $insert->harga_total       = $hargaTotal;
+            $insert->movement_datetime = $request->movement_datetime ?? now();
+
+            $dataSubcategory = $request->subcategory_id ?? [];
+            unset($insert->subcategory_id, $insert->category_id);
+
+            $insert->save();
+
+            // SET STOCK
+            InventoryConsumableStock::updateOrCreate(
+                ['item_id' => $insert->item_id],
+                ['stock' => $stockAkhir]
+            );
+
+            // SET SUBCATEGORY
+            if (!empty($dataSubcategory)) {
+                $insert->subcategories()->sync($dataSubcategory);
+            }
+
+            $this->afterMainInsert($insert, $request);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Berhasil Dibuat',
+            ], 200);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
+
     protected function update(Request $request, $id)
     {
         $rules = $this->rules($id);
-        
+
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             $messageErrors = (new Validation)->modify($validator, $rules);
@@ -560,34 +544,67 @@ class InventoryConsumableMovementController extends DefaultController
 
         $beforeUpdateResponse = $this->beforeMainUpdate($id, $request);
         if ($beforeUpdateResponse !== null) {
-            return $beforeUpdateResponse; // Return early if there's a response
+            return $beforeUpdateResponse;
         }
 
         DB::beginTransaction();
 
+
+
+
         try {
             $appendUpdate = $this->appendUpdate($request);
 
-            $change = $this->modelClass::where('id', $id)->first();
-            foreach ($this->fields('edit', $id) as $key => $th) {
-                if ($request[$th['name']]) {
-                    $change->{$th['name']} = $request[$th['name']];
+            $change = $this->modelClass::lockForUpdate()->findOrFail($id);
+
+            if ($request->filled('harga_satuan')) {
+                $change->harga_satuan = (int) $request->harga_satuan;
+
+                if ($change->type === 'in') {
+                    $change->harga_total = abs($change->qty) * $change->harga_satuan;
                 }
             }
+
+            if ($request->filled('notes')) {
+                $change->notes = $request->notes;
+            }
+
+            foreach ($this->fields('edit', $id) as $th) {
+                if (in_array($th['name'], ['harga_satuan', 'notes'])) {
+                    continue;
+                }
+
+                if ($request->filled($th['name'])) {
+                    $change->{$th['name']} = $request->{$th['name']};
+                }
+            }
+
             if (array_key_exists('columns', $appendUpdate)) {
-                foreach ($appendUpdate['columns'] as $key => $as) {
+                foreach ($appendUpdate['columns'] as $as) {
                     $change->{$as['name']} = $as['value'];
                 }
             }
 
-            // Jangan update qty
-            if ($change->qty) {
-                unset($change->qty);
+
+            if (Carbon::parse($change->created_at)->isBefore(now()->subHours(24))) {
+                throw new Exception('Tidak dapat mengubah transaksi setelah 24 jam');
             }
 
-            // unset
-            unset($change->category);
-            
+
+            if ($change->stock_akhir != InventoryConsumableStock::where('item_id', $change->item_id)->value('stock')) {
+                throw new Exception('Tidak dapat mengubah transaksi lama');
+            }
+
+            /** -------------------------------
+             * PROTECT STOCK : TIDAK BOLEH DIUBAH
+             * ------------------------------ */
+            unset(
+                $change->qty,
+                $change->stock_awal,
+                $change->stock_akhir,
+                $change->category_id,
+            );
+
             $change->save();
 
             $this->afterMainUpdate($change, $request);
@@ -599,6 +616,7 @@ class InventoryConsumableMovementController extends DefaultController
                 'alert' => 'success',
                 'message' => 'Data Berhasil Diperbarui',
             ], 200);
+
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -608,6 +626,7 @@ class InventoryConsumableMovementController extends DefaultController
             ], 500);
         }
     }
+
 
     protected function show($id)
     {

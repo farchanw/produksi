@@ -29,6 +29,14 @@ class InventoryConsumable extends Model
         );
     }
 
+    public function movements()
+    {
+        return $this->hasMany(
+            InventoryConsumableMovement::class,
+            'item_id'
+        );
+    }
+
     public function getBtnDeleteAttribute()
     {
         $html = "<button type='button' class='btn btn-outline-danger btn-sm radius-6' style='margin:1px;' data-bs-toggle='modal' data-bs-target='#modalDelete' onclick='setDelete(" . json_encode($this->id) . ")'>
