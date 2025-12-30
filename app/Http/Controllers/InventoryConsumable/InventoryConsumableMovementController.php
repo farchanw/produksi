@@ -603,6 +603,7 @@ class InventoryConsumableMovementController extends DefaultController
                 $change->stock_awal,
                 $change->stock_akhir,
                 $change->category_id,
+                $change->subcategory_id
             );
 
             $change->save();

@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('type');
             $table->integer('stock_awal');
             $table->integer('stock_akhir');
-            $table->bigInteger('harga_satuan')->default(0);
-            $table->bigInteger('harga_total')->default(0);
+            $table->unsignedBigInteger('harga_satuan')->default(0);
+            $table->unsignedBigInteger('harga_total')->default(0);
             $table->datetime('movement_datetime');
             $table->string('notes')->nullable();
             $table->timestamps();
