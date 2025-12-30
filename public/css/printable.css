@@ -1,0 +1,30 @@
+body {
+    font-size: 11px;
+    margin: 0;
+    padding: 0;
+    font-family: arial, sans-serif;
+}
+
+#laporan_bulanan_inventaris header h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#laporan_bulanan_inventaris main {
+    padding: 3em 3em 3em 4em;
+}
+
+#laporan_bulanan_inventaris table {
+    width: 100%;
+}
+
+#laporan_bulanan_inventaris table thead th {
+    font-size: 12px;
+}
+
+#laporan_bulanan_inventaris .jumlah {
+    text-align: center;
+}
