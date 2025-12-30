@@ -107,7 +107,8 @@ class InventoryConsumableMovementController extends DefaultController
             $optionsSubcategory = InventoryConsumableHelper::getItemSubcategories($edit->item_id)->toArray();
         }
 
-        $fields = [
+        if ($mode == 'create') {
+            $fields = [
                     [
                         'type' => 'select',
                         'label' => 'Kategori',
@@ -177,7 +178,73 @@ class InventoryConsumableMovementController extends DefaultController
                         'required' => $this->flagRules('notes', $id),
                         'value' => (isset($edit)) ? $edit->notes : ''
                     ],
-        ];
+            ];
+        }
+
+        if ($mode == 'edit') {
+            $fields = [
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Kategori',
+                        'name' =>  'category_id',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('category_id', $id),
+                        'value' => isset($edit) ? $edit->category_id : '',
+                        'options' => $optionsCategory
+                    ],
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Nama Item',
+                        'name' =>  'item_id',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('item_id', $id),
+                        'value' => (isset($edit)) ? $edit->item_id : '',
+                        'options' => $optionsItem
+                    ],
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Type',
+                        'name' =>  'type',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('type', $id),
+                        'value' => (isset($edit)) ? $edit->type : '',
+                        'options' => InventoryConsumableHelper::optionsForMovementTypes(),
+                        'filter' => true,
+                    ],
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Qty',
+                        'name' =>  'qty',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('qty', $id),
+                        'value' => (isset($edit)) ? $edit->qty : ''
+                    ],
+                    [
+                        'type' => 'number',
+                        'label' => 'Harga Satuan',
+                        'name' =>  'harga_satuan',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('harga_satuan', $id),
+                        'value' => (isset($edit)) ? $edit->harga_satuan : ''
+                    ],
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Tanggal',
+                        'name' =>  'movement_datetime',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('movement_datetime', $id),
+                        'value' => (isset($edit)) ? $edit->movement_datetime : ''
+                    ],
+                    [
+                        'type' => 'textarea',
+                        'label' => 'Catatan',
+                        'name' =>  'notes',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('notes', $id),
+                        'value' => (isset($edit)) ? $edit->notes : ''
+                    ],
+            ];
+        }
         
         return $fields;
     }
@@ -569,16 +636,6 @@ class InventoryConsumableMovementController extends DefaultController
                 $change->notes = $request->notes;
             }
 
-            foreach ($this->fields('edit', $id) as $th) {
-                if (in_array($th['name'], ['harga_satuan', 'notes'])) {
-                    continue;
-                }
-
-                if ($request->filled($th['name'])) {
-                    $change->{$th['name']} = $request->{$th['name']};
-                }
-            }
-
             if (array_key_exists('columns', $appendUpdate)) {
                 foreach ($appendUpdate['columns'] as $as) {
                     $change->{$as['name']} = $as['value'];
@@ -596,10 +653,13 @@ class InventoryConsumableMovementController extends DefaultController
             }
 
             /** -------------------------------
-             * PROTECT STOCK : TIDAK BOLEH DIUBAH
+             * PROTECT : TIDAK BOLEH DIUBAH
              * ------------------------------ */
             unset(
+                //$change->item_id,
                 $change->qty,
+                //$change->type,
+                //$change->movement_datetime,
                 $change->stock_awal,
                 $change->stock_akhir,
                 $change->category_id,
