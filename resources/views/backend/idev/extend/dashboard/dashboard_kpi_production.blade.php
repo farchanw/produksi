@@ -29,7 +29,7 @@
                                 <button class="nav-link active" id="produktivitas-kerja-produksi-tab" data-bs-toggle="tab" data-bs-target="#produktivitas-kerja-produksi-section" type="button" role="tab" aria-controls="produktivitas-kerja-produksi-section" aria-selected="true">Produktivitas Kerja Produksi</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="zild-hasil-produksi-tab" data-bs-toggle="tab" data-bs-target="#zild-hasil-produksi-section" type="button" role="tab" aria-controls="zild-hasil-produksi-section" aria-selected="false">ZILD Hasil Produksi</button>
+                                <button class="nav-link" id="yield-hasil-produksi-tab" data-bs-toggle="tab" data-bs-target="#yield-hasil-produksi-section" type="button" role="tab" aria-controls="yield-hasil-produksi-section" aria-selected="false">Yield Hasil Produksi</button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="hasil-vs-kapasitas-tab" data-bs-toggle="tab" data-bs-target="#hasil-vs-kapasitas-section" type="button" role="tab" aria-controls="hasil-vs-kapasitas-section" aria-selected="false">Hasil vs Kapasitas</button>
@@ -45,8 +45,8 @@
                             <div class="tab-pane fade show active" id="produktivitas-kerja-produksi-section" role="tabpanel" aria-labelledby="produktivitas-kerja-produksi-tab">
                                 produktivitas-kerja-produksi
                             </div>
-                            <div class="tab-pane fade" id="zild-hasil-produksi-section" role="tabpanel" aria-labelledby="zild-hasil-produksi-tab">
-                                zild-hasil-produksi
+                            <div class="tab-pane fade" id="yield-hasil-produksi-section" role="tabpanel" aria-labelledby="yield-hasil-produksi-tab">
+                                yield-hasil-produksi
                             </div>
                             <div class="tab-pane fade" id="hasil-vs-kapasitas-section" role="tabpanel" aria-labelledby="hasil-vs-kapasitas-tab">
                                 hasil-vs-kapasitas</div>
