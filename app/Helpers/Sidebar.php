@@ -184,8 +184,14 @@ class Sidebar
     
     public function accessCustomize($menuKey)
     {
+        $accessInventoryConsumableMovement = array_merge($this->defaultAllAccess(), ['export-laporan-bulanan-default']);
+
+
+
         $arrMenu = [
             'dashboard' => ['list'],
+
+            'inventory-consumable-movement' => $accessInventoryConsumableMovement,
         ];
         
         return $arrMenu[$menuKey] ?? $this->defaultAllAccess();

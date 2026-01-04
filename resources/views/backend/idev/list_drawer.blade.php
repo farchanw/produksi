@@ -36,6 +36,12 @@
                                 {!! $ma['html_button'] !!}
                                 @endif
                                 @endforeach
+
+                                @foreach ($custom_actions as $ma)
+                                @if (isset($ma['key']))
+                                {!! $ma['html_button'] !!}
+                                @endif
+                                @endforeach
                             </div>
                             <div class="col-4 col-md-6">
                             </div>

@@ -19,6 +19,8 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable
     Route::get('inventory-consumable-category-fetch-categories', [InventoryConsumableCategoryController::class, 'fetchCategories']);
     Route::get('inventory-consumable-subcategory-fetch-subcategories-data-default', [InventoryConsumableSubcategoryController::class, 'fetchSubcategories']);
     Route::get('inventory-consumable-fetch-item-subcategories-default', [InventoryConsumableController::class, 'fetchItemSubcategories']);
+
+    Route::get('inventory-consumable-movement-export-laporan-bulanan-pdf-default', [InventoryConsumableMovementController::class, 'exportLaporanBulananPdf'])->name('inventory-consumable-movement.export-laporan-bulanan-pdf-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'inventory-consumable'], function () {

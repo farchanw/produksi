@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Validator;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Validation\Rules\In;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class InventoryConsumableMovementController extends DefaultController
 {
@@ -38,7 +40,7 @@ class InventoryConsumableMovementController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Nama Item          ', 'column' => 'item', 'order' => true],
+                    ['name' => 'Nama Barang', 'column' => 'item', 'order' => true],
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true],
                     ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true],
                     ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
@@ -303,7 +305,7 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $filters = [];
         $orThose = null;
-        $orderBy = 'id';
+        $orderBy = 'inventory_consumable_movements.id';
         $orderState = 'DESC';
 
         // Search keyword
@@ -378,7 +380,10 @@ class InventoryConsumableMovementController extends DefaultController
                 'inventory_consumable_movements.*',
                 'inventory_consumables.name as item',
                 'inventory_consumable_categories.name AS category',
-                DB::raw('GROUP_CONCAT(subcategories.name SEPARATOR ", ") as subcategory')
+                DB::raw('GROUP_CONCAT(subcategories.name SEPARATOR ", ") as subcategory'),
+
+                'inventory_consumable_categories.id as category_id',
+                'inventory_consumables.satuan',
             );
 
         return $dataQueries;
@@ -391,6 +396,7 @@ class InventoryConsumableMovementController extends DefaultController
     {
         $baseUrlExcel = route($this->generalUri.'.export-excel-default');
         $baseUrlPdf = route($this->generalUri.'.export-pdf-default');
+        $baseUrlLaporanBulananPdf = route($this->generalUri.'.export-laporan-bulanan-pdf-default');
 
         $moreActions = [
             [
@@ -408,10 +414,13 @@ class InventoryConsumableMovementController extends DefaultController
                 'name' => 'Export Pdf',
                 'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export PDF'><i class='ti ti-file'></i></a>"
             ],
+        ];
+
+        $customActions = [
             [
-                'key' => 'export-laporan-default',
-                'name' => 'Export Laporan',
-                'html_button' => "<a id='export-laporan' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-success radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export Laporan'><i class='ti ti-file'></i></a>"
+                'key' => 'export-laporan-bulanan-pdf-default',
+                'name' => 'Export Laporan Bulanan',
+                'html_button' => "<a id='export-laporan-bulanan' data-base-url='".$baseUrlLaporanBulananPdf."' class='btn btn-sm btn-primary radius-6' target='_blank' href='" . $baseUrlLaporanBulananPdf . "' title='Export Laporan Bulanan'><i class='ti ti-file-report'></i></a>"
             ],
         ];
 
@@ -419,15 +428,15 @@ class InventoryConsumableMovementController extends DefaultController
         if ($this->dynamicPermission) {
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
         }
-        if (in_array('export-pdf-default', $permissions)) {
-            $permissions[] = 'export-laporan-default';
-        }
         $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
+
+
         $data['permissions'] = $permissions;
         $data['more_actions'] = $moreActions;
+        $data['custom_actions'] = $customActions;
         $data['headerLayout'] = $this->pageHeaderLayout;
         $data['table_headers'] = $this->tableHeaders;
         $data['title'] = $this->title;
@@ -706,5 +715,57 @@ class InventoryConsumableMovementController extends DefaultController
         $data['detail'] = $singleData;
 
         return view('easyadmin::backend.idev.show-default', $data);
+    }
+
+
+    protected function exportLaporanBulananPdf(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->format('m'));
+        $year = $request->input('year', Carbon::now()->format('Y'));
+        $data['monthName'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('M'));
+        $data['year'] = $year;
+        $data['records'] = $this->defaultDataQuery()
+            ->where('inventory_consumable_movements.type', 'in')
+            ->whereYear('inventory_consumable_movements.movement_datetime', $year)
+            ->whereMonth('inventory_consumable_movements.movement_datetime', $month)
+            ->select(
+                'inventory_consumable_categories.id as category_id',
+                'inventory_consumable_categories.name as category',
+                'inventory_consumables.name as item',
+                'inventory_consumables.satuan',
+
+                DB::raw('SUM(inventory_consumable_movements.qty) as qty'),
+                DB::raw('SUM(inventory_consumable_movements.harga_total) as price')
+            )
+            ->groupBy(
+                'inventory_consumable_categories.id',
+                'inventory_consumable_categories.name',
+                'inventory_consumables.name'
+            )
+            ->get()
+            ->groupBy('category_id')
+            ->map(function ($categoryRows) {
+
+                return [
+                    'name' => $categoryRows->first()->category,
+
+                    'items' => $categoryRows->map(function ($row) {
+                        return [
+                            'name'      => $row->item,
+                            'satuan'    => $row->satuan,
+                            'qty'       => (int) $row->qty,
+                            'price'     => (int) $row->price,
+                        ];
+                    })->values(),
+                ];
+
+            })->values();
+
+        $pdf = Pdf::loadView('pdf.inventory_consumable.laporan_bulanan_inventaris', $data);
+        $pdf->setPaper('A4', 'landscape');
+
+        $fileName = 'laporan-bulanan-inventaris-' . Carbon::now()->format('YmdHis') . '.pdf';
+
+        return $pdf->stream($fileName);
     }
 }
