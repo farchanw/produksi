@@ -151,23 +151,13 @@
                 <div class="modal-body">
                     <div class="d-flex align-items-center mb-2">
                         <label class="me-2 mb-0" style="min-width:70px;">Bulan</label>
-                        <select name="month" class="form-select form-select-sm" required>
-                            <option value="">Pilih Bulan...</option>
-                            <?php for ($m = 1; $m <= 12; $m++): ?>
-                                <option value="<?= $m; ?>">
-                                    <?= date('F', mktime(0, 0, 0, $m, 1)); ?>
-                                </option>
-                            <?php endfor; ?>
-                        </select>
-                    </div>
-
-                    <div class="d-flex align-items-center">
-                        <label class="me-2 mb-0" style="min-width:70px;">Tahun</label>
-                        <select name="year" class="form-select form-select-sm" required>
-                            <?php for ($y = date('Y'); $y >= date('Y') - 5; $y--): ?>
-                                <option value="<?= $y; ?>"><?= $y; ?></option>
-                            <?php endfor; ?>
-                        </select>
+                        <input 
+                            type="month"
+                            name="month_year"
+                            class="form-control form-control-sm"
+                            value="<?= date('Y-m'); ?>"
+                            required
+                        >
                     </div>
                 </div>
 

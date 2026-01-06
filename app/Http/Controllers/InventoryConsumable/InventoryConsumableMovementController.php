@@ -731,8 +731,10 @@ class InventoryConsumableMovementController extends DefaultController
 
     protected function exportLaporanBulananPdf(Request $request)
     {
-        $month = $request->input('month', Carbon::now()->format('m'));
-        $year = $request->input('year', Carbon::now()->format('Y'));
+        $rawMonthYear = Carbon::parse($request->input('month_year', now()->format('Y-m')));
+
+        $month = $rawMonthYear->month;
+        $year  = $rawMonthYear->year;
         $data['monthName'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('M'));
         $data['year'] = $year;
         $data['records'] = $this->defaultDataQuery()
