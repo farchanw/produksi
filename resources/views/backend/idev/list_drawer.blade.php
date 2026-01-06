@@ -37,12 +37,14 @@
                                 @endif
                                 @endforeach
 
-                                @foreach ($custom_actions as $ma)
-                                @if (isset($ma['key']))
-                                {!! $ma['html_button'] !!}
+                                @if (isset($custom_actions))
+                                    @foreach ($custom_actions as $ma)
+                                    @if (isset($ma['key']))
+                                    {!! $ma['html_button'] !!}
+                                    @endif
+                                    @endforeach
                                 @endif
-                                @endforeach
-                            </div>
+                            </div> 
                             <div class="col-4 col-md-6">
                             </div>
                             <div class="col-md-12">
