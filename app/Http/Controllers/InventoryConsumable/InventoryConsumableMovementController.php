@@ -420,7 +420,18 @@ class InventoryConsumableMovementController extends DefaultController
             [
                 'key' => 'export-laporan-bulanan-pdf-default',
                 'name' => 'Export Laporan Bulanan',
-                'html_button' => "<a id='export-laporan-bulanan' data-base-url='".$baseUrlLaporanBulananPdf."' class='btn btn-sm btn-primary radius-6' target='_blank' href='" . $baseUrlLaporanBulananPdf . "' title='Export Laporan Bulanan'><i class='ti ti-file-report'></i></a>"
+                'html_button' => '<button
+                    type="button"
+                    id="export-laporan-bulanan"
+                    class="btn btn-sm btn-primary radius-6"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalExportLaporan"
+                    data-base-url="'.$baseUrlLaporanBulananPdf.'"
+                    title="Export Laporan Bulanan"
+                    >
+                    <i class="ti ti-file-report"></i>
+                    </button>
+                '
             ],
         ];
 
@@ -428,7 +439,7 @@ class InventoryConsumableMovementController extends DefaultController
         if ($this->dynamicPermission) {
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
         }
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer_inventory_consumable_movement';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
