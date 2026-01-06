@@ -744,34 +744,42 @@ class InventoryConsumableMovementController extends DefaultController
             ->select(
                 'inventory_consumable_categories.id as category_id',
                 'inventory_consumable_categories.name as category',
+                'inventory_consumables.id as item_id',
                 'inventory_consumables.name as item',
                 'inventory_consumables.satuan',
-
                 DB::raw('SUM(inventory_consumable_movements.qty) as qty'),
                 DB::raw('SUM(inventory_consumable_movements.harga_total) as price')
             )
             ->groupBy(
+                'inventory_consumables.id',
+                'inventory_consumables.name',
+                'inventory_consumables.satuan',
                 'inventory_consumable_categories.id',
-                'inventory_consumable_categories.name',
-                'inventory_consumables.name'
+                'inventory_consumable_categories.name'
             )
             ->get()
             ->groupBy('category_id')
             ->map(function ($categoryRows) {
 
-                return [
-                    'name' => $categoryRows->first()->category,
-                    'items' => $categoryRows->map(function ($row) {
+                $items = $categoryRows
+                    ->groupBy(fn ($row) => $row->item . '|' . $row->satuan)
+                    ->map(function ($rows) {
                         return [
-                            'name'      => $row->item,
-                            'satuan'    => $row->satuan,
-                            'qty'       => (int) $row->qty,
-                            'price'     => (int) $row->price,
+                            'name'   => $rows->first()->item,
+                            'satuan' => $rows->first()->satuan,
+                            'qty'    => $rows->sum('qty'),
+                            'price'  => $rows->sum('price'),
                         ];
-                    })->values(),
+                    })
+                    ->values();
+
+                return [
+                    'name'  => $categoryRows->first()->category,
+                    'items' => $items,
                 ];
 
-            })->values();
+            })
+            ->values();
 
         $pdf = Pdf::loadView('pdf.inventory_consumable.laporan_bulanan_inventaris', $data);
         $pdf->setPaper('A4');
