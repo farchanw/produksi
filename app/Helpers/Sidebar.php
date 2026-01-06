@@ -123,6 +123,15 @@ class Sidebar
                         'ajax_load' => false,
                         'childrens' => []
                     ],
+                    [
+                        'name' => 'Jenis',
+                        'icon' => 'ti ti-menu',
+                        'key' => 'inventory-consumable-kind.index',
+                        'base_key' => 'inventory-consumable-kind.index',
+                        'visibility' => $this->canAccessMenu('inventory-consumable-kind') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
                 ]
             ],
             

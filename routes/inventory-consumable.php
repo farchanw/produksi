@@ -5,6 +5,7 @@ use App\Http\Controllers\InventoryConsumable\InventoryConsumableMovementControll
 use App\Http\Controllers\InventoryConsumable\DashboardInventoryConsumableController;
 use App\Http\Controllers\InventoryConsumable\InventoryConsumableCategoryController;
 use App\Http\Controllers\InventoryConsumable\InventoryConsumableSubcategoryController;
+use App\Http\Controllers\InventoryConsumable\InventoryConsumableKindController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'inventory-consumable'], function () {
@@ -59,4 +60,12 @@ Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' =>
     Route::get('inventory-consumable-subcategory-export-pdf-default', [InventoryConsumableSubcategoryController::class, 'exportPdf'])->name('inventory-consumable-subcategory.export-pdf-default');
     Route::get('inventory-consumable-subcategory-export-excel-default', [InventoryConsumableSubcategoryController::class, 'exportExcel'])->name('inventory-consumable-subcategory.export-excel-default');
     Route::post('inventory-consumable-subcategory-import-excel-default', [InventoryConsumableSubcategoryController::class, 'importExcel'])->name('inventory-consumable-subcategory.import-excel-default');
+
+
+
+    Route::resource('inventory-consumable-kind', InventoryConsumableKindController::class);
+    Route::get('inventory-consumable-kind-api', [InventoryConsumableKindController::class, 'indexApi'])->name('inventory-consumable-kind.listapi');
+    Route::get('inventory-consumable-kind-export-pdf-default', [InventoryConsumableKindController::class, 'exportPdf'])->name('inventory-consumable-kind.export-pdf-default');
+    Route::get('inventory-consumable-kind-export-excel-default', [InventoryConsumableKindController::class, 'exportExcel'])->name('inventory-consumable-kind.export-excel-default');
+    Route::post('inventory-consumable-kind-import-excel-default', [InventoryConsumableKindController::class, 'importExcel'])->name('inventory-consumable-kind.import-excel-default');
 });
