@@ -143,16 +143,16 @@
         <form method="get" id="formExportLaporan" target="_blank">
             <div class="modal-content">
                 <div class="modal-header bg-secondary text-white">
-                    <h5 class="modal-title text-white">Export Laporan Bulanan</h5>
+                    <h5 class="modal-title text-white">Cetak Laporan Bulanan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                
+
                 <div class="modal-body">
                     <div class="d-flex align-items-center mb-2">
-                        <label class="me-2 mb-0" style="min-width:70px;">Month</label>
+                        <label class="me-2 mb-0" style="min-width:70px;">Bulan</label>
                         <select name="month" class="form-select form-select-sm" required>
-                            <option value="">Month</option>
+                            <option value="">Pilih Bulan...</option>
                             <?php for ($m = 1; $m <= 12; $m++): ?>
                                 <option value="<?= $m; ?>">
                                     <?= date('F', mktime(0, 0, 0, $m, 1)); ?>
@@ -162,7 +162,7 @@
                     </div>
 
                     <div class="d-flex align-items-center">
-                        <label class="me-2 mb-0" style="min-width:70px;">Year</label>
+                        <label class="me-2 mb-0" style="min-width:70px;">Tahun</label>
                         <select name="year" class="form-select form-select-sm" required>
                             <?php for ($y = date('Y'); $y >= date('Y') - 5; $y--): ?>
                                 <option value="<?= $y; ?>"><?= $y; ?></option>
@@ -174,10 +174,10 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancel
+                        Batal
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        Export
+                        Cetak
                     </button>
                 </div>
             </div>

@@ -1,6 +1,32 @@
 @php
+    function toRoman($number) {
+        $map = [
+            'M'  => 1000,
+            'CM' => 900,
+            'D'  => 500,
+            'CD' => 400,
+            'C'  => 100,
+            'XC' => 90,
+            'L'  => 50,
+            'XL' => 40,
+            'X'  => 10,
+            'IX' => 9,
+            'V'  => 5,
+            'IV' => 4,
+            'I'  => 1,
+        ];
 
+        $result = '';
+        foreach ($map as $roman => $value) {
+            while ($number >= $value) {
+                $result .= $roman;
+                $number -= $value;
+            }
+        }
+        return $result;
+    }
 @endphp
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +48,7 @@
         <table border="1" cellspacing="0" cellpadding="6">
             <thead>
                 <tr>
+                    <th rowspan="2">NO</th>
                     <th rowspan="2">BIAYA PRODUKSI</th>
                     <th rowspan="2">POST ANGGARAN</th>
                     <th rowspan="2">PERINCIAN POST ANGGARAN</th>
@@ -34,49 +61,51 @@
                 </tr>
             </thead>
 
-<tbody>
-@foreach ($records as $category)
-    @php
-        $itemCount  = count($category['items']);
-        $rowspan    = $itemCount + 1; // + JUMLAH
-        $totalQty   = collect($category['items'])->sum('qty');
-        $totalPrice = collect($category['items'])->sum('price');
-    @endphp
 
-    {{-- ITEM ROWS --}}
-    @foreach ($category['items'] as $item)
-        <tr>
-            @if ($loop->first)
-                {{-- FIXED FIRST COLUMN --}}
-                <td rowspan="{{ $rowspan }}" class="expenses">
-                    Expense Produksi
-                </td>
+            <tbody>
+            @foreach ($records as $category)
+                @php
+                    $itemCount  = count($category['items']);
+                    $rowspan    = $itemCount + 1; // + JUMLAH
+                    $totalQty   = collect($category['items'])->sum('qty');
+                    $totalPrice = collect($category['items'])->sum('price');
+                @endphp
 
-                {{-- CATEGORY --}}
-                <td rowspan="{{ $rowspan }}" class="category">
-                    {{ $category['name'] }}
-                </td>
-            @endif
+                {{-- ITEM ROWS --}}
+                @foreach ($category['items'] as $item)
+                    <tr>
+                        @if ($loop->first)
+                            <td rowspan="{{ $rowspan }}" class="text-center">
+                                {{ toRoman($loop->parent->iteration) }}
+                            </td>
 
-            <td>{{ $item['name'] }}</td>
-            <td>{{ $item['satuan'] }}</td>
-            <td class="text-end">{{ $item['qty'] }}</td>
-            <td class="text-end">
-                {{ number_format($item['price'], 0, ',', '.') }}
-            </td>
-        </tr>
-    @endforeach
+                            <td rowspan="{{ $rowspan }}" class="expenses">
+                                EXPENSES PRODUKSI
+                            </td>
 
-    {{-- JUMLAH ROW --}}
-    <tr>
-        <td class="jumlah" colspan="2">JUMLAH</td>
-        <td class="text-end">{{ $totalQty }}</td>
-        <td class="text-end">
-            {{ number_format($totalPrice, 0, ',', '.') }}
-        </td>
-    </tr>
-@endforeach
-</tbody>
+                            <td rowspan="{{ $rowspan }}" class="category">
+                                {{ $category['name'] }}
+                            </td>
+                        @endif
+
+                        <td>{{ $item['name'] }}</td>
+                        <td>{{ $item['satuan'] }}</td>
+                        <td class="text-end">{{ $item['qty'] }}</td>
+                        <td class="text-end">
+                            {{ number_format($item['price'], 0, ',', '.') }}
+                        </td>
+                    </tr>
+                @endforeach
+
+                <tr>
+                    <td class="jumlah" colspan="2">JUMLAH</td>
+                    <td class="text-end">{{ $totalQty }}</td>
+                    <td class="text-end">
+                        {{ number_format($totalPrice, 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endforeach
+            </tbody>
 
 
 
@@ -160,6 +189,15 @@
             </tbody>
             -->
         </table>
+
+        <div class="signature-block">
+            Semarang, {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('d F Y') }}
+            <br>
+            <br>
+            <br>
+            <br>
+            Bagian Produksi
+        </div>
     </main>
 </body>
 </html>

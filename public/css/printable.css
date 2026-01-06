@@ -5,6 +5,10 @@ body {
     font-family: arial, sans-serif;
 }
 
+.text-center {
+    text-align: center;
+}
+
 #laporan_bulanan_inventaris header h1 {
     text-align: center;
     margin-bottom: 10px;
@@ -27,4 +31,9 @@ body {
 
 #laporan_bulanan_inventaris .jumlah {
     text-align: center;
+}
+
+#laporan_bulanan_inventaris .signature-block {
+    margin-top: .5rem;
+    text-align: right;
 }

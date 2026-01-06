@@ -427,7 +427,7 @@ class InventoryConsumableMovementController extends DefaultController
                     data-bs-toggle="modal"
                     data-bs-target="#modalExportLaporan"
                     data-base-url="'.$baseUrlLaporanBulananPdf.'"
-                    title="Export Laporan Bulanan"
+                    title="Cetak Laporan Bulanan"
                     >
                     <i class="ti ti-file-report"></i>
                     </button>
@@ -759,7 +759,6 @@ class InventoryConsumableMovementController extends DefaultController
 
                 return [
                     'name' => $categoryRows->first()->category,
-
                     'items' => $categoryRows->map(function ($row) {
                         return [
                             'name'      => $row->item,
@@ -773,7 +772,7 @@ class InventoryConsumableMovementController extends DefaultController
             })->values();
 
         $pdf = Pdf::loadView('pdf.inventory_consumable.laporan_bulanan_inventaris', $data);
-        $pdf->setPaper('A4', 'landscape');
+        $pdf->setPaper('A4');
 
         $fileName = 'laporan-bulanan-inventaris-' . Carbon::now()->format('YmdHis') . '.pdf';
 
