@@ -72,7 +72,7 @@ function renderStockTable() {
                     <tr class="${Number(item.stock) <= Number(item.minimum_stock) ? 'text-danger' : ''}">
                         <td>${item.text}</td>
                         <td>${item.stock}</td>
-                        <td>${item.satuan}</td>
+                        <td>${item.satuan.toUpperCase()}</td>
                     </tr>
                 `;
             });

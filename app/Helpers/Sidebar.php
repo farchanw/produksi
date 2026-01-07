@@ -99,14 +99,23 @@ class Sidebar
                 'childrens' => []
             ],
             [
-                'name' => 'Input Kategori',
+                'name' => 'Data Kategori',
                 'icon' => 'ti ti-tag',
                 'key' => '',
                 'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => [
                     [
-                        'name' => 'Input Kategori',
+                        'name' => 'Jenis',
+                        'icon' => 'ti ti-tag',
+                        'key' => 'inventory-consumable-kind.index',
+                        'base_key' => 'inventory-consumable-kind.index',
+                        'visibility' => $this->canAccessMenu('inventory-consumable-kind') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                    [
+                        'name' => 'Kategori',
                         'icon' => 'ti ti-tag',
                         'key' => 'inventory-consumable-category.index',
                         'base_key' => '',
@@ -120,15 +129,6 @@ class Sidebar
                         'key' => 'inventory-consumable-subcategory.index',
                         'base_key' => '',
                         'visibility' => $this->canAccessMenu('inventory-consumable-subcategory') && $module == $currentModule,
-                        'ajax_load' => false,
-                        'childrens' => []
-                    ],
-                    [
-                        'name' => 'Jenis',
-                        'icon' => 'ti ti-menu',
-                        'key' => 'inventory-consumable-kind.index',
-                        'base_key' => 'inventory-consumable-kind.index',
-                        'visibility' => $this->canAccessMenu('inventory-consumable-kind') && $module == $currentModule,
                         'ajax_load' => false,
                         'childrens' => []
                     ],
