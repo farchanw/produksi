@@ -4,6 +4,7 @@ namespace App\Helpers\Modules;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
 use App\Models\InventoryConsumableSubcategory;
+use App\Models\InventoryConsumableKind;
 use Illuminate\Support\Facades\DB;
 
 class InventoryConsumableHelper
@@ -43,6 +44,14 @@ class InventoryConsumableHelper
                 //DB::raw('CONCAT_WS(" - ", sku, name) as text')
                 'name as text'
             )
+            ->orderBy('name', 'ASC')
+            ->get()
+            ->toArray();
+    }
+
+    public static function optionsForKinds()
+    {
+        return InventoryConsumableKind::select('id as value', 'name as text')
             ->orderBy('name', 'ASC')
             ->get()
             ->toArray();

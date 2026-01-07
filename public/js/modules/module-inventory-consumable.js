@@ -157,6 +157,7 @@ $(document).on('change select2:select select2:clear', '[name="item_id"]', functi
             subCheckItemList.replaceChildren();
 
             data.forEach((dt, index) => {
+                if (!dt.value || !dt.text) return;
                 subCheckItemList.insertAdjacentHTML('beforeend', `
                     <div class="form-check">
                         <input 

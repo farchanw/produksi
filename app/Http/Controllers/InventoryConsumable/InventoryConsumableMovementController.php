@@ -33,10 +33,10 @@ class InventoryConsumableMovementController extends DefaultController
 
     public function __construct()
     {
-        $this->title = 'Riwayat Kartu Stok';
+        $this->title = 'Kartu Stok';
         $this->generalUri = 'inventory-consumable-movement';
         // $this->arrPermissions = [];
-        $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
+        $this->actionButtons = ['btn_edit', 'btn_show', /*'btn_delete'*/];
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
@@ -204,7 +204,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'options' => $optionsItem
                     ],
                     [
-                        'type' => 'hidden',
+                        'type' => 'select',
                         'label' => 'Type',
                         'name' =>  'type',
                         'class' => 'col-md-12 my-2',
@@ -214,7 +214,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'filter' => true,
                     ],
                     [
-                        'type' => 'hidden',
+                        'type' => 'number',
                         'label' => 'Qty',
                         'name' =>  'qty',
                         'class' => 'col-md-12 my-2',
@@ -349,6 +349,7 @@ class InventoryConsumableMovementController extends DefaultController
         }
 
         $dataQueries = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
+            ->join('inventory_consumable_kinds', 'inventory_consumables.kind_id', '=', 'inventory_consumable_kinds.id')
             ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
             ->leftJoin('inventory_consumable_movement_subcategory as pivot', 'inventory_consumable_movements.id', '=', 'pivot.movement_id')
             ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
@@ -380,6 +381,7 @@ class InventoryConsumableMovementController extends DefaultController
                 'inventory_consumable_movements.*',
                 'inventory_consumables.name as item',
                 'inventory_consumable_categories.name AS category',
+                'inventory_consumable_kinds.name AS kind',
                 DB::raw('GROUP_CONCAT(subcategories.name SEPARATOR ", ") as subcategory'),
 
                 'inventory_consumable_categories.id as category_id',
@@ -644,54 +646,105 @@ class InventoryConsumableMovementController extends DefaultController
 
         DB::beginTransaction();
 
-
-
-
         try {
             $appendUpdate = $this->appendUpdate($request);
 
+            // Lock movement
             $change = $this->modelClass::lockForUpdate()->findOrFail($id);
 
+            // 24h rule
+            if (Carbon::parse($change->created_at)->isBefore(now()->subHours(24))) {
+                throw new Exception('Tidak dapat mengubah transaksi setelah 24 jam');
+            }
+            
+            // LOCK & VERIFY STOCK ROW
+            $stock = InventoryConsumableStock::where('item_id', $change->item_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Must be latest transaction
+            if ($change->stock_akhir !== $stock->stock) {
+                throw new Exception('Tidak dapat mengubah transaksi lama');
+            }
+
+            
+            // ALLOW TYPE + QTY CHANGE
+            if ($request->filled('qty') || $request->filled('type')) {
+
+                // Resolve new type
+                $newType = $request->filled('type')
+                    ? $request->type
+                    : $change->type;
+
+                if (!in_array($newType, ['in', 'out'], true)) {
+                    throw new Exception('Tipe transaksi tidak valid');
+                }
+
+                // Resolve qty (absolute)
+                $newQtyAbs = $request->filled('qty')
+                    ? abs((int) $request->qty)
+                    : abs((int) $change->qty);
+
+                if ($newQtyAbs === 0) {
+                    throw new Exception('Qty tidak boleh 0');
+                }
+
+                // Normalize qty sign
+                $newQty = $newType === 'out'
+                    ? -$newQtyAbs
+                    : $newQtyAbs;
+
+                // Recalculate stock
+                $newStockAkhir = $change->stock_awal + $newQty;
+
+                if ($newStockAkhir < 0) {
+                    throw new Exception('Stok tidak mencukupi');
+                }
+
+                // Apply movement
+                $change->type = $newType;
+                $change->qty = $newQty;
+                $change->stock_akhir = $newStockAkhir;
+
+                // Sync master stock
+                $stock->stock = $newStockAkhir;
+                $stock->save();
+            }
+
+            
+            // PRICE UPDATE
             if ($request->filled('harga_satuan')) {
                 $change->harga_satuan = (int) $request->harga_satuan;
 
                 if ($change->type === 'in') {
                     $change->harga_total = abs($change->qty) * $change->harga_satuan;
+                } else {
+                    $change->harga_total = 0;
                 }
             }
 
+            
+            // NOTES
             if ($request->filled('notes')) {
                 $change->notes = $request->notes;
             }
 
+            
+            // EXTRA APPENDED COLUMNS
             if (array_key_exists('columns', $appendUpdate)) {
                 foreach ($appendUpdate['columns'] as $as) {
                     $change->{$as['name']} = $as['value'];
                 }
             }
 
-
-            if (Carbon::parse($change->created_at)->isBefore(now()->subHours(24))) {
-                throw new Exception('Tidak dapat mengubah transaksi setelah 24 jam');
-            }
-
-
-            if ($change->stock_akhir != InventoryConsumableStock::where('item_id', $change->item_id)->value('stock')) {
-                throw new Exception('Tidak dapat mengubah transaksi lama');
-            }
-
-            /** -------------------------------
-             * PROTECT : TIDAK BOLEH DIUBAH
-             * ------------------------------ */
+            
+            // IMMUTABLE FIELDS
             unset(
-                //$change->item_id,
-                $change->qty,
-                //$change->type,
-                //$change->movement_datetime,
+                $change->item_id,
                 $change->stock_awal,
-                $change->stock_akhir,
                 $change->category_id,
-                $change->subcategory_id
+                $change->subcategory_id,
+                $change->movement_datetime
             );
 
             $change->save();
@@ -742,6 +795,8 @@ class InventoryConsumableMovementController extends DefaultController
             ->whereYear('inventory_consumable_movements.movement_datetime', $year)
             ->whereMonth('inventory_consumable_movements.movement_datetime', $month)
             ->select(
+                'inventory_consumable_kinds.name as kind',
+                'inventory_consumable_kinds.id as kind_id',
                 'inventory_consumable_categories.id as category_id',
                 'inventory_consumable_categories.name as category',
                 'inventory_consumables.id as item_id',
@@ -751,34 +806,52 @@ class InventoryConsumableMovementController extends DefaultController
                 DB::raw('SUM(inventory_consumable_movements.harga_total) as price')
             )
             ->groupBy(
+                'inventory_consumable_kinds.name',
+                'inventory_consumable_categories.id',
+                'inventory_consumable_categories.name',
                 'inventory_consumables.id',
                 'inventory_consumables.name',
-                'inventory_consumables.satuan',
-                'inventory_consumable_categories.id',
-                'inventory_consumable_categories.name'
+                'inventory_consumables.satuan'
             )
+            ->orderBy('inventory_consumable_kinds.id', 'ASC')
             ->get()
-            ->groupBy('category_id')
-            ->map(function ($categoryRows) {
 
-                $items = $categoryRows
-                    ->groupBy(fn ($row) => $row->item . '|' . $row->satuan)
-                    ->map(function ($rows) {
+            // GROUP BY KIND FIRST
+            ->groupBy('kind_id')
+            ->map(function ($kindRows) {
+
+                $kindName = $kindRows->first()->kind;
+
+                $categories = $kindRows
+                    ->groupBy('category_id')
+                    ->map(function ($categoryRows) {
+
+                        $items = $categoryRows
+                            ->groupBy(fn ($row) => $row->item . '|' . $row->satuan)
+                            ->map(function ($rows) {
+                                return [
+                                    'name'   => $rows->first()->item,
+                                    'satuan' => $rows->first()->satuan,
+                                    'qty'    => $rows->sum('qty'),
+                                    'price'  => $rows->sum('price'),
+                                ];
+                            })
+                            ->values();
+
                         return [
-                            'name'   => $rows->first()->item,
-                            'satuan' => $rows->first()->satuan,
-                            'qty'    => $rows->sum('qty'),
-                            'price'  => $rows->sum('price'),
+                            'name'  => $categoryRows->first()->category,
+                            'items' => $items,
                         ];
                     })
                     ->values();
 
                 return [
-                    'name'  => $categoryRows->first()->category,
-                    'items' => $items,
+                    'kind_id'    => $kindRows->first()->kind_id,
+                    'kind'       => $kindName,
+                    'categories' => $categories,
                 ];
-
             })
+            ->sortBy('kind_id')
             ->values();
 
         $pdf = Pdf::loadView('pdf.inventory_consumable.laporan_bulanan_inventaris', $data);
@@ -787,5 +860,16 @@ class InventoryConsumableMovementController extends DefaultController
         $fileName = 'laporan-bulanan-inventaris-' . Carbon::now()->format('YmdHis') . '.pdf';
 
         return $pdf->stream($fileName);
+    }
+
+    protected function destroy($id)
+    {
+        // $this->modelClass::where('id', $id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'alert' => 'error',
+            'message' => 'Invalid Request',
+        ], 400);
     }
 }

@@ -11,26 +11,47 @@ body {
 
 #laporan_bulanan_inventaris header h1 {
     text-align: center;
-    margin-bottom: 10px;
+    margin: 2px;
     font-size: 14px;
     font-weight: bold;
     text-transform: uppercase;
 }
 
 #laporan_bulanan_inventaris main {
-    padding: 3em 3em 3em 4em;
+    padding-top: 16px;
+    padding-left: 8px;
 }
 
 #laporan_bulanan_inventaris table {
     width: 100%;
+    border-color: #000;
 }
 
 #laporan_bulanan_inventaris table thead th {
     font-size: 12px;
 }
 
-#laporan_bulanan_inventaris .jumlah {
+#laporan_bulanan_inventaris table tr td {
+    font-size: 10px;
+    padding: 1px 3px;
+}
+
+#laporan_bulanan_inventaris .category {
+    text-transform: uppercase;
+}
+
+#laporan_bulanan_inventaris .name {
+    white-space: nowrap;;
+}
+
+#laporan_bulanan_inventaris .jumlah,
+#laporan_bulanan_inventaris .satuan {
     text-align: center;
+}
+
+#laporan_bulanan_inventaris .qty,
+#laporan_bulanan_inventaris .price {
+    text-align: right;
 }
 
 #laporan_bulanan_inventaris .signature-block {

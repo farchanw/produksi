@@ -37,6 +37,7 @@ class InventoryConsumableController extends DefaultController
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Kode Item', 'column' => 'sku', 'order' => true],
                     ['name' => 'Nama Item', 'column' => 'name', 'order' => true, 'formatting' => 'toInventoryConsumableNotifyStockLow',], 
+                    ['name' => 'Jenis', 'column' => 'kind', 'order' => true],
                     ['name' => 'Kategori', 'column' => 'category', 'order' => true], 
                     ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true], 
                     ['name' => 'Min. Stock', 'column' => 'minimum_stock', 'order' => true],
@@ -83,6 +84,7 @@ class InventoryConsumableController extends DefaultController
 
         $optionsCategory = InventoryConsumableHelper::optionsForCategories();
         $optionsSubcategory = InventoryConsumableHelper::optionsForSubcategories()->toArray();
+        $optionsKind = InventoryConsumableHelper::optionsForKinds();
 
         if (isset($edit)) {
             $edit->subcategory_id = DB::table('inventory_consumable_item_subcategory')
@@ -98,6 +100,15 @@ class InventoryConsumableController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('sku', $id),
                         'value' => (isset($edit)) ? $edit->sku : ''
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => 'Jenis',
+                        'name' =>  'kind_id',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('kind_id', $id),
+                        'value' => (isset($edit)) ? $edit->kind_id : '',
+                        'options' => $optionsKind,
                     ],
                     [
                         'type' => 'select',
@@ -174,7 +185,8 @@ class InventoryConsumableController extends DefaultController
         $rules = [
                     'sku' => 'required|string',
                     'name' => 'required|string',
-                    'category_id' => 'required|string',
+                    'kind_id' => 'required|integer',
+                    'category_id' => 'required|integer',
                     'minimum_stock' => 'required|integer',
                     'satuan' => 'required|string',
         ];
@@ -200,14 +212,18 @@ class InventoryConsumableController extends DefaultController
         if (request('category_id')) {
             $filters[] = ['inventory_consumable_categories.id', '=', request('category_id')];
         }
+        if (request('kind_id')) {
+            $filters[] = ['inventory_consumable_kinds.id', '=', request('kind_id')];
+        }
 
         $dataQueries = $this->modelClass::join('inventory_consumable_stocks', 'inventory_consumable_stocks.item_id', '=', 'inventory_consumables.id')
             ->join('inventory_consumable_categories', 'inventory_consumables.category_id', '=', 'inventory_consumable_categories.id')
+            ->join('inventory_consumable_kinds', 'inventory_consumables.kind_id', '=', 'inventory_consumable_kinds.id')
             ->leftJoin('inventory_consumable_item_subcategory as pivot', 'inventory_consumables.id', '=', 'pivot.item_id')
             ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'category', 'subcategory'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'name', 'category', 'subcategory', 'kind'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -235,6 +251,7 @@ class InventoryConsumableController extends DefaultController
                 'inventory_consumables.*', 
                 'inventory_consumable_stocks.stock',
                 'inventory_consumable_categories.name AS category',
+                'inventory_consumable_kinds.name AS kind',
                 DB::raw('GROUP_CONCAT(subcategories.name SEPARATOR ", ") as subcategory')
 
             );
