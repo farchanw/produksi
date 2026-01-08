@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\InventoryConsumable;
 
+use App\Exports\ExcelLaporanBulananExport;
 use App\Models\InventoryConsumableMovement;
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
@@ -19,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Validation\Rules\In;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InventoryConsumableMovementController extends DefaultController
 {
@@ -399,6 +401,7 @@ class InventoryConsumableMovementController extends DefaultController
         $baseUrlExcel = route($this->generalUri.'.export-excel-default');
         $baseUrlPdf = route($this->generalUri.'.export-pdf-default');
         $baseUrlLaporanBulananPdf = route($this->generalUri.'.export-laporan-bulanan-pdf-default');
+        $baseUrlLaporanBulananExcel = route($this->generalUri.'.export-laporan-bulanan-excel-default');
 
         $moreActions = [
             [
@@ -421,15 +424,31 @@ class InventoryConsumableMovementController extends DefaultController
         $customActions = [
             [
                 'key' => 'export-laporan-bulanan-pdf-default',
-                'name' => 'Export Laporan Bulanan',
+                'name' => 'Export Laporan Bulanan PDF',
                 'html_button' => '<button
                     type="button"
-                    id="export-laporan-bulanan"
+                    id="export-laporan-bulanan-pdf"
                     class="btn btn-sm btn-primary radius-6"
                     data-bs-toggle="modal"
-                    data-bs-target="#modalExportLaporan"
+                    data-bs-target="#modalExportLaporanPdf"
                     data-base-url="'.$baseUrlLaporanBulananPdf.'"
-                    title="Cetak Laporan Bulanan"
+                    title="Cetak Laporan Bulanan PDF"
+                    >
+                    <i class="ti ti-file-report"></i>
+                    </button>
+                '
+            ],
+            [
+                'key' => 'export-laporan-bulanan-excel-default',
+                'name' => 'Export Laporan Bulanan Excel',
+                'html_button' => '<button
+                    type="button"
+                    id="export-laporan-bulanan-excel"
+                    class="btn btn-sm btn-success radius-6"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalExportLaporanExcel"
+                    data-base-url="'.$baseUrlLaporanBulananExcel.'"
+                    title="Cetak Laporan Bulanan Excel"
                     >
                     <i class="ti ti-file-report"></i>
                     </button>
@@ -784,75 +803,18 @@ class InventoryConsumableMovementController extends DefaultController
 
     protected function exportLaporanBulananPdf(Request $request)
     {
-        $rawMonthYear = Carbon::parse($request->input('month_year', now()->format('Y-m')));
+        $requestMonthYear = $request->input('month_year', now()->format('Y-m'));
+        $carbonMonthYear = Carbon::parse($requestMonthYear);
 
-        $month = $rawMonthYear->month;
-        $year  = $rawMonthYear->year;
+        $month = $carbonMonthYear->month;
+        $year  = $carbonMonthYear->year;
         $data['monthName'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('M'));
         $data['year'] = $year;
-        $data['records'] = $this->defaultDataQuery()
-            ->where('inventory_consumable_movements.type', 'in')
-            ->whereYear('inventory_consumable_movements.movement_datetime', $year)
-            ->whereMonth('inventory_consumable_movements.movement_datetime', $month)
-            ->select(
-                'inventory_consumable_kinds.name as kind',
-                'inventory_consumable_kinds.id as kind_id',
-                'inventory_consumable_categories.id as category_id',
-                'inventory_consumable_categories.name as category',
-                'inventory_consumables.id as item_id',
-                'inventory_consumables.name as item',
-                'inventory_consumables.satuan',
-                DB::raw('SUM(inventory_consumable_movements.qty) as qty'),
-                DB::raw('SUM(inventory_consumable_movements.harga_total) as price')
-            )
-            ->groupBy(
-                'inventory_consumable_kinds.name',
-                'inventory_consumable_categories.id',
-                'inventory_consumable_categories.name',
-                'inventory_consumables.id',
-                'inventory_consumables.name',
-                'inventory_consumables.satuan'
-            )
-            ->orderBy('inventory_consumable_kinds.id', 'ASC')
-            ->get()
-
-            // GROUP BY KIND FIRST
-            ->groupBy('kind_id')
-            ->map(function ($kindRows) {
-
-                $kindName = $kindRows->first()->kind;
-
-                $categories = $kindRows
-                    ->groupBy('category_id')
-                    ->map(function ($categoryRows) {
-
-                        $items = $categoryRows
-                            ->groupBy(fn ($row) => $row->item . '|' . $row->satuan)
-                            ->map(function ($rows) {
-                                return [
-                                    'name'   => $rows->first()->item,
-                                    'satuan' => $rows->first()->satuan,
-                                    'qty'    => $rows->sum('qty'),
-                                    'price'  => $rows->sum('price'),
-                                ];
-                            })
-                            ->values();
-
-                        return [
-                            'name'  => $categoryRows->first()->category,
-                            'items' => $items,
-                        ];
-                    })
-                    ->values();
-
-                return [
-                    'kind_id'    => $kindRows->first()->kind_id,
-                    'kind'       => $kindName,
-                    'categories' => $categories,
-                ];
-            })
-            ->sortBy('kind_id')
-            ->values();
+        $data['records'] = InventoryConsumableHelper::getDataExportLaporanBulanan(
+            $this->defaultDataQuery(),
+            $year,
+            $month
+        );
 
         $pdf = Pdf::loadView('pdf.inventory_consumable.laporan_bulanan_inventaris', $data);
         $pdf->setPaper('A4');
@@ -860,6 +822,24 @@ class InventoryConsumableMovementController extends DefaultController
         $fileName = 'laporan-bulanan-inventaris-' . Carbon::now()->format('YmdHis') . '.pdf';
 
         return $pdf->stream($fileName);
+    }
+
+    protected function exportLaporanBulananExcel(Request $request)
+    {
+        $requestMonthYear = $request->input('month_year', now()->format('Y-m'));
+        $carbonMonthYear = Carbon::parse($requestMonthYear);
+
+        $month = $carbonMonthYear->month;
+        $year  = $carbonMonthYear->year;
+        $data['monthName'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('M'));
+        $data['year'] = $year;
+        $data['records'] = InventoryConsumableHelper::getDataExportLaporanBulanan(
+            $this->defaultDataQuery(),
+            $year,
+            $month
+        );
+
+        return Excel::download(new ExcelLaporanBulananExport($data), 'laporan_bulanan_inventaris.xlsx');
     }
 
     protected function destroy($id)

@@ -71,4 +71,71 @@ class InventoryConsumableHelper
 
         return $query->get();
     }
+
+    public static function getDataExportLaporanBulanan($query, $year, $month)
+    {
+        return $query
+            ->where('inventory_consumable_movements.type', 'in')
+            ->whereYear('inventory_consumable_movements.movement_datetime', $year)
+            ->whereMonth('inventory_consumable_movements.movement_datetime', $month)
+            ->select(
+                'inventory_consumable_kinds.name as kind',
+                'inventory_consumable_kinds.id as kind_id',
+                'inventory_consumable_categories.id as category_id',
+                'inventory_consumable_categories.name as category',
+                'inventory_consumables.id as item_id',
+                'inventory_consumables.name as item',
+                'inventory_consumables.satuan',
+                DB::raw('SUM(inventory_consumable_movements.qty) as qty'),
+                DB::raw('SUM(inventory_consumable_movements.harga_total) as price')
+            )
+            ->groupBy(
+                'inventory_consumable_kinds.name',
+                'inventory_consumable_categories.id',
+                'inventory_consumable_categories.name',
+                'inventory_consumables.id',
+                'inventory_consumables.name',
+                'inventory_consumables.satuan'
+            )
+            ->orderBy('inventory_consumable_kinds.id', 'ASC')
+            ->get()
+
+            // GROUP BY KIND FIRST
+            ->groupBy('kind_id')
+            ->map(function ($kindRows) {
+
+                $kindName = $kindRows->first()->kind;
+
+                $categories = $kindRows
+                    ->groupBy('category_id')
+                    ->map(function ($categoryRows) {
+
+                        $items = $categoryRows
+                            ->groupBy(fn ($row) => $row->item . '|' . $row->satuan)
+                            ->map(function ($rows) {
+                                return [
+                                    'name'   => $rows->first()->item,
+                                    'satuan' => $rows->first()->satuan,
+                                    'qty'    => $rows->sum('qty'),
+                                    'price'  => $rows->sum('price'),
+                                ];
+                            })
+                            ->values();
+
+                        return [
+                            'name'  => $categoryRows->first()->category,
+                            'items' => $items,
+                        ];
+                    })
+                    ->values();
+
+                return [
+                    'kind_id'    => $kindRows->first()->kind_id,
+                    'kind'       => $kindName,
+                    'categories' => $categories,
+                ];
+            })
+            ->sortBy('kind_id')
+            ->values();
+    }
 }

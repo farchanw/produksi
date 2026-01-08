@@ -138,12 +138,49 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalExportLaporan" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalExportLaporanPdf" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
-        <form method="get" id="formExportLaporan" target="_blank">
+        <form method="get" id="formExportLaporanPdf" target="_blank">
             <div class="modal-content">
                 <div class="modal-header bg-secondary text-white">
-                    <h5 class="modal-title text-white">Cetak Laporan Bulanan</h5>
+                    <h5 class="modal-title text-white">Cetak Laporan Bulanan PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+
+                <div class="modal-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="me-2 mb-0" style="min-width:70px;">Bulan</label>
+                        <input 
+                            type="month"
+                            name="month_year"
+                            class="form-control form-control-sm"
+                            value="<?= date('Y-m'); ?>"
+                            required
+                        >
+                    </div>
+                </div>
+
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Cetak
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="modalExportLaporanExcel" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="get" id="formExportLaporanExcel" target="_blank">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title text-white">Cetak Laporan Bulanan Excel</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -176,9 +213,14 @@
 </div>
 
 <script>
-    document.getElementById('export-laporan-bulanan').addEventListener('click', function() {
+    document.getElementById('export-laporan-bulanan-pdf').addEventListener('click', function() {
         const baseUrl = this.getAttribute('data-base-url');
-        document.getElementById('formExportLaporan').setAttribute('action', baseUrl);
+        document.getElementById('formExportLaporanPdf').setAttribute('action', baseUrl);
+    });
+
+    document.getElementById('export-laporan-bulanan-excel').addEventListener('click', function() {
+        const baseUrl = this.getAttribute('data-base-url');
+        document.getElementById('formExportLaporanExcel').setAttribute('action', baseUrl);
     });
 </script>
 
