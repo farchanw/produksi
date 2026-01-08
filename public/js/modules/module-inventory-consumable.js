@@ -21,7 +21,8 @@ function chartInventoryConsumableLoad() {
             if (selectItemId.value) {
                 figure.querySelector('figcaption').innerText = selectItemId.options[selectItemId.selectedIndex].text;
             }
-            const ctx = figure.querySelector('canvas');
+            const ctx = figure.querySelector('canvas')
+            const dataAbs = data.values.map((num) => Math.abs(num));
 
             chartInventoryConsumable = new Chart(ctx, {
                 type: 'bar',
@@ -29,7 +30,7 @@ function chartInventoryConsumableLoad() {
                     labels: data.labels,
                     datasets: [{
                         label: 'Pemakaian',
-                        data: data.values,
+                        data: dataAbs,
                         tension: 0.3,
                         fill: true
                     }]
