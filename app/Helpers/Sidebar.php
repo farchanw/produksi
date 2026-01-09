@@ -166,14 +166,53 @@ class Sidebar
         
         return [
             [
-                'name' => 'KPI Produksi',
+                'name' => 'Master Data Bagian',
+                'icon' => 'ti ti-tag',
+                'key' => '',
+                'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => [
+                    [
+                        'name' => 'Bagian',
+                        'icon' => 'ti ti-menu',
+                        'key' => 'master-section.index',
+                        'base_key' => 'master-section.index',
+                        'visibility' => $this->canAccessMenu('master-section') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                    [
+                        'name' => 'Subbagian',
+                        'icon' => 'ti ti-menu',
+                        'key' => 'master-subsection.index',
+                        'base_key' => 'master-subsection.index',
+                        'visibility' => $this->canAccessMenu('master-subsection') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                ]
+            ],
+
+            [
+                'name' => 'Master Kpi',
                 'icon' => 'ti ti-menu',
-                'key' => 'kpi-production',
-                'base_key' => 'kpi-production',
-                'visibility' => $this->canAccessMenu('kpi-production') && $module == $currentModule,
+                'key' => 'master-kpi',
+                'base_key' => 'master-kpi',
+                'visibility' => $this->canAccessMenu('master-kpi') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
+            
+            [
+                'name' => 'Aspek Kpi Header',
+                'icon' => 'ti ti-menu',
+                'key' => 'aspek-kpi-header',
+                'base_key' => 'aspek-kpi-header',
+                'visibility' => $this->canAccessMenu('aspek-kpi-header') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
+
         ];
     }
     

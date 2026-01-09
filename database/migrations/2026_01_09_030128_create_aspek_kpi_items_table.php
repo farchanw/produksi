@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('master_kpi_id');
             $table->decimal('score', 5, 2)->nullable();
             $table->decimal('bobot', 5, 2)->nullable();
+            $table->decimal('target', 5, 2)->nullable();
             $table->timestamps();
 
             $table->unique(
