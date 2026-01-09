@@ -43,10 +43,20 @@ class DatabaseSeeder extends Seeder
 
         Role::updateOrCreate(
             [
-                'name' => 'staff-admin'
+                'name' => 'staff-administrasi'
             ],
             [
-                'name' => 'staff-admin',
+                'name' => 'staff-administrasi',
+                'access' => '[{"route":"dashboard","access":["list"]}]',
+            ]
+        );
+
+        Role::updateOrCreate(
+            [
+                'name' => 'Supervisi'
+            ],
+            [
+                'name' => 'supervisi',
                 'access' => '[{"route":"dashboard","access":["list"]}]',
             ]
         );
@@ -83,13 +93,25 @@ class DatabaseSeeder extends Seeder
 
         User::updateOrCreate(
             [
-                'email' => 'staff-admin',
+                'email' => 'staff-administrasi',
             ],
             [
-                'name' => 'Staff Admin',
-                'email' => 'staff-admin',
+                'name' => 'Staff Administrasi',
+                'email' => 'staff-administrasi',
                 'password' => bcrypt('asdasd123'),
-                'role_id' => Role::where('name', 'staff-admin')->first()->id,
+                'role_id' => Role::where('name', 'staff-administrasi')->first()->id,
+            ]
+        );
+
+        User::updateOrCreate(
+            [
+                'email' => 'supervisi',
+            ],
+            [
+                'name' => 'Supervisi',
+                'email' => 'supervisi',
+                'password' => bcrypt('asdasd123'),
+                'role_id' => Role::where('name', 'supervisi')->first()->id,
             ]
         );
     }

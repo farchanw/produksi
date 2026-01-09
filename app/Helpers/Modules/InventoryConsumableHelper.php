@@ -5,6 +5,7 @@ use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
 use App\Models\InventoryConsumableSubcategory;
 use App\Models\InventoryConsumableKind;
+use App\Models\InventoryConsumableMovement;
 use Illuminate\Support\Facades\DB;
 
 class InventoryConsumableHelper
@@ -137,5 +138,33 @@ class InventoryConsumableHelper
             })
             ->sortBy('kind_id')
             ->values();
+    }
+
+    public static function getMovementOutChartData($year, $itemId)
+    {
+        $rows = InventoryConsumableMovement::selectRaw("
+            MONTH(movement_datetime) AS month,
+            SUM(qty) AS total
+        ")
+        ->where('item_id', $itemId)
+        ->where('type', 'out')
+        ->whereYear('movement_datetime', $year)
+        ->groupBy('month')
+        ->orderBy('month')
+        ->get()
+        ->keyBy('month');
+
+        $labels = [];
+        $values = [];
+
+        for ($m = 1; $m <= 12; $m++) {
+            $labels[] = date('M', mktime(0, 0, 0, $m, 1));
+            $values[] = $rows[$m]->total ?? 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'values' => $values,
+        ];
     }
 }

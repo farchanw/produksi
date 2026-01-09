@@ -183,7 +183,6 @@ class InventoryConsumableController extends DefaultController
     protected function rules($id = null)
     {
         $rules = [
-                    'sku' => 'required|string',
                     'name' => 'required|string',
                     'kind_id' => 'required|integer',
                     'category_id' => 'required|integer',
@@ -305,11 +304,20 @@ class InventoryConsumableController extends DefaultController
                 }
             }
 
+            if (empty($insert->sku)) {
+                $insert->sku = $insert->id;
+            }
+
              // Save SUBCATEGORY
             $dataSubcategory = $request->subcategory_id ?? [];
             unset($insert->subcategory_id);
 
             $insert->save();
+
+            if (empty($insert->sku)) {
+                $insert->sku = $insert->id;
+                $insert->save(); // update with SKU
+            }
 
             $this->afterMainInsert($insert, $request);
 
@@ -461,30 +469,9 @@ class InventoryConsumableController extends DefaultController
         $year   = $request->year;
         $itemId = $request->item_id;
 
-        $rows = InventoryConsumableMovement::selectRaw("
-                MONTH(movement_datetime) AS month,
-                SUM(qty) AS total
-            ")
-            ->where('item_id', $itemId)
-            ->where('type', 'out')
-            ->whereYear('movement_datetime', $year)
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get()
-            ->keyBy('month');
+        $data = InventoryConsumableHelper::getMovementOutChartData($year, $itemId);
 
-        $labels = [];
-        $values = [];
-
-        for ($m = 1; $m <= 12; $m++) {
-            $labels[] = date('M', mktime(0, 0, 0, $m, 1));
-            $values[] = $rows[$m]->total ?? 0;
-        }
-
-        return response()->json([
-            'labels' => $labels,
-            'values' => $values,
-        ]);
+        return response()->json($data);
     }
 
         
@@ -535,19 +522,15 @@ class InventoryConsumableController extends DefaultController
         $data['buttonTextCreateNew'] = 'Input Item';
         
         /* Override edit button */
-        // unset first
         if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
             unset($this->actionButtonViews[$key]);
         }
-        // set new edit button
         $this->actionButtonViews[] = 'backend.idev.buttons.edit';
 
         /* Override delete button */
-        // unset first
         if (($key = array_search('easyadmin::backend.idev.buttons.delete', $this->actionButtonViews)) !== false) {
             unset($this->actionButtonViews[$key]);
         }
-        // set new delete button
         $this->actionButtonViews[] = 'backend.idev.buttons.delete';
 
         $data['actionButtonViews'] = $this->actionButtonViews;
@@ -672,7 +655,6 @@ class InventoryConsumableController extends DefaultController
                 'inventory_consumables.id as value',
                 'inventory_consumables.minimum_stock',
                 'inventory_consumables.satuan',
-                //DB::raw("CONCAT(inventory_consumables.sku, ' - ', inventory_consumables.name) AS text"),
                 'inventory_consumables.name as text',
                 'inventory_consumable_stocks.stock as stock'
             );
