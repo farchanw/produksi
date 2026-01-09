@@ -52,7 +52,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <button type="button" class="btn btn-sm btn-secondary my-2 text-white rounded-1"
-                        onclick="add('{{ $preffix_method }}')">
+                        onclick="addAspekKpiItem('{{ $preffix_method }}')">
                         <i class="ti ti-plus" data-toggle="tooltip" data-placement="top" title="Add"> </i> 1 ITEM
                     </button>
                 </div>
@@ -61,6 +61,59 @@
     </div>
 
 </div>
+
+<script>
+    function addAspekKpiItem(prefix = '') {
+        const container = document.querySelector(`.${prefix}repeatable-sections`);
+        if (!container) return;
+
+        const sections = container.querySelectorAll(`.${prefix}field-sections`);
+        const lastSection = sections[sections.length - 1];
+
+        // New index
+        const newIndex = sections.length;
+
+        // Clone node
+        const newSection = lastSection.cloneNode(true);
+
+        // Update ID
+        newSection.id = `${prefix}repeatable-${newIndex}`;
+
+        // Reset inputs & selects
+        newSection.querySelectorAll('input').forEach(input => {
+            input.value = '';
+        });
+
+        newSection.querySelectorAll('select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        // Update remove button
+        const removeBtn = newSection.querySelector('.remove-section button');
+        if (removeBtn) {
+            removeBtn.setAttribute('onclick', `remove(${newIndex})`);
+        }
+
+        container.appendChild(newSection);
+    }
+
+    function remove(index) {
+        const el = document.getElementById(`repeatable-${index}`)
+            || document.getElementById(`method_repeatable-${index}`);
+
+        if (!el) return;
+
+        // Prevent removing last item
+        const container = el.parentElement;
+        if (container.children.length <= 1) {
+            alert('Minimal 1 item');
+            return;
+        }
+
+        el.remove();
+    }
+</script>
+
 @push('styles')
     <style>
         .offcanvas {
