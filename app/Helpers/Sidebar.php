@@ -70,6 +70,7 @@ class Sidebar
             $this->menuInventoryConsumable($role, $currentModule),
             $this->menuUtilisationProduction($role, $currentModule),
             $this->menuSetting($role, $currentModule),
+            $this->menuKpiProduction($role, $currentModule),
             
         );
     }
@@ -151,6 +152,25 @@ class Sidebar
                 'key' => 'utilisation-production',
                 'base_key' => 'utilisation-production',
                 'visibility' => $this->canAccessMenu('utilisation-production') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
+        ];
+    }
+
+
+
+    private function menuKpiProduction($role, $module)
+    {
+        $currentModule = 'kpi-production';
+        
+        return [
+            [
+                'name' => 'KPI Produksi',
+                'icon' => 'ti ti-menu',
+                'key' => 'kpi-production',
+                'base_key' => 'kpi-production',
+                'visibility' => $this->canAccessMenu('kpi-production') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
