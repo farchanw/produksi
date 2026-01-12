@@ -491,17 +491,18 @@ class InventoryConsumableMovementController extends DefaultController
         // unset first
         if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
             unset($this->actionButtonViews[$key]);
+            // set new edit button
+            $this->actionButtonViews[] = 'backend.idev.buttons.edit';
         }
-        // set new edit button
-        $this->actionButtonViews[] = 'backend.idev.buttons.edit';
-        
+
         /* Override delete button */
         // unset first
         if (($key = array_search('easyadmin::backend.idev.buttons.delete', $this->actionButtonViews)) !== false) {
             unset($this->actionButtonViews[$key]);
+            // set new delete button
+            $this->actionButtonViews[] = 'backend.idev.buttons.delete';
         }
-        // set new delete button
-        $this->actionButtonViews[] = 'backend.idev.buttons.delete';
+
 
         $data['actionButtonViews'] = $this->actionButtonViews;
         $data['templateImportExcel'] = "#";

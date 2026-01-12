@@ -13,9 +13,14 @@ return new class extends Migration
     {
         Schema::create('master_kpis', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete();
+            $table->foreignId('master_subsection_id')->constrained('master_subsections')->cascadeOnDelete();
+            $table->string('area_kinerja_utama')->nullable();
             $table->string('nama');
             $table->text('deskripsi')->nullable();
-            $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete();
+            $table->string('tipe');
+            $table->string('satuan');
+            $table->text('sumber_data_realisasi')->nullable();
             $table->timestamps();
         });
     }

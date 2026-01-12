@@ -166,7 +166,7 @@ class Sidebar
         
         return [
             [
-                'name' => 'Master Data Bagian',
+                'name' => 'Data Bagian',
                 'icon' => 'ti ti-tag',
                 'key' => '',
                 'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
@@ -194,7 +194,7 @@ class Sidebar
             ],
 
             [
-                'name' => 'Master Kpi',
+                'name' => 'KPI',
                 'icon' => 'ti ti-menu',
                 'key' => 'master-kpi',
                 'base_key' => 'master-kpi',
@@ -204,7 +204,7 @@ class Sidebar
             ],
             
             [
-                'name' => 'Aspek Kpi Header',
+                'name' => 'Aspek KPI',
                 'icon' => 'ti ti-menu',
                 'key' => 'aspek-kpi-header',
                 'base_key' => 'aspek-kpi-header',

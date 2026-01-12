@@ -891,8 +891,38 @@ function skeleton(heightSkeleton) {
     return mHtml;
 }
 
+function handleEditFormRepeatableAspekKpiItem(field) {
+    const prefix = 'edit_'
+    const subsectionId = $(`#${prefix}master_subsection_id`).val();
+    const existingValues = field?.value || [];
+    if (!subsectionId) return;
+
+    // Fetch KPI options for this subsection
+    fetch(`kpi-production-fetch-master-kpi-default?subsection_id=${subsectionId}`)
+        .then(res => res.json())
+        .then(options => {
+            const container = document.querySelector(`.${prefix}repeatable-sections`);
+            if (!container) return;
+
+            // Clear existing rows
+            container.innerHTML = '';
+
+            // Add each existing KPI row (prepopulate)
+            existingValues.forEach(item => {
+                addAspekKpiItem(prefix, item, options);
+            });
+
+            // Optional: if no existingValues, add a blank row
+            if (existingValues.length === 0) {
+                addAspekKpiItem(prefix, {}, options);
+            }
+        })
+        .catch(err => console.error('Failed to fetch KPI options', err));
+}
+
 function idevSetEdit(id, uriKey, prefix = "") {
     var uriEdit = baseUrl + "" + prefix + "/" + uriKey + "/" + id + "/edit";
+    console.log(uriEdit, baseUrl, prefix, uriKey, id);
     var uriUpdate = baseUrl + "" + prefix + "/" + uriKey + "/" + id + "";
     $(".idev-form").val(null).trigger("change");
     // $('.select2-hidden-accessible').html("")
@@ -1015,8 +1045,8 @@ function idevSetEdit(id, uriKey, prefix = "") {
                         ).val(jv[hf.name]);
                     });
                 });
-            } else if (field.type == "repeatable_bom") {
-                handleRepeatableBom(field.value)
+            } else if (field.type == "repeatable_aspek_kpi_item") {
+                handleEditFormRepeatableAspekKpiItem(field)
             } else if (field.type === "checklist_base" || field.type === "checklist_searchable") {
                 $('input[type="checkbox"][id^="edit_' + field.name + '"]').each(function () {
                     const checkboxValue = Number(this.value);

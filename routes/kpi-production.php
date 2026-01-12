@@ -9,12 +9,15 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], function () {
+    Route::get('kpi-production-fetch-master-kpi-default', [MasterKpiController::class, 'fetchDefault'])->name('kpi-production.fetch-master-kpi-default');
+});
+
+Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {
     Route::resource('dashboard-kpi-production', DashboardKpiProductionController::class);
-    Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-inventory.listapi');
-    Route::get('dashboard-kpi-production-export-pdf-default', [DashboardKpiProductionController::class, 'exportPdf'])->name('dashboard-inventory.export-pdf-default');
-    Route::get('dashboard-kpi-production-export-excel-default', [DashboardKpiProductionController::class, 'exportExcel'])->name('dashboard-inventory.export-excel-default');
-    Route::post('dashboard-kpi-production-import-excel-default', [DashboardKpiProductionController::class, 'importExcel'])->name('dashboard-inventory.import-excel-default');
-    Route::get('dashboard-kpi-production-chart-data-out-default', [DashboardKpiProductionController::class, 'chartDataOut']);
+    Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-kpi-production.listapi');
+    Route::get('dashboard-kpi-production-export-pdf-default', [DashboardKpiProductionController::class, 'exportPdf'])->name('dashboard-kpi-production.export-pdf-default');
+    Route::get('dashboard-kpi-production-export-excel-default', [DashboardKpiProductionController::class, 'exportExcel'])->name('dashboard-kpi-production.export-excel-default');
+    Route::post('dashboard-kpi-production-import-excel-default', [DashboardKpiProductionController::class, 'importExcel'])->name('dashboard-kpi-production.import-excel-default');
 
 
 
@@ -47,4 +50,12 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
     Route::get('aspek-kpi-header-export-pdf-default', [AspekKpiHeaderController::class, 'exportPdf'])->name('aspek-kpi-header.export-pdf-default');
     Route::get('aspek-kpi-header-export-excel-default', [AspekKpiHeaderController::class, 'exportExcel'])->name('aspek-kpi-header.export-excel-default');
     Route::post('aspek-kpi-header-import-excel-default', [AspekKpiHeaderController::class, 'importExcel'])->name('aspek-kpi-header.import-excel-default');
+
+
+
+    Route::resource('aspek-kpi-item', AspekKpiItemController::class);
+    Route::get('aspek-kpi-item-api', [AspekKpiItemController::class, 'indexApi'])->name('aspek-kpi-item.listapi');
+    Route::get('aspek-kpi-item-export-pdf-default', [AspekKpiItemController::class, 'exportPdf'])->name('aspek-kpi-item.export-pdf-default');
+    Route::get('aspek-kpi-item-export-excel-default', [AspekKpiItemController::class, 'exportExcel'])->name('aspek-kpi-item.export-excel-default');
+    Route::post('aspek-kpi-item-import-excel-default', [AspekKpiItemController::class, 'importExcel'])->name('aspek-kpi-item.import-excel-default');
 });
