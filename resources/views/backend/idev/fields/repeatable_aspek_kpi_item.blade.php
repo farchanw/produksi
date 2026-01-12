@@ -27,7 +27,7 @@
 
 <template id="node-repeatable-aspek-kpi-item-template">
     <div id="{{ $prefix_method }}repeatable-0"
-            class="row {{ $prefix_method }}field-sections">
+            class="row repeatable-kpi-field-sections {{ $prefix_method }}field-sections">
 
         <div class="col my-2">
             <label>KPI</label>
@@ -74,105 +74,73 @@
 </template>
 
 <script>
-// create event delegate for onchange
-document.addEventListener('change', function (e) {
-    const target = e.target;
-    if (target.name === 'master_subsection_id') {
-        // set option kpi
-        const subsectionId = target.value
-        //const existingValues = field?.value || [];
-        if (!subsectionId) return;
-
-        // Fetch KPI options for this subsection
-        fetch(`kpi-production-fetch-master-kpi-default?subsection_id=${subsectionId}`)
-            .then(res => res.json())
-            .then(options => {
-                document.querySelectorAll('[name^="kpi"]').forEach(el => {
-                    el.replaceChildren()
-                });
-                document.querySelectorAll('[name^="kpi"]').forEach(el => {
-                    const defaultOption = new Option('Select...', '');
-                    el.appendChild(defaultOption);
-                    options.forEach(option => {
-                        const optionEl = new Option(option.text, option.value);
-                        el.appendChild(optionEl);
-                    })
-                });
-            })
-            .catch(err => console.error('Failed to fetch KPI options', err));
-
-
-    }
-});
-
-
+// ================================
+// ADD ITEM
+// ================================
 function addAspekKpiItem(prefix = '', values = {}, optionsKpiMaster = []) {
     const container = document.querySelector(`.${prefix}repeatable-sections`);
     if (!container) return;
 
-    const sections = container.querySelectorAll(`.${prefix}field-sections`);
+    const sections = container.querySelectorAll('.repeatable-kpi-field-sections');
     const newIndex = sections.length;
 
-    // Clone the first section as a template
     const nodeTemplate = document.querySelector('#node-repeatable-aspek-kpi-item-template');
-    const template = document.importNode(nodeTemplate.content, true);
-    template.id = `${prefix}repeatable-${newIndex}`;
+    const fragment = document.importNode(nodeTemplate.content, true);
 
-    // Update names and prepopulate values
-    template.querySelectorAll('input, select').forEach(el => {
-        // Update the name to new index
+    // 🔥 IMPORTANT: get the real section element
+    const section = fragment.querySelector('.repeatable-kpi-field-sections');
+    section.id = `${prefix}repeatable-${newIndex}`;
+
+    // Update inputs/selects
+    section.querySelectorAll('input, select').forEach(el => {
         const name = el.getAttribute('name');
         if (name) {
             el.setAttribute('name', name.replace(/\[\d+\]/, `[${newIndex}]`));
         }
 
-        const keyMatch = el.getAttribute('name').match(/\[([a-zA-Z_]+)\]/);
+        const keyMatch = el.getAttribute('name')?.match(/\[([a-zA-Z_]+)\]/);
         if (!keyMatch) return;
         const key = keyMatch[1];
 
-        // Prepopulate input/select values
-        if (key === 'master_kpi_id' && optionsKpiMaster.length > 0) {
-            // Populate select dynamically
-            el.innerHTML = ''; // clear existing options
+        if (key === 'master_kpi_id' && optionsKpiMaster.length) {
+            el.innerHTML = '';
             el.appendChild(new Option('Select...', ''));
             optionsKpiMaster.forEach(opt => {
                 const optionEl = new Option(opt.text, opt.value);
-                if (values[key] && values[key] == opt.value) {
-                    optionEl.selected = true;
-                }
+                if (values[key] == opt.value) optionEl.selected = true;
                 el.appendChild(optionEl);
             });
-        } else if (values[key] !== undefined) {
-            el.value = values[key];
         } else {
-            el.value = '';
+            el.value = values[key] ?? '';
         }
     });
 
-    // Update remove button
-    const removeBtn = template.querySelector('.remove-section button');
+    // Fix remove button
+    const removeBtn = section.querySelector('.remove-section button');
     removeBtn.setAttribute(
         'onclick',
         `removeAspekKpiItem('${prefix}', ${newIndex})`
     );
 
-    container.appendChild(template);
+    container.appendChild(section);
 }
 
-
+// ================================
+// REMOVE ITEM
+// ================================
 function removeAspekKpiItem(prefix = '', index) {
     const container = document.querySelector(`.${prefix}repeatable-sections`);
     if (!container) return;
 
-    const sections = container.querySelectorAll(`.${prefix}field-sections`);
+    const sections = container.querySelectorAll('.repeatable-kpi-field-sections');
     if (sections.length <= 1) return;
 
-    const target = document.getElementById(`${prefix}repeatable-${index}`);
+    const target = sections[index];
     if (!target) return;
 
     const hasValue = Array.from(
         target.querySelectorAll('input, select')
-    ).some(el => el.value && el.value.trim() !== '');
+    ).some(el => el.value && el.value.toString().trim() !== '');
 
     if (hasValue && !confirm('This item contains data. Are you sure you want to remove it?')) {
         return;
@@ -182,8 +150,14 @@ function removeAspekKpiItem(prefix = '', index) {
     reindexAspekKpiItem(prefix);
 }
 
+// ================================
+// REINDEX ITEMS
+// ================================
 function reindexAspekKpiItem(prefix = '') {
-    const sections = document.querySelectorAll(`.${prefix}field-sections`);
+    const container = document.querySelector(`.${prefix}repeatable-sections`);
+    if (!container) return;
+
+    const sections = container.querySelectorAll('.repeatable-kpi-field-sections');
 
     sections.forEach((section, i) => {
         section.id = `${prefix}repeatable-${i}`;
@@ -199,10 +173,12 @@ function reindexAspekKpiItem(prefix = '') {
         });
 
         const removeBtn = section.querySelector('.remove-section button');
-        removeBtn.setAttribute(
-            'onclick',
-            `removeAspekKpiItem('${prefix}', ${i})`
-        );
+        if (removeBtn) {
+            removeBtn.setAttribute(
+                'onclick',
+                `removeAspekKpiItem('${prefix}', ${i})`
+            );
+        }
     });
 }
 </script>
