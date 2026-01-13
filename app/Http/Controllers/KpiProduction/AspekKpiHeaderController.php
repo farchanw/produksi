@@ -50,6 +50,11 @@ class AspekKpiHeaderController extends DefaultController
                     ['name' => 'Master subsection id', 'column' => 'master_subsection_id'],
             ]
         ];
+
+        $this->importScripts = [
+            ['source' => asset('js/modules/module-kpi-production.js')],
+            
+        ];
     }
 
 

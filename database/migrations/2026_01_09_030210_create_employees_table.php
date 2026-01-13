@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('kpi_employees', function (Blueprint $table) {
             $table->id();
             $table->string('nama', 255);
             $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete(); // delete

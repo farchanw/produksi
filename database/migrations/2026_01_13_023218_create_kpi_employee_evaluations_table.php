@@ -13,12 +13,17 @@ return new class extends Migration
     {
         Schema::create('kpi_employee_evaluations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
+            $table->foreignId('employee_id')->constrained('kpi_employees')->cascadeOnDelete();
+            // kode
+            $table->string('tipe');
+            $table->string('kode');
+
+
             $table->foreignId('aspek_kpi_header_id')->constrained('aspek_kpi_headers')->cascadeOnDelete();
+            $table->json('aspek_values')->nullable();
             $table->unsignedInteger('bulan');
             $table->unsignedInteger('tahun');
-            $table->decimal('realisasi', 5, 2)->default(0.00);
-            $table->decimal('skor', 5, 2)->default(0.00);
+            $table->decimal('skor_akhir', 5, 2)->default(0.00);
             $table->timestamps();
 
             $table->unique(
