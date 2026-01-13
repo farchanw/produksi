@@ -61,31 +61,6 @@ class AspekKpiHeaderController extends DefaultController
             $repeatableAspekKpiItemValue = AspekKpiItem::where('aspek_kpi_header_id', $edit->id)->get();
         }
 
-        $optionsYear = [];
-
-        $currentYear = (int) date('Y');
-
-        for ($y = $currentYear; $y >= $currentYear - 50; $y--) {
-            $optionsYear[] = [
-                'value' => $y,
-                'text'  => $y,
-            ];
-        }
-
-        $optionsMonth = [
-            ['value' => 1, 'text' => 'Januari'],
-            ['value' => 2, 'text' => 'Februari'],
-            ['value' => 3, 'text' => 'Maret'],
-            ['value' => 4, 'text' => 'April'],
-            ['value' => 5, 'text' => 'Mei'],
-            ['value' => 6, 'text' => 'Juni'],
-            ['value' => 7, 'text' => 'Juli'],
-            ['value' => 8, 'text' => 'Agustus'],
-            ['value' => 9, 'text' => 'September'],
-            ['value' => 10, 'text' => 'Oktober'],
-            ['value' => 11, 'text' => 'November'],
-            ['value' => 12, 'text' => 'Desember'],
-        ];
 
 
         $fields = [
@@ -224,6 +199,88 @@ class AspekKpiHeaderController extends DefaultController
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    protected function update(Request $request, $id)
+    {
+        $rules = $this->rules($id);
+        
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeUpdateResponse = $this->beforeMainUpdate($id, $request);
+        if ($beforeUpdateResponse !== null) {
+            return $beforeUpdateResponse; // Return early if there's a response
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendUpdate = $this->appendUpdate($request);
+
+            $change = $this->modelClass::where('id', $id)->first();
+            foreach ($this->fields('edit', $id) as $key => $th) {
+                if ($request[$th['name']]) {
+                    $change->{$th['name']} = $request[$th['name']];
+                }
+            }
+            if (array_key_exists('columns', $appendUpdate)) {
+                foreach ($appendUpdate['columns'] as $key => $as) {
+                    $change->{$as['name']} = $as['value'];
+                }
+            }
+            
+            $change->save();
+
+            $this->afterMainUpdate($change, $request);
+
+            // sync kpi (DESTRUCTIVE)
+            /*
+            AspekKpiItem::where('aspek_kpi_header_id', $change->id)->delete();
+            foreach ($request->kpi as $row) {
+                AspekKpiItem::create([
+                    'aspek_kpi_header_id' => $change->id,
+                    'master_kpi_id'       => $row['master_kpi_id'],
+                    'bobot'               => $row['bobot'],
+                    'target'              => $row['target'],
+                ]);
+            }
+            */
+
+            foreach ($request->kpi as $row) {
+                AspekKpiItem::where('id', $row['id'])->update([
+                    'master_kpi_id' => $row['master_kpi_id'],
+                    'bobot'         => $row['bobot'],
+                    'target'        => $row['target'],
+                ]);
+            }
+
+
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Was Updated Successfully',
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),

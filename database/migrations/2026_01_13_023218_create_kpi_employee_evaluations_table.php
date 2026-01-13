@@ -17,8 +17,14 @@ return new class extends Migration
             $table->foreignId('aspek_kpi_header_id')->constrained('aspek_kpi_headers')->cascadeOnDelete();
             $table->unsignedInteger('bulan');
             $table->unsignedInteger('tahun');
-            $table->integer('skor');
+            $table->decimal('realisasi', 5, 2)->default(0.00);
+            $table->decimal('skor', 5, 2)->default(0.00);
             $table->timestamps();
+
+            $table->unique(
+                ['employee_id', 'aspek_kpi_header_id', 'bulan', 'tahun'],
+                'kpi_employee_evaluation_period_idx'
+            );
         });
     }
 

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->string('nama', 255);
-            $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete();
-            $table->foreignId('master_subsection_id')->constrained('master_subsections')->cascadeOnDelete();
+            $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete(); // delete
+            $table->foreignId('master_subsection_id')->constrained('master_subsections')->cascadeOnDelete(); // delete
             $table->unsignedBigInteger('aspek_kpi_header_id')->nullable();
             $table->timestamps();
 

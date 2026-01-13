@@ -212,6 +212,25 @@ class Sidebar
                 'ajax_load' => false,
                 'childrens' => []
             ],
+            [
+                'name' => 'Employee',
+                'icon' => 'ti ti-menu',
+                'key' => 'employee',
+                'base_key' => 'employee',
+                'visibility' => $this->canAccessMenu('kpi-employee-evaluation') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
+            [
+                'name' => 'Kpi Employee Evaluation',
+                'icon' => 'ti ti-menu',
+                'key' => 'kpi-employee-evaluation',
+                'base_key' => 'kpi-employee-evaluation',
+                'visibility' => $this->canAccessMenu('kpi-employee-evaluation') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
+            
 
         ];
     }

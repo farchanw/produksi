@@ -28,6 +28,8 @@
 <template id="node-repeatable-aspek-kpi-item-template">
     <div id="{{ $prefix_method }}repeatable-0"
             class="row repeatable-kpi-field-sections {{ $prefix_method }}field-sections">
+        
+        <input type="hidden" name="kpi[0][id]" value="0">
 
         <div class="col my-2">
             <label>KPI</label>
@@ -90,7 +92,9 @@ document.addEventListener('change', function (event) {
 
 
 function addAspekKpiItem(prefix = '', values = {}, optionsKpiMaster = window.KpiProductionAspekKpiItemOptionsData) {
-    console.log(optionsKpiMaster);
+    if (!optionsKpiMaster) {
+        optionsKpiMaster = [{ value: '', text: 'Select...' }];
+    }
 
     const container = document.querySelector(`.${prefix}repeatable-sections`);
     if (!container) return;

@@ -5,6 +5,8 @@ use App\Http\Controllers\KpiProduction\MasterSubsectionController;
 use App\Http\Controllers\KpiProduction\MasterKpiController;
 use App\Http\Controllers\KpiProduction\AspekKpiHeaderController;
 use App\Http\Controllers\KpiProduction\AspekKpiItemController;
+use App\Http\Controllers\KpiProduction\KpiEmployeeEvaluationController;
+use App\Http\Controllers\KpiProduction\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -53,4 +55,20 @@ Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' =>
     Route::get('aspek-kpi-item-export-pdf-default', [AspekKpiItemController::class, 'exportPdf'])->name('aspek-kpi-item.export-pdf-default');
     Route::get('aspek-kpi-item-export-excel-default', [AspekKpiItemController::class, 'exportExcel'])->name('aspek-kpi-item.export-excel-default');
     Route::post('aspek-kpi-item-import-excel-default', [AspekKpiItemController::class, 'importExcel'])->name('aspek-kpi-item.import-excel-default');
+
+
+
+    Route::resource('kpi-employee-evaluation', KpiEmployeeEvaluationController::class);
+    Route::get('kpi-employee-evaluation-api', [KpiEmployeeEvaluationController::class, 'indexApi'])->name('kpi-employee-evaluation.listapi');
+    Route::get('kpi-employee-evaluation-export-pdf-default', [KpiEmployeeEvaluationController::class, 'exportPdf'])->name('kpi-employee-evaluation.export-pdf-default');
+    Route::get('kpi-employee-evaluation-export-excel-default', [KpiEmployeeEvaluationController::class, 'exportExcel'])->name('kpi-employee-evaluation.export-excel-default');
+    Route::post('kpi-employee-evaluation-import-excel-default', [KpiEmployeeEvaluationController::class, 'importExcel'])->name('kpi-employee-evaluation.import-excel-default');
+
+
+
+    Route::resource('employee', EmployeeController::class);
+    Route::get('employee-api', [EmployeeController::class, 'indexApi'])->name('employee.listapi');
+    Route::get('employee-export-pdf-default', [EmployeeController::class, 'exportPdf'])->name('employee.export-pdf-default');
+    Route::get('employee-export-excel-default', [EmployeeController::class, 'exportExcel'])->name('employee.export-excel-default');
+    Route::post('employee-import-excel-default', [EmployeeController::class, 'importExcel'])->name('employee.import-excel-default');
 });
