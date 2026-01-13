@@ -32,6 +32,7 @@ class MasterKpiController extends DefaultController
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Bagian', 'column' => 'master_section', 'order' => true],
                     ['name' => 'Subbagian', 'column' => 'master_subsection', 'order' => true], 
+                    ['name' => 'Kategori', 'column' => 'kategori', 'order' => true],
                     ['name' => 'Area Kinerja Utama', 'column' => 'area_kinerja_utama', 'order' => true],
                     ['name' => 'Nama', 'column' => 'nama', 'order' => true],
                     ['name' => 'Deskripsi', 'column' => 'deskripsi', 'order' => true],
@@ -79,6 +80,17 @@ class MasterKpiController extends DefaultController
                         'required' => $this->flagRules('master_section_id', $id),
                         'value' => (isset($edit)) ? $edit->master_section_id : '',
                         'options' => MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => 'Kategori',
+                        'name' =>  'kategori',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('kategori', $id),
+                        'value' => (isset($edit)) ? $edit->kategori : '',
+                        'options' => [
+                            ['value' => 'personal', 'text' => 'Personal'],
+                            ['value' => 'divisi', 'text' => 'Divisi'],]
                     ],
                     [
                         'type' => 'text',
@@ -150,6 +162,7 @@ class MasterKpiController extends DefaultController
             
                     'master_section_id' => 'required|string',
                     'master_subsection_id' => 'required|string',
+                    'kategori' => 'required|string',
                     'area_kinerja_utama' => 'required|string',
                     'nama' => 'required|string',
                     'deskripsi' => 'nullable|string',

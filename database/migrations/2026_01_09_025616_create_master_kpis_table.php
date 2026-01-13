@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete();
             $table->foreignId('master_subsection_id')->constrained('master_subsections')->cascadeOnDelete();
+            $table->string('kategori');
             $table->string('area_kinerja_utama')->nullable();
             $table->string('nama');
             $table->text('deskripsi')->nullable();

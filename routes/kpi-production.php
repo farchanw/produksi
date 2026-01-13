@@ -9,18 +9,13 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], function () {
+    Route::resource('dashboard-kpi-production', DashboardKpiProductionController::class);
+    Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-kpi-production.listapi');
+
     Route::get('kpi-production-fetch-master-kpi-default', [MasterKpiController::class, 'fetchDefault'])->name('kpi-production.fetch-master-kpi-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {
-    Route::resource('dashboard-kpi-production', DashboardKpiProductionController::class);
-    Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-kpi-production.listapi');
-    Route::get('dashboard-kpi-production-export-pdf-default', [DashboardKpiProductionController::class, 'exportPdf'])->name('dashboard-kpi-production.export-pdf-default');
-    Route::get('dashboard-kpi-production-export-excel-default', [DashboardKpiProductionController::class, 'exportExcel'])->name('dashboard-kpi-production.export-excel-default');
-    Route::post('dashboard-kpi-production-import-excel-default', [DashboardKpiProductionController::class, 'importExcel'])->name('dashboard-kpi-production.import-excel-default');
-
-
-
     Route::resource('master-section', MasterSectionController::class);
     Route::get('master-section-api', [MasterSectionController::class, 'indexApi'])->name('master-section.listapi');
     Route::get('master-section-export-pdf-default', [MasterSectionController::class, 'exportPdf'])->name('master-section.export-pdf-default');

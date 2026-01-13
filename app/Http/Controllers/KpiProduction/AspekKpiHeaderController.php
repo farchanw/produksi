@@ -38,8 +38,6 @@ class AspekKpiHeaderController extends DefaultController
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Bagian', 'column' => 'master_section', 'order' => true],
                     ['name' => 'Subbagian', 'column' => 'master_subsection', 'order' => true],
-                    ['name' => 'Tahun', 'column' => 'tahun', 'order' => true],
-                    ['name' => 'Bulan', 'column' => 'bulan', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -50,8 +48,6 @@ class AspekKpiHeaderController extends DefaultController
             'headers' => [
                     ['name' => 'Master section id', 'column' => 'master_section_id'],
                     ['name' => 'Master subsection id', 'column' => 'master_subsection_id'],
-                    ['name' => 'Tahun', 'column' => 'tahun'],
-                    ['name' => 'Bulan', 'column' => 'bulan'], 
             ]
         ];
     }
@@ -111,6 +107,7 @@ class AspekKpiHeaderController extends DefaultController
                         'value' => (isset($edit)) ? $edit->master_subsection_id : '',
                         'options' => MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
                     ],
+                    /*
                     [
                         'type' => 'select',
                         'label' => 'Tahun',
@@ -129,6 +126,7 @@ class AspekKpiHeaderController extends DefaultController
                         'value' => (isset($edit)) ? $edit->bulan : date('n'),
                         'options' => $optionsMonth,
                     ],
+                    */
                     [
                         'type' => 'repeatable_aspek_kpi_item',
                         'label' => 'Aspek KPI',
@@ -152,14 +150,11 @@ class AspekKpiHeaderController extends DefaultController
         $rules = [
                     'master_section_id' => 'required|string',
                     'master_subsection_id' => 'required|string',
-                    'tahun' => 'required|string',
-                    'bulan' => 'required|string',
 
                     'kpi'                   => 'required|array|min:1',
                     'kpi.*.master_kpi_id'   => 'required|integer',
                     'kpi.*.bobot'           => 'required|numeric|min:0',
                     'kpi.*.target'          => 'required|numeric|min:0',
-                    'kpi.*.realisasi'       => 'required|numeric|min:0',
         ];
 
         return $rules;
@@ -217,7 +212,6 @@ class AspekKpiHeaderController extends DefaultController
                     'master_kpi_id'         => $row['master_kpi_id'],
                     'bobot'                 => $row['bobot'],
                     'target'                => $row['target'],
-                    'realisasi'             => $row['realisasi'],
                 ]);
             }
 

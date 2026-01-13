@@ -56,13 +56,6 @@
                     class="form-control idev-form">
         </div>
 
-        <div class="col-md-1 my-2">
-            <label>Realisasi</label>
-            <input type="number"
-                    name="kpi[0][realisasi]"
-                    class="form-control idev-form">
-        </div>
-
         <div class="col-md-1 my-2 remove-section">
             <button type="button"
                     class="btn btn-sm btn-circle btn-danger text-white mt-4"
@@ -74,10 +67,31 @@
 </template>
 
 <script>
-// ================================
-// ADD ITEM
-// ================================
-function addAspekKpiItem(prefix = '', values = {}, optionsKpiMaster = []) {
+document.addEventListener('change', function (event) {
+    if (event.target.matches('select[name="master_subsection_id"]')) {
+        const subsectionId = event.target.closest('form').querySelector('[name="master_subsection_id"]').value;
+        fetch(`kpi-production-fetch-master-kpi-default?subsection_id=${subsectionId}`)
+            .then(response => response.json())
+            .then(data => {
+                window.KpiProductionAspekKpiItemOptionsData = data;
+
+                // update all matched selects options
+                document.querySelectorAll('select[name^="kpi"]').forEach(el => {
+                    el.innerHTML = '';
+                    el.appendChild(new Option('Select...', ''));
+                    data.forEach(opt => {
+                        el.appendChild(new Option(opt.text, opt.value));
+                    });
+                });
+            });
+
+    }
+});
+
+
+function addAspekKpiItem(prefix = '', values = {}, optionsKpiMaster = window.KpiProductionAspekKpiItemOptionsData) {
+    console.log(optionsKpiMaster);
+
     const container = document.querySelector(`.${prefix}repeatable-sections`);
     if (!container) return;
 
@@ -125,15 +139,12 @@ function addAspekKpiItem(prefix = '', values = {}, optionsKpiMaster = []) {
     container.appendChild(section);
 }
 
-// ================================
-// REMOVE ITEM
-// ================================
 function removeAspekKpiItem(prefix = '', index) {
     const container = document.querySelector(`.${prefix}repeatable-sections`);
     if (!container) return;
 
     const sections = container.querySelectorAll('.repeatable-kpi-field-sections');
-    if (sections.length <= 1) return;
+    //if (sections.length <= 1) return;
 
     const target = sections[index];
     if (!target) return;
@@ -150,9 +161,6 @@ function removeAspekKpiItem(prefix = '', index) {
     reindexAspekKpiItem(prefix);
 }
 
-// ================================
-// REINDEX ITEMS
-// ================================
 function reindexAspekKpiItem(prefix = '') {
     const container = document.querySelector(`.${prefix}repeatable-sections`);
     if (!container) return;

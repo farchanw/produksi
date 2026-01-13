@@ -15,12 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('master_section_id')->nullable()->constrained('master_sections')->nullOnDelete();
             $table->foreignId('master_subsection_id')->nullable()->constrained('master_subsections')->nullOnDelete();
-            $table->unsignedInteger('tahun');
-            $table->unsignedInteger('bulan');
             $table->timestamps();
 
             $table->unique(
-                ['master_section_id', 'master_subsection_id', 'tahun', 'bulan'],
+                ['master_section_id', 'master_subsection_id'],
                 'aspek_kpi_header_period_idx'
             );
         });
