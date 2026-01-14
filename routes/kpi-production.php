@@ -5,8 +5,8 @@ use App\Http\Controllers\KpiProduction\MasterSubsectionController;
 use App\Http\Controllers\KpiProduction\MasterKpiController;
 use App\Http\Controllers\KpiProduction\AspekKpiHeaderController;
 use App\Http\Controllers\KpiProduction\AspekKpiItemController;
-use App\Http\Controllers\KpiProduction\KpiEmployeeEvaluationController;
-use App\Http\Controllers\KpiProduction\EmployeeController;
+use App\Http\Controllers\KpiProduction\KpiEmployeeController;
+use App\Http\Controllers\KpiProduction\KpiEvaluationController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -15,6 +15,7 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
     Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-kpi-production.listapi');
 
     Route::get('kpi-production-fetch-master-kpi-default', [MasterKpiController::class, 'fetchDefault'])->name('kpi-production.fetch-master-kpi-default');
+    Route::get('kpi-production-fetch-aspek-kpi-item-default', [AspekKpiItemController::class, 'fetchDefault'])->name('kpi-production.fetch-aspek-kpi-item-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {
@@ -58,17 +59,17 @@ Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' =>
 
 
 
-    Route::resource('kpi-employee-evaluation', KpiEmployeeEvaluationController::class);
-    Route::get('kpi-employee-evaluation-api', [KpiEmployeeEvaluationController::class, 'indexApi'])->name('kpi-employee-evaluation.listapi');
-    Route::get('kpi-employee-evaluation-export-pdf-default', [KpiEmployeeEvaluationController::class, 'exportPdf'])->name('kpi-employee-evaluation.export-pdf-default');
-    Route::get('kpi-employee-evaluation-export-excel-default', [KpiEmployeeEvaluationController::class, 'exportExcel'])->name('kpi-employee-evaluation.export-excel-default');
-    Route::post('kpi-employee-evaluation-import-excel-default', [KpiEmployeeEvaluationController::class, 'importExcel'])->name('kpi-employee-evaluation.import-excel-default');
+    Route::resource('kpi-employee', KpiEmployeeController::class);
+    Route::get('kpi-employee-api', [KpiEmployeeController::class, 'indexApi'])->name('kpi-employee.listapi');
+    Route::get('kpi-employee-export-pdf-default', [KpiEmployeeController::class, 'exportPdf'])->name('kpi-employee.export-pdf-default');
+    Route::get('kpi-employee-export-excel-default', [KpiEmployeeController::class, 'exportExcel'])->name('kpi-employee.export-excel-default');
+    Route::post('kpi-employee-import-excel-default', [KpiEmployeeController::class, 'importExcel'])->name('kpi-employee.import-excel-default');
 
 
 
-    Route::resource('employee', EmployeeController::class);
-    Route::get('employee-api', [EmployeeController::class, 'indexApi'])->name('employee.listapi');
-    Route::get('employee-export-pdf-default', [EmployeeController::class, 'exportPdf'])->name('employee.export-pdf-default');
-    Route::get('employee-export-excel-default', [EmployeeController::class, 'exportExcel'])->name('employee.export-excel-default');
-    Route::post('employee-import-excel-default', [EmployeeController::class, 'importExcel'])->name('employee.import-excel-default');
+    Route::resource('kpi-evaluation', KpiEvaluationController::class);
+    Route::get('kpi-evaluation-api', [KpiEvaluationController::class, 'indexApi'])->name('kpi-evaluation.listapi');
+    Route::get('kpi-evaluation-export-pdf-default', [KpiEvaluationController::class, 'exportPdf'])->name('kpi-evaluation.export-pdf-default');
+    Route::get('kpi-evaluation-export-excel-default', [KpiEvaluationController::class, 'exportExcel'])->name('kpi-evaluation.export-excel-default');
+    Route::post('kpi-evaluation-import-excel-default', [KpiEvaluationController::class, 'importExcel'])->name('kpi-evaluation.import-excel-default');
 });

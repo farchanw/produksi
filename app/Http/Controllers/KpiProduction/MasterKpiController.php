@@ -5,6 +5,7 @@ namespace App\Http\Controllers\KpiProduction;
 use App\Models\MasterKpi;
 use App\Models\MasterSection;
 use App\Models\MasterSubsection;
+use App\Helpers\Modules\KpiProductionHelper;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Constant;
 use Illuminate\Http\Request;
@@ -62,6 +63,9 @@ class MasterKpiController extends DefaultController
             $edit = $this->modelClass::where('id', $id)->first();
         }
 
+        $optionsSubsection = MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray();
+        $optionsSubsection = array_merge([['value' => '', 'text' => 'Pilih Subbagian...']], $optionsSubsection);
+
         $fields = [
                     [
                         'type' => 'select',
@@ -79,7 +83,7 @@ class MasterKpiController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('master_section_id', $id),
                         'value' => (isset($edit)) ? $edit->master_section_id : '',
-                        'options' => MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
+                        'options' => $optionsSubsection,
                     ],
                     [
                         'type' => 'select',
@@ -88,9 +92,7 @@ class MasterKpiController extends DefaultController
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('kategori', $id),
                         'value' => (isset($edit)) ? $edit->kategori : '',
-                        'options' => [
-                            ['value' => 'personal', 'text' => 'Personal'],
-                            ['value' => 'divisi', 'text' => 'Divisi'],]
+                        'options' => KpiProductionHelper::optionsKategori(),
                     ],
                     [
                         'type' => 'text',

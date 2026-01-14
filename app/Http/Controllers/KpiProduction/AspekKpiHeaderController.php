@@ -36,6 +36,7 @@ class AspekKpiHeaderController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
+                    ['name' => 'Nama', 'column' => 'nama', 'order' => true],
                     ['name' => 'Bagian', 'column' => 'master_section', 'order' => true],
                     ['name' => 'Subbagian', 'column' => 'master_subsection', 'order' => true],
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
@@ -66,14 +67,23 @@ class AspekKpiHeaderController extends DefaultController
             $repeatableAspekKpiItemValue = AspekKpiItem::where('aspek_kpi_header_id', $edit->id)->get();
         }
 
-
+        $optionsSubsection = MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray();
+        $optionsSubsection = array_merge([['value' => '', 'text' => 'Pilih Subbagian...']], $optionsSubsection);
 
         $fields = [
+                    [
+                        'type' => 'text',
+                        'label' => 'Nama',
+                        'name' =>  'nama',
+                        'class' => 'col-4 my-2',
+                        'required' => $this->flagRules('nama', $id),
+                        'value' => (isset($edit)) ? $edit->nama : ''
+                    ],
                     [
                         'type' => 'select',
                         'label' => 'Bagian',
                         'name' =>  'master_section_id',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-4 my-2',
                         'required' => $this->flagRules('master_section_id', $id),
                         'value' => (isset($edit)) ? $edit->master_section_id : '',
                         'options' => MasterSection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
@@ -82,10 +92,10 @@ class AspekKpiHeaderController extends DefaultController
                         'type' => 'select',
                         'label' => 'Subbagian',
                         'name' =>  'master_subsection_id',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-4 my-2',
                         'required' => $this->flagRules('master_subsection_id', $id),
                         'value' => (isset($edit)) ? $edit->master_subsection_id : '',
-                        'options' => MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
+                        'options' => $optionsSubsection,
                     ],
                     /*
                     [
@@ -128,6 +138,7 @@ class AspekKpiHeaderController extends DefaultController
     protected function rules($id = null)
     {
         $rules = [
+                    'nama' => 'required|string',
                     'master_section_id' => 'required|string',
                     'master_subsection_id' => 'required|string',
 
@@ -266,13 +277,28 @@ class AspekKpiHeaderController extends DefaultController
             }
             */
 
-            foreach ($request->kpi as $row) {
-                AspekKpiItem::where('id', $row['id'])->update([
-                    'master_kpi_id' => $row['master_kpi_id'],
-                    'bobot'         => $row['bobot'],
-                    'target'        => $row['target'],
-                ]);
-            }
+            $data = collect($request->kpi)->map(function ($row) use ($change) {
+                return [
+                    'id'                   => $row['id'] ?? null,
+                    'aspek_kpi_header_id'   => $change->id,
+                    'master_kpi_id'         => $row['master_kpi_id'],
+                    'bobot'                => $row['bobot'],
+                    'target'               => $row['target'],
+                ];
+            })->toArray();
+
+            /* DELETE missing */
+            AspekKpiItem::where('aspek_kpi_header_id', $change->id)
+                ->whereNotIn('id', collect($data)->pluck('id')->filter())
+                ->delete();
+
+            /* UPSERT */
+            AspekKpiItem::upsert(
+                $data,
+                ['id'], // unique key
+                ['master_kpi_id', 'bobot', 'target']
+            );
+
 
 
 
@@ -312,7 +338,7 @@ class AspekKpiHeaderController extends DefaultController
             ->join('master_sections', 'master_subsections.master_section_id', '=', 'master_sections.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'master_section', 'master_subsection'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'master_section', 'master_subsection', 'nama'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {

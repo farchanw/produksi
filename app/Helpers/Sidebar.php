@@ -215,18 +215,19 @@ class Sidebar
             [
                 'name' => 'Employee',
                 'icon' => 'ti ti-menu',
-                'key' => 'employee',
-                'base_key' => 'employee',
-                'visibility' => $this->canAccessMenu('kpi-employee-evaluation') && $module == $currentModule,
+                'key' => 'kpi-employee',
+                'base_key' => 'kpi-employee',
+                'visibility' => $this->canAccessMenu('kpi-employee') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],
             [
-                'name' => 'Kpi Employee Evaluation',
+                //'name' => 'Pencatatan',
+                'name' => 'Penilaian',
                 'icon' => 'ti ti-menu',
-                'key' => 'kpi-employee-evaluation',
-                'base_key' => 'kpi-employee-evaluation',
-                'visibility' => $this->canAccessMenu('kpi-employee-evaluation') && $module == $currentModule,
+                'key' => 'kpi-evaluation',
+                'base_key' => 'kpi-evaluation',
+                'visibility' => $this->canAccessMenu('kpi-evaluation') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],

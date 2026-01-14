@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\KpiProduction;
 
-use App\Models\Employee;
+use App\Models\AspekKpiHeader;
+use App\Models\KpiEmployee;
 use App\Models\MasterSection;
 use App\Models\MasterSubsection;
-use Illuminate\Http\Request;
-use Idev\EasyAdmin\app\Helpers\Constant;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
+use Idev\EasyAdmin\app\Helpers\Constant;
 
-class EmployeeController extends DefaultController
+class KpiEmployeeController extends DefaultController
 {
-    protected $modelClass = Employee::class;
+    protected $modelClass = KpiEmployee::class;
     protected $title;
     protected $generalUri;
     protected $tableHeaders;
@@ -21,8 +21,8 @@ class EmployeeController extends DefaultController
 
     public function __construct()
     {
-        $this->title = 'Employee';
-        $this->generalUri = 'employee';
+        $this->title = 'KPI Employee';
+        $this->generalUri = 'kpi-employee';
         // $this->arrPermissions = [];
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
@@ -31,7 +31,7 @@ class EmployeeController extends DefaultController
                     ['name' => 'Nama', 'column' => 'nama', 'order' => true],
                     ['name' => 'Bagian', 'column' => 'master_section', 'order' => true],
                     ['name' => 'Subbagian', 'column' => 'master_subsection', 'order' => true],
-                    ['name' => 'Aspek KPI Header', 'column' => 'aspek_kpi_header_id', 'order' => true], 
+                    ['name' => 'Aspek KPI', 'column' => 'aspek_kpi_header', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -66,6 +66,14 @@ class EmployeeController extends DefaultController
                         'value' => (isset($edit)) ? $edit->nama : ''
                     ],
                     [
+                        'type' => 'text',
+                        'label' => 'NIK',
+                        'name' =>  'nik',
+                        'class' => 'col-md-12 my-2',
+                        'required' => $this->flagRules('nik', $id),
+                        'value' => (isset($edit)) ? $edit->nik : ''
+                    ],
+                    [
                         'type' => 'select',
                         'label' => 'Bagian',
                         'name' =>  'master_section_id',
@@ -84,12 +92,13 @@ class EmployeeController extends DefaultController
                         'options' => MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
                     ],
                     [
-                        'type' => 'text',
-                        'label' => 'Aspek KPI Header',
+                        'type' => 'select',
+                        'label' => 'Aspek KPI',
                         'name' =>  'aspek_kpi_header_id',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('aspek_kpi_header_id', $id),
-                        'value' => (isset($edit)) ? $edit->aspek_kpi_header_id : ''
+                        'value' => (isset($edit)) ? $edit->aspek_kpi_header_id : '',
+                        'options' => AspekKpiHeader::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
                     ],
         ];
         
@@ -101,6 +110,7 @@ class EmployeeController extends DefaultController
     {
         $rules = [
                     'nama' => 'required|string',
+                    'nik' => 'required|string',
                     'master_section_id' => 'required|string',
                     'master_subsection_id' => 'required|string',
                     'aspek_kpi_header_id' => 'required|string',
@@ -113,7 +123,7 @@ class EmployeeController extends DefaultController
     {
         $filters = [];
         $orThose = null;
-        $orderBy = 'employees.id';
+        $orderBy = 'kpi_employees.id';
         $orderState = 'DESC';
         if (request('search')) {
             $orThose = request('search');
@@ -123,9 +133,9 @@ class EmployeeController extends DefaultController
             $orderState = request('order_state');
         }
 
-        $dataQueries = $this->modelClass::join('master_subsections', 'employees.master_subsection_id', '=', 'master_subsections.id')
-            ->join('master_sections', 'employees.master_section_id', '=', 'master_sections.id')
-            ->join('aspek_kpi_headers', 'employees.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+        $dataQueries = $this->modelClass::join('master_subsections', 'kpi_employees.master_subsection_id', '=', 'master_subsections.id')
+            ->join('master_sections', 'master_subsections.master_section_id', '=', 'master_sections.id')
+            ->join('aspek_kpi_headers', 'kpi_employees.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
                 $efc = ['#', 'created_at', 'updated_at', 'id', 'master_section', 'master_subsection', 'aspek_kpi_header', 'nama'];
@@ -146,10 +156,10 @@ class EmployeeController extends DefaultController
             })
             ->orderBy($orderBy, $orderState)
             ->select(
-                'employees.*',
-                'master_subsections.nama as master_subsection',
+                'kpi_employees.*',
                 'master_sections.nama as master_section',
-                'aspek_kpi_headers.id as aspek_kpi_header'    
+                'master_subsections.nama as master_subsection',
+                'aspek_kpi_headers.nama as aspek_kpi_header'
             );
 
         return $dataQueries;
@@ -186,8 +196,6 @@ class EmployeeController extends DefaultController
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
-
-        
         /* Override edit button */
         // unset first
         if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
@@ -203,7 +211,6 @@ class EmployeeController extends DefaultController
             // set new delete button
             $this->actionButtonViews[] = 'backend.idev.buttons.delete';
         }
-
         $data['permissions'] = $permissions;
         $data['more_actions'] = $moreActions;
         $data['headerLayout'] = $this->pageHeaderLayout;

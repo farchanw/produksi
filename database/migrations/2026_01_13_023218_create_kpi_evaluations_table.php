@@ -11,24 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kpi_employee_evaluations', function (Blueprint $table) {
+        Schema::create('kpi_evaluations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('kpi_employees')->cascadeOnDelete();
-            // kode
-            $table->string('tipe');
-            $table->string('kode');
-
-
-            $table->foreignId('aspek_kpi_header_id')->constrained('aspek_kpi_headers')->cascadeOnDelete();
-            $table->json('aspek_values')->nullable();
+            $table->string('kategori'); // personal|divisi
+            $table->string('kode'); // nik|id_divisi
             $table->unsignedInteger('bulan');
             $table->unsignedInteger('tahun');
+            $table->foreignId('aspek_kpi_header_id')->constrained('aspek_kpi_headers')->cascadeOnDelete();
+            $table->json('aspek_values')->nullable();
             $table->decimal('skor_akhir', 5, 2)->default(0.00);
             $table->timestamps();
 
             $table->unique(
-                ['employee_id', 'aspek_kpi_header_id', 'bulan', 'tahun'],
-                'kpi_employee_evaluation_period_idx'
+                ['kategori', 'kode', 'aspek_kpi_header_id', 'bulan', 'tahun'],
+                'kpi_evaluation_idx'
             );
         });
     }
@@ -38,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kpi_employee_evaluations');
+        Schema::dropIfExists('kpi_evaluations');
     }
 };

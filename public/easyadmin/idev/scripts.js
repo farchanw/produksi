@@ -901,6 +901,7 @@ function handleEditFormRepeatableAspekKpiItem(field) {
     fetch(`kpi-production-fetch-master-kpi-default?subsection_id=${subsectionId}`)
         .then(res => res.json())
         .then(options => {
+            window.KpiProductionAspekKpiItemOptionsData = options;
             const container = document.querySelector(`.${prefix}repeatable-sections`);
             if (!container) return;
 

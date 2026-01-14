@@ -30,8 +30,6 @@ class AspekKpiItemController extends DefaultController
                     ['name' => 'Master kpi id', 'column' => 'master_kpi_id', 'order' => true],
                     ['name' => 'Bobot', 'column' => 'bobot', 'order' => true],
                     ['name' => 'Target', 'column' => 'target', 'order' => true],
-                    ['name' => 'Realisasi', 'column' => 'realisasi', 'order' => true],
-                    ['name' => 'Skor', 'column' => 'skor', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
@@ -44,8 +42,6 @@ class AspekKpiItemController extends DefaultController
                     ['name' => 'Master kpi id', 'column' => 'master_kpi_id'],
                     ['name' => 'Bobot', 'column' => 'bobot'],
                     ['name' => 'Target', 'column' => 'target'],
-                    ['name' => 'Realisasi', 'column' => 'realisasi'],
-                    ['name' => 'Skor', 'column' => 'skor'], 
             ]
         ];
     }
@@ -91,22 +87,6 @@ class AspekKpiItemController extends DefaultController
                         'required' => $this->flagRules('target', $id),
                         'value' => (isset($edit)) ? $edit->target : ''
                     ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Realisasi',
-                        'name' =>  'realisasi',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('realisasi', $id),
-                        'value' => (isset($edit)) ? $edit->realisasi : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Skor',
-                        'name' =>  'skor',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('skor', $id),
-                        'value' => (isset($edit)) ? $edit->skor : ''
-                    ],
         ];
         
         return $fields;
@@ -120,11 +100,61 @@ class AspekKpiItemController extends DefaultController
                     'master_kpi_id' => 'required|string',
                     'bobot' => 'required|string',
                     'target' => 'required|string',
-                    'realisasi' => 'required|string',
-                    'skor' => 'required|string',
         ];
 
         return $rules;
+    }
+
+    protected function defaultDataQuery()
+    {
+        $filters = [];
+        $orThose = null;
+        $orderBy = 'aspek_kpi_items.id';
+        $orderState = 'DESC';
+        if (request('search')) {
+            $orThose = request('search');
+        }
+        if (request('order')) {
+            $orderBy = request('order');
+            $orderState = request('order_state');
+        }
+
+        $dataQueries = $this->modelClass::where($filters)
+            ->where(function ($query) use ($orThose) {
+                $efc = ['#', 'created_at', 'updated_at', 'id'];
+
+                foreach ($this->tableHeaders as $key => $th) {
+                    if (array_key_exists('search', $th) && $th['search'] == false) {
+                        $efc[] = $th['column'];
+                    }
+                    if(!in_array($th['column'], $efc))
+                    {
+                        if($key == 0){
+                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }else{
+                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }
+                    }
+                }
+            })
+            ->orderBy($orderBy, $orderState);
+
+        return $dataQueries;
+    }
+
+    public function fetchDefault() 
+    {
+        $data = collect();
+        $id = request('aspek_kpi_header_id');
+
+        if ($id) {
+            $data = $this->defaultDataQuery()
+                ->join('master_kpis', 'aspek_kpi_items.master_kpi_id', '=', 'master_kpis.id')
+                ->where('aspek_kpi_header_id', $id)
+                ->get();
+        }
+
+        return response()->json($data);
     }
 
 }

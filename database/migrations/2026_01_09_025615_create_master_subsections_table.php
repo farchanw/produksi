@@ -19,6 +19,7 @@ return new class extends Migration
                 ->nullOnDelete();
 
             $table->string('nama');
+            $table->unique(['master_section_id', 'nama']);
             $table->timestamps();
         });
     }

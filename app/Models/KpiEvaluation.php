@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class KpiEmployeeEvaluation extends Model
+class KpiEvaluation extends Model
 {
     use HasFactory;
 
-    protected $table = 'kpi_employee_evaluations';
+    protected $table = 'kpi_evaluations';
     protected $primaryKey = 'id';
-    protected $fillable = ["employee_id","aspek_kpi_header_id","bulan","tahun","skor"];
+    protected $fillable = ["kategori","kode","bulan","tahun","aspek_kpi_header_id","aspek_values","skor_akhir"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show'];
 
 

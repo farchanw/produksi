@@ -11,7 +11,7 @@ class AspekKpiItem extends Model
 
     protected $table = 'aspek_kpi_items';
     protected $primaryKey = 'id';
-    protected $fillable = ["aspek_kpi_header_id","master_kpi_id","bobot","target","realisasi","skor"];
+    protected $fillable = ["aspek_kpi_header_id","master_kpi_id","bobot","target"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show'];
 
 

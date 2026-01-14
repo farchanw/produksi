@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('kpi_employees', function (Blueprint $table) {
             $table->id();
             $table->string('nama', 255);
+            $table->string('nik')->unique();
             $table->foreignId('master_section_id')->constrained('master_sections')->cascadeOnDelete(); // delete
             $table->foreignId('master_subsection_id')->constrained('master_subsections')->cascadeOnDelete(); // delete
             $table->unsignedBigInteger('aspek_kpi_header_id')->nullable();
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('kpi_employees');
     }
 };

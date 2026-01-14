@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('aspek_kpi_headers', function (Blueprint $table) {
             $table->id();
+            $table->string('nama')->unique();
             $table->foreignId('master_section_id')->nullable()->constrained('master_sections')->nullOnDelete();
             $table->foreignId('master_subsection_id')->nullable()->constrained('master_subsections')->nullOnDelete();
             $table->timestamps();

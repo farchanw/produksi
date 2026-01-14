@@ -122,3 +122,15 @@ function reindexAspekKpiItem(prefix = '') {
         }
     });
 }
+
+
+$( document ).ajaxStop(function() {
+    $('.support-live-select2').each(function () {
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $(this).parent(),// fix select2 search input focus bug
+        })
+        
+    })
+});
+
