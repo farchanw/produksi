@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('aspek_kpi_header_id')->constrained('aspek_kpi_headers')->cascadeOnDelete();
             $table->json('aspek_values')->nullable();
             $table->decimal('skor_akhir', 5, 2)->default(0.00);
+            $table->unsignedInteger('evaluator_id')->nullable();
             $table->timestamps();
 
             $table->unique(

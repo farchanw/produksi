@@ -83,6 +83,12 @@ class KpiEvaluationController extends DefaultController
 
         $optionsAspekKpiHeader = AspekKpiHeader::select('id as value', 'nama as text')->get()->toArray();
         $optionsAspekKpiHeader = array_merge([['value' => '', 'text' => 'Select...']], $optionsAspekKpiHeader);
+        $optionsEmployee = KpiEmployee::select('id as value', DB::raw("CONCAT(nama, ' / ', nik) as text"))
+            // filter not exist in kpi evaluation
+            //->whereNotIn('id', KpiEvaluation::select('kode')->where('kategori', 'personal')->get()->pluck('kode')->toArray())
+            ->orderBy('nama', 'ASC')
+            ->get()
+            ->toArray();
 
         $emptyAspekValues = [];
 
@@ -104,7 +110,7 @@ class KpiEvaluationController extends DefaultController
                         'class' => 'col-4 my-2',
                         'required' => $this->flagRules('kode', $id),
                         'value' => (isset($edit)) ? $edit->kode : '',
-                        'options' => KpiEmployee::select('id as value', DB::raw("CONCAT(nama, ' / ', nik) as text"))->orderBy('nama', 'ASC')->get()->toArray(),
+                        'options' => $optionsEmployee,
                     ],
                     [
                         'type' => 'select',

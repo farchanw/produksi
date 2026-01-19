@@ -256,6 +256,18 @@ class AspekKpiHeaderController extends DefaultController
             return $beforeUpdateResponse; // Return early if there's a response
         }
 
+        $totalBobot = 0;
+        foreach ($request->kpi as $row) {
+            $totalBobot += (int) $row['bobot'];
+        }
+        if ($totalBobot !== 100) {
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Total bobot tidak valid: '. $totalBobot . '%. Total bobot harus 100%.',
+            ], 200);
+        }
+
         DB::beginTransaction();
 
         try {
