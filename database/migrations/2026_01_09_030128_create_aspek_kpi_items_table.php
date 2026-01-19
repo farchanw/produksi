@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('aspek_kpi_header_id');
             $table->unsignedBigInteger('master_kpi_id');
-            $table->decimal('bobot', 5, 2);
-            $table->decimal('target', 5, 2);
+            $table->unsignedInteger('bobot');
+            $table->decimal('target', 10, 2);
             $table->timestamps();
 
             $table->unique(

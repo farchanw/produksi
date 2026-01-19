@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\KpiProduction;
 
 use App\Models\AspekKpiItem;
+use App\Models\KpiEvaluation;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Constant;
 
@@ -147,11 +148,40 @@ class AspekKpiItemController extends DefaultController
         $data = collect();
         $id = request('aspek_kpi_header_id');
 
+        // optional params
+        $kategori = request('kategori');
+        $kode = request('kode');
+        $bulan = request('bulan');
+        $tahun = request('tahun');
+
         if ($id) {
             $data = $this->defaultDataQuery()
                 ->join('master_kpis', 'aspek_kpi_items.master_kpi_id', '=', 'master_kpis.id')
                 ->where('aspek_kpi_header_id', $id)
                 ->get();
+
+            // get values from kpi_evaluations if exist
+            if ($kategori && $kode && $bulan && $tahun) {
+                $evaluationData = KpiEvaluation::where('aspek_kpi_header_id', $id)
+                    ->where('kode', $kode)
+                    ->where('bulan', $bulan)
+                    ->where('tahun', $tahun)
+                    ->where('kategori', $kategori)
+                    ->first();
+
+                if ($evaluationData) {
+                    $evaluationDataValues = json_decode($evaluationData->aspek_values);
+
+                    foreach ($evaluationDataValues as $key => $value) {
+                        $data->each(function ($item) use ($key, $value) {
+                            if ($item->id == $key) {
+                                $item->aspek_values = $value;
+                            }
+                        });
+                    }
+                }
+                
+            }
         }
 
         return response()->json($data);

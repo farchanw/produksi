@@ -5,7 +5,8 @@
 
 <div class="{{ $field['class'] ?? 'form-group' }}">
     <label>{{ $field['label'] ?? 'Label ' . $key }}</label>
-    <input type="hidden" name="aspek_values" id="aspek_values">
+    <input type="hidden" name="aspek_values" id="aspek_values" value="{{ isset($field['value']) ? $field['value'] : '' }}">
+    <input type="hidden" name="{{ $prefix_method }}aspek_values" id="{{ $prefix_method }}aspek_values" value="{{ isset($field['value']) ? $field['value'] : '' }}">
 
     <section class="dynamic-form-kpi-aspek-values"></section>
 </div>
@@ -15,62 +16,53 @@
         <div class="mb-3">
             <h5 class="text-secondary">
                 <span class="item-nama"></span> -
-                (<span class="fw-normal">
-                    Sumber Data Realisasi: <span class="item-sumber-data"></span>
-                </span>)
+                <i class="fw-normal">
+                    (Sumber Data Realisasi: <span class="item-sumber-data"></span>)
+                </i>
             </h5>
 
             <div class="row g-3">
 
-                <!-- Area Kinerja Utama -->
                 <div class="col-md-3">
                     <label class="form-label">Area Kinerja Utama</label>
                     <input type="text" class="form-control form-control-sm input-area-kinerja-utama" disabled>
                 </div>
 
-                <!-- Bobot -->
                 <div class="col-md-1">
                     <label class="form-label">Bobot</label>
                     <input type="text" class="form-control form-control-sm input-bobot" disabled>
                 </div>
 
-                <!-- Target -->
                 <div class="col-md-1">
                     <label class="form-label">Target</label>
                     <input type="text" class="form-control form-control-sm input-target" disabled>
                 </div>
 
-                <!-- Tipe -->
                 <div class="col-md-1">
                     <label class="form-label">Tipe</label>
                     <input type="text" class="form-control form-control-sm input-tipe" disabled>
                 </div>
 
-                <!-- Satuan -->
                 <div class="col-md-1">
                     <label class="form-label">Satuan</label>
                     <input type="text" class="form-control form-control-sm input-satuan" disabled>
                 </div>
 
-                <!-- Realisasi -->
                 <div class="col">
                     <label class="form-label fw-bold">Realisasi</label>
                     <input type="number" step="any" class="form-control form-control-sm input-realisasi" placeholder="Input realisasi" required>
                 </div>
 
-                <!-- Skor -->
                 <div class="col-md-1">
                     <label class="form-label">Skor</label>
                     <input type="text" class="form-control form-control-sm input-skor" disabled>
                 </div>
 
-                <!-- Skor Akhir -->
                 <div class="col-md-1">
                     <label class="form-label">Skor Akhir</label>
                     <input type="text" class="form-control form-control-sm input-skor-akhir" disabled>
                 </div>
 
-                <!-- KPI ID -->
                 <input type="hidden" class="input-kpi-id">
             </div>
         </div>
@@ -81,9 +73,16 @@
 
 
 <script>
+window.formPrefixMethod = '{{ $prefix_method }}';
+
 $('[name="aspek_kpi_header_id"]').on('change', function () {
     const aspekKpiHeaderId = $(this).val();
     const $container = $('.dynamic-form-kpi-aspek-values');
+
+    const kategori = $('input[name="kategori"]').val();
+    const bulan = $('input[name="bulan"]').val();
+    const tahun = $('input[name="tahun"]').val();
+    const kode = $('input[name="kode"]').val();
 
     if (!aspekKpiHeaderId) {
         $container.empty();
@@ -93,13 +92,27 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
     $.ajax({
         url: 'kpi-production-fetch-aspek-kpi-item-default',
         method: 'GET',
-        data: { aspek_kpi_header_id: aspekKpiHeaderId },
+        data: { 
+            aspek_kpi_header_id: aspekKpiHeaderId,
+            kategori: kategori,
+            bulan: bulan,
+            tahun: tahun,
+            kode: kode,
+         },
         success: function (response) {
             $container.empty();
             const template = document.getElementById('kpi-aspek-template');
+           
+            const editValues = $(`[name="${window.formPrefixMethod}aspek_values"]`).val();
+            let editValuesParsed = {};
+            if (editValues) {
+                editValuesParsed = JSON.parse(editValues);
+            }
 
             response.forEach((item, index) => {
                 const clone = template.content.cloneNode(true);
+                // get edit value match by item.id
+                const editValue = editValuesParsed.find((value) => Number(value.aspek_kpi_item_id) === Number(item.id)) || {};
 
                 // Fill display inputs
                 $(clone).find('.item-nama').text(item.nama);
@@ -110,15 +123,17 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
                 $(clone).find('.input-target').val(item.target);
                 $(clone).find('.input-tipe').val(item.tipe);
                 $(clone).find('.input-satuan').val(item.satuan);
-                $(clone).find('.input-skor').val(item.skor || '');
-                $(clone).find('.input-skor-akhir').val(item.skor_akhir || '');
+                $(clone).find('.input-skor').val(editValue.skor || item.skor || '');
+                $(clone).find('.input-skor-akhir').val(editValue.skor_akhir || item.skor_akhir || '');
                 $(clone).find('.input-kpi-id').val(item.id);
+                $(clone).find('.input-realisasi').val(editValue.realisasi || '');
 
                 // Dynamically create hidden inputs for readonly/display values
                 const $row = $(clone).find('.row');
                 const fields = [
                     'area_kinerja_utama', 'bobot', 'target', 'tipe', 'satuan', 'skor', 'skor_akhir', 'aspek_kpi_item_id'
                 ];
+
 
                 fields.forEach(field => {
                     let value = '';
@@ -137,6 +152,9 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
                         .val(value)
                         .appendTo($row);
                 });
+
+                
+
 
                 // Realisasi input is already editable, just set its name
                 $(clone).find('.input-realisasi').attr('name', `aspek_values_input[${index}][realisasi]`);
