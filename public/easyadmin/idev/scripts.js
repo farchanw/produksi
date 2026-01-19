@@ -1048,6 +1048,11 @@ function idevSetEdit(id, uriKey, prefix = "") {
                 });
             } else if (field.type == "repeatable_aspek_kpi_item") {
                 handleEditFormRepeatableAspekKpiItem(field)
+            } else if (field.type == "dynamic_form_kpi_aspek_values") {
+                $('[name="kode"]').each(function () {
+                    $(this).trigger('select2:select');
+                })
+                $("#edit_" + field.name).val(field.value);
             } else if (field.type === "checklist_base" || field.type === "checklist_searchable") {
                 $('input[type="checkbox"][id^="edit_' + field.name + '"]').each(function () {
                     const checkboxValue = Number(this.value);

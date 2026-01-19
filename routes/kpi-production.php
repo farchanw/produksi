@@ -7,6 +7,7 @@ use App\Http\Controllers\KpiProduction\AspekKpiHeaderController;
 use App\Http\Controllers\KpiProduction\AspekKpiItemController;
 use App\Http\Controllers\KpiProduction\KpiEmployeeController;
 use App\Http\Controllers\KpiProduction\KpiEvaluationController;
+use App\Http\Controllers\KpiProduction\KpiEvaluationPersonalController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -16,6 +17,7 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
 
     Route::get('kpi-production-fetch-master-kpi-default', [MasterKpiController::class, 'fetchDefault'])->name('kpi-production.fetch-master-kpi-default');
     Route::get('kpi-production-fetch-aspek-kpi-item-default', [AspekKpiItemController::class, 'fetchDefault'])->name('kpi-production.fetch-aspek-kpi-item-default');
+    Route::get('kpi-production-fetch-aspek-kpi-item-by-kode-default', [AspekKpiItemController::class, 'fetchByKodeDefault'])->name('kpi-production.fetch-aspek-kpi-item-by-kode-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {
@@ -72,4 +74,12 @@ Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' =>
     Route::get('kpi-evaluation-export-pdf-default', [KpiEvaluationController::class, 'exportPdf'])->name('kpi-evaluation.export-pdf-default');
     Route::get('kpi-evaluation-export-excel-default', [KpiEvaluationController::class, 'exportExcel'])->name('kpi-evaluation.export-excel-default');
     Route::post('kpi-evaluation-import-excel-default', [KpiEvaluationController::class, 'importExcel'])->name('kpi-evaluation.import-excel-default');
+
+
+
+    Route::resource('kpi-evaluation-personal', KpiEvaluationPersonalController::class);
+    Route::get('kpi-evaluation-personal-api', [KpiEvaluationPersonalController::class, 'indexApi'])->name('kpi-evaluation-personal.listapi');
+    Route::get('kpi-evaluation-personal-export-pdf-default', [KpiEvaluationPersonalController::class, 'exportPdf'])->name('kpi-evaluation-personal.export-pdf-default');
+    Route::get('kpi-evaluation-personal-export-excel-default', [KpiEvaluationPersonalController::class, 'exportExcel'])->name('kpi-evaluation-personal.export-excel-default');
+    Route::post('kpi-evaluation-personal-import-excel-default', [KpiEvaluationPersonalController::class, 'importExcel'])->name('kpi-evaluation-personal.import-excel-default');
 });

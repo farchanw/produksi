@@ -3,9 +3,16 @@
 namespace App\Helpers\Modules;
 
 class DatetimeHelper {
-    public static function optionsForYears()
+    public static function optionsForYears($withPlaceholder = true)
     {
         $optionsYear = [];
+
+        if ($withPlaceholder) {
+            $optionsYear[] = [
+                'value' => '',
+                'text'  => 'Select...',
+            ];
+        }
 
         $currentYear = (int) date('Y');
 
@@ -19,9 +26,9 @@ class DatetimeHelper {
         return $optionsYear;
     }
 
-    public static function optionsForMonths() 
+    public static function optionsForMonths($withPlaceholder = true) 
     {
-        return [
+        $optionsMonth = [
             ['value' => 1, 'text' => 'Januari'],
             ['value' => 2, 'text' => 'Februari'],
             ['value' => 3, 'text' => 'Maret'],
@@ -35,6 +42,12 @@ class DatetimeHelper {
             ['value' => 11, 'text' => 'November'],
             ['value' => 12, 'text' => 'Desember'],
         ];
+
+        if ($withPlaceholder) {
+            $optionsMonth = array_merge([['value' => '', 'text' => 'Select...']], $optionsMonth);
+        }
+
+        return $optionsMonth;
     }
 
 

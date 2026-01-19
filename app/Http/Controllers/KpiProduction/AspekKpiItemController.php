@@ -187,4 +187,38 @@ class AspekKpiItemController extends DefaultController
         return response()->json($data);
     }
 
+    public function fetchByKodeDefault() 
+    {
+        $data = collect();
+        $kode = request('kode');
+
+        // optional params
+        $kategori = request('kategori');
+        $bulan = request('bulan');
+        $tahun = request('tahun');
+
+        if (!$kode) {
+            return response()->json($data);
+        }
+
+        if (strtolower($kategori ?? '') == 'personal') {
+            // $kode == nik
+            $data = $this->modelClass::join('master_kpis', 'aspek_kpi_items.master_kpi_id', '=', 'master_kpis.id')
+                ->join('kpi_employees', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'kpi_employees.aspek_kpi_header_id')
+                ->where('kpi_employees.nik', $kode)
+                ->select(
+                    'aspek_kpi_items.*',
+                    'master_kpis.nama',
+                    'master_kpis.area_kinerja_utama',
+                    'master_kpis.tipe',
+                    'master_kpis.satuan',
+                    'master_kpis.sumber_data_realisasi'
+                )
+                ->get();
+        }
+
+
+        return response()->json($data);
+    }
+
 }

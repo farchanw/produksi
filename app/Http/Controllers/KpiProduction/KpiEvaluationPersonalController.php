@@ -1,0 +1,400 @@
+<?php
+
+namespace App\Http\Controllers\KpiProduction;
+
+use App\Helpers\Modules\KpiProductionHelper;
+use App\Helpers\Modules\DatetimeHelper;
+use App\Models\AspekKpiHeader;
+use App\Models\AspekKpiItem;
+use App\Models\KpiEmployee;
+use App\Models\KpiEvaluation;
+use Illuminate\Support\Facades\DB;
+use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
+use Illuminate\Http\Request;
+use Exception;
+use Idev\EasyAdmin\app\Helpers\Constant;
+use Illuminate\Support\Facades\Validator;
+use Idev\EasyAdmin\app\Helpers\Validation;
+
+class KpiEvaluationPersonalController extends DefaultController
+{
+    protected $modelClass = KpiEvaluation::class;
+    protected $title;
+    protected $generalUri;
+    protected $tableHeaders;
+    // protected $actionButtons;
+    // protected $arrPermissions;
+    protected $importExcelConfig;
+
+    public function __construct()
+    {
+        $this->title = 'Pencatatan';
+        $this->title = 'Penilaian';
+        $this->generalUri = 'kpi-evaluation-personal';
+        // $this->arrPermissions = [];
+        $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
+
+        $this->tableHeaders = [
+                    ['name' => 'No', 'column' => '#', 'order' => true],
+                    ['name' => 'Nik', 'column' => 'kode', 'order' => true],
+                    ['name' => 'Bulan', 'column' => 'bulan', 'order' => true],
+                    ['name' => 'Tahun', 'column' => 'tahun', 'order' => true],
+                    ['name' => 'Aspek', 'column' => 'aspek_kpi_header_id', 'order' => true],
+                    ['name' => 'Skor akhir', 'column' => 'skor_akhir', 'order' => true], 
+                    ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+                    ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+        ];
+
+
+        $this->importExcelConfig = [ 
+            'primaryKeys' => ['kategori'],
+            'headers' => [
+                    ['name' => 'Kategori', 'column' => 'kategori'],
+                    ['name' => 'Kode', 'column' => 'kode'],
+                    ['name' => 'Bulan', 'column' => 'bulan'],
+                    ['name' => 'Tahun', 'column' => 'tahun'],
+                    ['name' => 'Aspek kpi header id', 'column' => 'aspek_kpi_header_id'],
+                    ['name' => 'Aspek values', 'column' => 'aspek_values'],
+                    ['name' => 'Skor akhir', 'column' => 'skor_akhir'], 
+            ]
+        ];
+
+        $this->importScripts = [
+            ['source' => asset('vendor/select2/js/select2.min.js')],
+            ['source' => asset('js/modules/module-kpi-production.js')],
+        ];
+        $this->importStyles = [
+            ['source' => asset('vendor/select2/css/select2.min.css')],
+            ['source' => asset('vendor/select2/css/select2-bootstrap-5-theme.min.css')],
+        ];
+
+
+    }
+
+
+    protected function fields($mode = "create", $id = '-')
+    {
+        $edit = null;
+        if ($id != '-') {
+            $edit = $this->modelClass::where('id', $id)->first();
+        }
+
+        $optionsAspekKpiHeader = AspekKpiHeader::select('id as value', 'nama as text')->get()->toArray();
+        $optionsAspekKpiHeader = array_merge([['value' => '', 'text' => 'Select...']], $optionsAspekKpiHeader);
+        $optionsEmployee = KpiEmployee::select('nik as value', DB::raw("CONCAT(nama, ' / ', nik) as text"))
+            // filter not exist in kpi evaluation
+            //->whereNotIn('id', KpiEvaluation::select('kode')->where('kategori', 'personal')->get()->pluck('kode')->toArray())
+            ->orderBy('nama', 'ASC')
+            ->get()
+            ->toArray();
+        $optionsEmployee = array_merge([['value' => '', 'text' => 'Select...']], $optionsEmployee);
+
+        $emptyAspekValues = [];
+
+        $fields = [
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Kategori',
+                        'name' =>  'kategori',
+                        'class' => ' ',
+                        'required' => $this->flagRules('kategori', $id),
+                        'value' => 'personal',
+                    ],
+                    [
+                        'type' => 'select2',
+                        'label' => 'Kode',
+                        'name' =>  'kode',
+                        'class' => 'col-8 my-2',
+                        'required' => $this->flagRules('kode', $id),
+                        'value' => (isset($edit)) ? $edit->kode : '',
+                        'options' => $optionsEmployee,
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => 'Bulan',
+                        'name' =>  'bulan',
+                        'class' => 'col-2 my-2',
+                        'required' => $this->flagRules('bulan', $id),
+                        'value' => (isset($edit)) ? $edit->bulan : '',
+                        'options' => DatetimeHelper::optionsForMonths(true),
+                    ],
+                    [
+                        'type' => 'select',
+                        'label' => 'Tahun',
+                        'name' =>  'tahun',
+                        'class' => 'col-2 my-2',
+                        'required' => $this->flagRules('tahun', $id),
+                        'value' => (isset($edit)) ? $edit->tahun : '',
+                        'options' => DatetimeHelper::optionsForYears(true),
+                    ],
+                    [
+                        'type' => 'dynamic_form_kpi_aspek_values',
+                        'label' => 'Penilaian',
+                        'name' =>  'aspek_values',
+                        'class' => 'col-12 my-2',
+                        'required' => $this->flagRules('aspek_values', $id),
+                        'value' => (isset($edit)) ? $edit->aspek_values : '',
+                        'field_values' => (isset($edit)) ? json_decode($edit->aspek_values) : $emptyAspekValues,
+                    ],
+        ];
+        
+        return $fields;
+    }
+
+
+
+    protected function rules($id = null)
+    {
+        $rules = [
+                    'kategori' => 'required|string',
+                    'kode' => 'required|string',
+                    'bulan' => 'required|string',
+                    'tahun' => 'required|string',
+                    //'aspek_kpi_header_id' => 'required|string',
+        ];
+
+        return $rules;
+    }
+
+    
+
+    protected function store(Request $request)
+    {
+        $rules = $this->rules();
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeInsertResponse = $this->beforeMainInsert($request);
+        if ($beforeInsertResponse !== null) {
+            return $beforeInsertResponse; // Return early if there's a response
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendStore = $this->appendStore($request);
+            
+            if (array_key_exists('error', $appendStore)) {
+                return response()->json($appendStore['error'], 200);
+            }
+
+            $insert = new $this->modelClass();
+            foreach ($this->fields('create') as $key => $th) {
+                if ($request[$th['name']]) {
+                    $insert->{$th['name']} = $request[$th['name']];
+                }
+            }
+            if (array_key_exists('columns', $appendStore)) {
+                foreach ($appendStore['columns'] as $key => $as) {
+                    $insert->{$as['name']} = $as['value'];
+                }
+            }
+
+            // aspek_kpi_header_id
+            $insert->aspek_kpi_header_id = KpiEmployee::where('nik', $request->input('kode'))
+                ->first()
+                ->aspek_kpi_header_id;
+
+            // === aspek_values ===
+            $values = $request->input('aspek_values_input', []);
+
+            // Validate bobot
+            $weights = collect($values)->map(fn ($v) => (int) $v['bobot']);
+            $sum = $weights->sum();
+            if ($sum !== 100) {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'danger',
+                    'message' => 'Total bobot tidak valid: '. $sum . '%. Total bobot harus 100%.',
+                ], 200);
+            }
+
+            // Calculate skor
+            $calcScore = KpiProductionHelper::calculateScore($values);
+            $insert->aspek_values = $calcScore->toJson();
+
+            // === skor_akhir ===
+            $skorAkhir = $calcScore->sum(fn ($item) => $item['skor_akhir']);
+            $insert->skor_akhir = $skorAkhir;
+
+            $insert->save();
+
+            $this->afterMainInsert($insert, $request);
+            
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Was Created Successfully',
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    protected function update(Request $request, $id)
+    {
+        $rules = $this->rules($id);
+        
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeUpdateResponse = $this->beforeMainUpdate($id, $request);
+        if ($beforeUpdateResponse !== null) {
+            return $beforeUpdateResponse; // Return early if there's a response
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendUpdate = $this->appendUpdate($request);
+
+            $change = $this->modelClass::where('id', $id)->first();
+            foreach ($this->fields('edit', $id) as $key => $th) {
+                if ($request[$th['name']]) {
+                    $change->{$th['name']} = $request[$th['name']];
+                }
+            }
+            if (array_key_exists('columns', $appendUpdate)) {
+                foreach ($appendUpdate['columns'] as $key => $as) {
+                    $change->{$as['name']} = $as['value'];
+                }
+            }
+
+
+            // === aspek_values ===
+            $values = $request->input('aspek_values_input', []);
+
+            // Validate bobot
+            $weights = collect($values)->map(fn ($v) => (int) $v['bobot']);
+            $sum = $weights->sum();
+            if ($sum !== 100) {
+                return response()->json([
+                    'status' => false,
+                    'alert' => 'danger',
+                    'message' => 'Total bobot tidak valid: '. $sum . '%. Total bobot harus 100%.',
+                ], 200);
+            }
+
+            // Calculate skor
+            $calcScore = KpiProductionHelper::calculateScore($values);
+            $change->aspek_values = $calcScore->toJson();
+
+            // === skor_akhir ===
+            $skorAkhir = $calcScore->sum(fn ($item) => $item['skor_akhir']);
+            $change->skor_akhir = $skorAkhir;
+            
+            $change->save();
+
+            $this->afterMainUpdate($change, $request);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Was Updated Successfully',
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function index()
+    {
+        $baseUrlExcel = route($this->generalUri.'.export-excel-default');
+        $baseUrlPdf = route($this->generalUri.'.export-pdf-default');
+
+        $moreActions = [
+            [
+                'key' => 'import-excel-default',
+                'name' => 'Import Excel',
+                'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>"
+            ],
+            [
+                'key' => 'export-excel-default',
+                'name' => 'Export Excel',
+                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='" . $baseUrlExcel . "'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>"
+            ],
+            [
+                'key' => 'export-pdf-default',
+                'name' => 'Export Pdf',
+                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export PDF'><i class='ti ti-file'></i></a>"
+            ],
+        ];
+
+        $permissions =  $this->arrPermissions;
+        if ($this->dynamicPermission) {
+            $permissions = (new Constant())->permissionByMenu($this->generalUri);
+        }
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
+        if(isset($this->drawerLayout)){
+            $layout = $this->drawerLayout;
+        }
+                /* Override edit button */
+        // unset first
+        if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
+            unset($this->actionButtonViews[$key]);
+            // set new edit button
+            $this->actionButtonViews[] = 'backend.idev.buttons.edit';
+        }
+
+        /* Override delete button */
+        // unset first
+        if (($key = array_search('easyadmin::backend.idev.buttons.delete', $this->actionButtonViews)) !== false) {
+            unset($this->actionButtonViews[$key]);
+            // set new delete button
+            $this->actionButtonViews[] = 'backend.idev.buttons.delete';
+        }
+        $data['permissions'] = $permissions;
+        $data['more_actions'] = $moreActions;
+        $data['headerLayout'] = $this->pageHeaderLayout;
+        $data['table_headers'] = $this->tableHeaders;
+        $data['title'] = $this->title;
+        $data['uri_key'] = $this->generalUri;
+        $data['uri_list_api'] = route($this->generalUri . '.listapi');
+        $data['uri_create'] = route($this->generalUri . '.create');
+        $data['url_store'] = route($this->generalUri . '.store');
+        $data['fields'] = $this->fields();
+        $data['edit_fields'] = $this->fields('edit');
+        $data['actionButtonViews'] = $this->actionButtonViews;
+        $data['templateImportExcel'] = "#";
+        $data['import_scripts'] = $this->importScripts;
+        $data['import_styles'] = $this->importStyles;
+        $data['filters'] = $this->filters();
+        
+        return view($layout, $data);
+    }
+}

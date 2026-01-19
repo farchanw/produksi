@@ -233,18 +233,18 @@ class Sidebar
                     [
                         'name' => 'Penilaian Personal',
                         'icon' => 'ti ti-menu',
-                        'key' => '_',
-                        'base_key' => '_',
-                        'visibility' => $this->canAccessMenu('master-section') && $module == $currentModule,
+                        'key' => 'kpi-evaluation-personal.index',
+                        'base_key' => 'kpi-evaluation-personal.index',
+                        'visibility' => $this->canAccessMenu('kpi-evaluation-personal') && $module == $currentModule,
                         'ajax_load' => false,
                         'childrens' => []
                     ],
                     [
                         'name' => 'Penilaian Divisi',
                         'icon' => 'ti ti-menu',
-                        'key' => '_',
-                        'base_key' => '_',
-                        'visibility' => $this->canAccessMenu('master-subsection') && $module == $currentModule,
+                        'key' => 'kpi-evaluation-division.index',
+                        'base_key' => 'kpi-evaluation-division.index',
+                        'visibility' => $this->canAccessMenu('kpi-evaluation-division') && $module == $currentModule,
                         'ajax_load' => false,
                         'childrens' => []
                     ],
