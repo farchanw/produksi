@@ -18,6 +18,7 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
     Route::get('kpi-production-fetch-master-kpi-default', [MasterKpiController::class, 'fetchDefault'])->name('kpi-production.fetch-master-kpi-default');
     Route::get('kpi-production-fetch-aspek-kpi-item-default', [AspekKpiItemController::class, 'fetchDefault'])->name('kpi-production.fetch-aspek-kpi-item-default');
     Route::get('kpi-production-fetch-aspek-kpi-item-by-kode-default', [AspekKpiItemController::class, 'fetchByKodeDefault'])->name('kpi-production.fetch-aspek-kpi-item-by-kode-default');
+    Route::get('kpi-production-fetch-kpi-employee-default', [KpiEmployeeController::class, 'fetchDefault'])->name('kpi-production.fetch-kpi-employee-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {

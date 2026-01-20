@@ -101,15 +101,6 @@ class KpiEvaluationPersonalController extends DefaultController
                         'value' => 'personal',
                     ],
                     [
-                        'type' => 'select2',
-                        'label' => 'Kode',
-                        'name' =>  'kode',
-                        'class' => 'col-8 my-2',
-                        'required' => $this->flagRules('kode', $id),
-                        'value' => (isset($edit)) ? $edit->kode : '',
-                        'options' => $optionsEmployee,
-                    ],
-                    [
                         'type' => 'select',
                         'label' => 'Bulan',
                         'name' =>  'bulan',
@@ -126,6 +117,15 @@ class KpiEvaluationPersonalController extends DefaultController
                         'required' => $this->flagRules('tahun', $id),
                         'value' => (isset($edit)) ? $edit->tahun : '',
                         'options' => DatetimeHelper::optionsForYears(true),
+                    ],
+                    [
+                        'type' => 'select2',
+                        'label' => 'Kode',
+                        'name' =>  'kode',
+                        'class' => 'col-8 my-2',
+                        'required' => $this->flagRules('kode', $id),
+                        'value' => (isset($edit)) ? $edit->kode : '',
+                        'options' => $optionsEmployee,
                     ],
                     [
                         'type' => 'dynamic_form_kpi_aspek_values',

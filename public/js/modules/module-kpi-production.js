@@ -271,4 +271,33 @@ $( document ).ready(function() {
             }
         });
     });
+
+    // get employee list
+    const currentKategori = window.formKategoriValue || ''
+    if(currentKategori === 'personal') {
+        $('[name="bulan"], [name="tahun"]').on('select2:select', function () {
+            // fetch employee list
+            const bulan = $(this).closest('form').find('[name="bulan"]').val();
+            const tahun = $(this).closest('form').find('[name="tahun"]').val();
+            const $container = $('.dynamic-form-kpi-aspek-values');
+            $.ajax({
+                url: 'kpi-production-fetch-employee-default',
+                method: 'GET',
+                data: { 
+                    bulan: bulan,
+                    tahun: tahun,
+                    filter_by_exist_evaluasi: true
+                },
+                success: function (response) {
+                    const options = JSON.parse(response);
+                    const $this = $(this);
+                    $this.closest('form').find('[name="kode"]').empty();
+                    options.forEach(opt => {
+                        $this.closest('form').find('[name="kode"]').append(new Option(opt.text, opt.value));
+                    })
+                }
+            });
+        });
+    }
+
 })

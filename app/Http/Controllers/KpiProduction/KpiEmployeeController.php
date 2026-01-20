@@ -231,4 +231,12 @@ class KpiEmployeeController extends DefaultController
         return view($layout, $data);
     }
 
+    public function fetchDefault() {
+        $tahun = request('tahun');
+        $bulan = request('bulan');
+        $filter = '';
+
+        $data = $this->defaultDataQuery()->where('tahun', $tahun)->where('bulan', $bulan)->get();
+    }
+
 }
