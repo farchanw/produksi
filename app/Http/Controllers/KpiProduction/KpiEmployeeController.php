@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\KpiProduction;
 
+use App\Helpers\Common\DatetimeHelper;
+use Illuminate\Support\Facades\Validator;
 use App\Models\AspekKpiHeader;
 use App\Models\KpiEmployee;
 use App\Models\MasterSection;
@@ -231,12 +233,35 @@ class KpiEmployeeController extends DefaultController
         return view($layout, $data);
     }
 
-    public function fetchDefault() {
-        $tahun = request('tahun');
-        $bulan = request('bulan');
-        $filter = '';
+    public function fetchDefault()
+    {
+        $request = request();
 
-        $data = $this->defaultDataQuery()->where('tahun', $tahun)->where('bulan', $bulan)->get();
+        $validated = $request->validate([
+            'periode' => ['required'],
+        ]);
+
+        $periode = DatetimeHelper::getKpiPeriode($validated['periode']);
+        $filterByExistEvaluasi = $request->boolean('filter_by_exist_evaluasi');
+
+        $query = $this->defaultDataQuery(); // usually kpi_employees
+
+        if ($filterByExistEvaluasi) {
+            // Left join evaluations to find employees that have NOT been evaluated yet
+            $query = $query->leftJoin('kpi_evaluations', function ($join) use ($periode) {
+                    $join->on('kpi_employees.nik', '=', 'kpi_evaluations.kode')
+                        ->where('kpi_evaluations.periode', $periode)
+                        ->where('kpi_evaluations.kategori', 'personal');
+                })
+                ->whereNull('kpi_evaluations.kode') // only employees without evaluation
+                ->select('kpi_employees.nik as value', 'kpi_employees.nama as text'); // avoid duplicate columns
+        }
+
+        $data = $query->get();
+
+        return response()->json($data);
     }
+
+
 
 }

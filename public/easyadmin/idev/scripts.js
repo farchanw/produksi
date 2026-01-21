@@ -726,6 +726,9 @@ function formattingColumn(items, col, dcfs) {
     if (dcf === "toInventoryInOutBadge") {
         mItem = formatToInventoryInOutBadge(item);
     }
+    if (dcf === "toKpiPeriodDate") {
+        mItem = formatToKpiPeriodDate(item);
+    }
 
     return mItem;
 }
@@ -800,6 +803,17 @@ const formatToInventoryInOutBadge = (text) => {
     }
     return `<span class="badge fs-6 ${badgeClass}"  style="width: 4rem;">${text.toUpperCase()}</span>`;
 }
+
+const formatToKpiPeriodDate = (date) => {
+    return new Date(date).toLocaleDateString('id-ID', {
+        month: 'long',
+        year: 'numeric',
+    });
+}
+
+
+
+
 
 $(document).ajaxComplete(function () {
     document

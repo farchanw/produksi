@@ -151,8 +151,7 @@ class AspekKpiItemController extends DefaultController
         // optional params
         $kategori = request('kategori');
         $kode = request('kode');
-        $bulan = request('bulan');
-        $tahun = request('tahun');
+        $periode = request('periode');
 
         if ($id) {
             $data = $this->defaultDataQuery()
@@ -161,11 +160,10 @@ class AspekKpiItemController extends DefaultController
                 ->get();
 
             // get values from kpi_evaluations if exist
-            if ($kategori && $kode && $bulan && $tahun) {
+            if ($kategori && $kode && $periode) {
                 $evaluationData = KpiEvaluation::where('aspek_kpi_header_id', $id)
                     ->where('kode', $kode)
-                    ->where('bulan', $bulan)
-                    ->where('tahun', $tahun)
+                    ->where('periode', $periode)
                     ->where('kategori', $kategori)
                     ->first();
 
@@ -194,8 +192,7 @@ class AspekKpiItemController extends DefaultController
 
         // optional params
         $kategori = request('kategori');
-        $bulan = request('bulan');
-        $tahun = request('tahun');
+        $periode = request('periode');
 
         if (!$kode) {
             return response()->json($data);

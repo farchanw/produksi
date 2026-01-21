@@ -217,8 +217,7 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
     const $container = $('.dynamic-form-kpi-aspek-values');
 
     const kategori = $('input[name="kategori"]').val();
-    const bulan = $('input[name="bulan"]').val();
-    const tahun = $('input[name="tahun"]').val();
+    const periode = $('input[name="periode"]').val();
     const kode = $('input[name="kode"]').val();
 
     $.ajax({
@@ -228,8 +227,7 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
             aspek_kpi_header_id: aspekKpiHeaderId,
             kategori: kategori,
             kode: kode,
-            bulan: bulan,
-            tahun: tahun,
+            periode: periode,
          },
         success: function (response) {
             renderAspekKpiItem(response);
@@ -249,11 +247,10 @@ $( document ).ready(function() {
 
         const selectElement = $(this);
         const kategori = $(this).closest('form').find('[name="kategori"]').val() || window.formKategoriValue;
-        const bulan = $(this).closest('form').find('[name="bulan"]').val();
-        const tahun = $(this).closest('form').find('[name="tahun"]').val();
+        const periode = $(this).closest('form').find('[name="periode"]').val();
         const kode = $(this).closest('form').find('[name="kode"]').val();
 
-        if((!kategori || !bulan || !tahun) && !kode) return;
+        if((!kategori || !periode) && !kode) return;
 
         $container.empty();
 
@@ -263,8 +260,7 @@ $( document ).ready(function() {
             data: { 
                 kategori: kategori,
                 kode: kode,
-                bulan: bulan,
-                tahun: tahun,
+                periode: periode,
             },
             success: function (response) {
                 renderAspekKpiItem(selectElement, response);
@@ -275,26 +271,31 @@ $( document ).ready(function() {
     // get employee list
     const currentKategori = window.formKategoriValue || ''
     if(currentKategori === 'personal') {
-        $('[name="bulan"], [name="tahun"]').on('select2:select', function () {
+        $('[name="periode"]').on('change', function () {
             // fetch employee list
-            const bulan = $(this).closest('form').find('[name="bulan"]').val();
-            const tahun = $(this).closest('form').find('[name="tahun"]').val();
+            const $form = $(this).closest('form');
+            const $select = $form.find('[name="kode"]');
+            const periode = $form.find('[name="periode"]').val();
             const $container = $('.dynamic-form-kpi-aspek-values');
             $.ajax({
-                url: 'kpi-production-fetch-employee-default',
+                url: 'kpi-production-fetch-kpi-employee-default',
                 method: 'GET',
                 data: { 
-                    bulan: bulan,
-                    tahun: tahun,
+                    periode: periode,
                     filter_by_exist_evaluasi: true
                 },
                 success: function (response) {
-                    const options = JSON.parse(response);
-                    const $this = $(this);
-                    $this.closest('form').find('[name="kode"]').empty();
-                    options.forEach(opt => {
-                        $this.closest('form').find('[name="kode"]').append(new Option(opt.text, opt.value));
-                    })
+                    $select.empty(); 
+
+                    // Add new options
+                    response.forEach(opt => {
+                        const newOption = new Option(opt.text, opt.value, false, false);
+                        $select.append(newOption);
+                    });
+
+                    // Refresh Select2 to recognize new options
+                    $select.trigger('change');
+
                 }
             });
         });

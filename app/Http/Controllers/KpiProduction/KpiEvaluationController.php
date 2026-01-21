@@ -38,10 +38,8 @@ class KpiEvaluationController extends DefaultController
                     ['name' => 'No', 'column' => '#', 'order' => true],
                     ['name' => 'Kategori', 'column' => 'kategori', 'order' => true],
                     ['name' => 'Kode', 'column' => 'kode', 'order' => true],
-                    ['name' => 'Bulan', 'column' => 'bulan', 'order' => true],
-                    ['name' => 'Tahun', 'column' => 'tahun', 'order' => true],
+                    ['name' => 'Periode', 'column' => 'periode', 'order' => true],
                     ['name' => 'Aspek', 'column' => 'aspek_kpi_header_id', 'order' => true],
-                    //['name' => 'Aspek values', 'column' => 'aspek_values', 'order' => true],
                     ['name' => 'Skor akhir', 'column' => 'skor_akhir', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
@@ -51,13 +49,7 @@ class KpiEvaluationController extends DefaultController
         $this->importExcelConfig = [ 
             'primaryKeys' => ['kategori'],
             'headers' => [
-                    ['name' => 'Kategori', 'column' => 'kategori'],
-                    ['name' => 'Kode', 'column' => 'kode'],
-                    ['name' => 'Bulan', 'column' => 'bulan'],
-                    ['name' => 'Tahun', 'column' => 'tahun'],
-                    ['name' => 'Aspek kpi header id', 'column' => 'aspek_kpi_header_id'],
-                    ['name' => 'Aspek values', 'column' => 'aspek_values'],
-                    ['name' => 'Skor akhir', 'column' => 'skor_akhir'], 
+
             ]
         ];
 
@@ -83,12 +75,13 @@ class KpiEvaluationController extends DefaultController
 
         $optionsAspekKpiHeader = AspekKpiHeader::select('id as value', 'nama as text')->get()->toArray();
         $optionsAspekKpiHeader = array_merge([['value' => '', 'text' => 'Select...']], $optionsAspekKpiHeader);
-        $optionsEmployee = KpiEmployee::select('id as value', DB::raw("CONCAT(nama, ' / ', nik) as text"))
+        $optionsEmployee = [];/*KpiEmployee::select('id as value', DB::raw("CONCAT(nama, ' / ', nik) as text"))
             // filter not exist in kpi evaluation
             //->whereNotIn('id', KpiEvaluation::select('kode')->where('kategori', 'personal')->get()->pluck('kode')->toArray())
             ->orderBy('nama', 'ASC')
             ->get()
             ->toArray();
+            */
 
         $emptyAspekValues = [];
 
@@ -113,22 +106,12 @@ class KpiEvaluationController extends DefaultController
                         'options' => $optionsEmployee,
                     ],
                     [
-                        'type' => 'select',
-                        'label' => 'Bulan',
-                        'name' =>  'bulan',
+                        'type' => 'month',
+                        'label' => 'Periode',
+                        'name' =>  'periode',
                         'class' => 'col-2 my-2',
-                        'required' => $this->flagRules('bulan', $id),
-                        'value' => (isset($edit)) ? $edit->bulan : '',
-                        'options' => DatetimeHelper::optionsForMonths(),
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Tahun',
-                        'name' =>  'tahun',
-                        'class' => 'col-2 my-2',
-                        'required' => $this->flagRules('tahun', $id),
-                        'value' => (isset($edit)) ? $edit->tahun : '',
-                        'options' => DatetimeHelper::optionsForYears(),
+                        'required' => $this->flagRules('periode', $id),
+                        'value' => (isset($edit)) ? $edit->periode : '',
                     ],
                     [
                         'type' => 'select',
@@ -160,8 +143,7 @@ class KpiEvaluationController extends DefaultController
         $rules = [
                     'kategori' => 'required|string',
                     'kode' => 'required|string',
-                    'bulan' => 'required|string',
-                    'tahun' => 'required|string',
+                    'periode' => 'required|string',
                     'aspek_kpi_header_id' => 'required|string',
         ];
 

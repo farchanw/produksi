@@ -11,7 +11,7 @@ class KpiEvaluation extends Model
 
     protected $table = 'kpi_evaluations';
     protected $primaryKey = 'id';
-    protected $fillable = ["kategori","kode","bulan","tahun","aspek_kpi_header_id","aspek_values","skor_akhir"];
+    protected $fillable = ["kategori","kode","periode","aspek_kpi_header_id","aspek_values","skor_akhir"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show'];
 
 

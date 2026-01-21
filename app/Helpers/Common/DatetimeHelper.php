@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Helpers\Modules;
+namespace App\Helpers\Common;
+
+use Carbon\Carbon;
 
 class DatetimeHelper {
     public static function optionsForYears($withPlaceholder = true)
@@ -48,6 +50,20 @@ class DatetimeHelper {
         }
 
         return $optionsMonth;
+    }
+
+    public static function getKpiPeriode($date) 
+    {
+        $date = Carbon::createFromFormat('Y-m', $date);
+
+        return $date->startOfMonth()->format('Y-m-d');
+    }
+
+    public static function getKpiPeriodeValue($date) 
+    {
+        $date = Carbon::createFromFormat('Y-m-d', $date);
+
+        return $date->format('Y-m');
     }
 
 

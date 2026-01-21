@@ -97,26 +97,6 @@ class AspekKpiHeaderController extends DefaultController
                         'value' => (isset($edit)) ? $edit->master_subsection_id : '',
                         'options' => $optionsSubsection,
                     ],
-                    /*
-                    [
-                        'type' => 'select',
-                        'label' => 'Tahun',
-                        'name' =>  'tahun',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('tahun', $id),
-                        'value' => (isset($edit)) ? $edit->tahun : date('Y'),
-                        'options' => $optionsYear,
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Bulan',
-                        'name' =>  'bulan',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('bulan', $id),
-                        'value' => (isset($edit)) ? $edit->bulan : date('n'),
-                        'options' => $optionsMonth,
-                    ],
-                    */
                     [
                         'type' => 'repeatable_aspek_kpi_item',
                         'label' => 'Aspek KPI',

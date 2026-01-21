@@ -15,8 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('kategori'); // personal|divisi
             $table->string('kode'); // nik|id_divisi
-            $table->unsignedInteger('bulan');
-            $table->unsignedInteger('tahun');
+            $table->date('periode');
             $table->foreignId('aspek_kpi_header_id')->constrained('aspek_kpi_headers')->cascadeOnDelete();
             $table->json('aspek_values')->nullable();
             $table->decimal('skor_akhir', 5, 2)->default(0.00);
@@ -24,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(
-                ['kategori', 'kode', 'aspek_kpi_header_id', 'bulan', 'tahun'],
+                ['kategori', 'kode', 'aspek_kpi_header_id', 'periode'],
                 'kpi_evaluation_idx'
             );
         });

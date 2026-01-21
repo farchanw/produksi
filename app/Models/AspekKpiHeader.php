@@ -11,7 +11,7 @@ class AspekKpiHeader extends Model
 
     protected $table = 'aspek_kpi_headers';
     protected $primaryKey = 'id';
-    protected $fillable = ["master_section_id","master_subsection_id","tahun","bulan"];
+    protected $fillable = ["master_section_id","master_subsection_id"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show'];
 
 
