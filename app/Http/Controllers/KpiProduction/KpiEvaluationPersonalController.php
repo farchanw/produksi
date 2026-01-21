@@ -15,6 +15,9 @@ use Exception;
 use Idev\EasyAdmin\app\Helpers\Constant;
 use Illuminate\Support\Facades\Validator;
 use Idev\EasyAdmin\app\Helpers\Validation;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class KpiEvaluationPersonalController extends DefaultController
 {
@@ -317,6 +320,7 @@ class KpiEvaluationPersonalController extends DefaultController
     {
         $baseUrlExcel = route($this->generalUri.'.export-excel-default');
         $baseUrlPdf = route($this->generalUri.'.export-pdf-default');
+        $baseUrlLaporanPdf = route($this->generalUri.'.export-pdf-laporan-personal-default');
 
         $moreActions = [
             [
@@ -335,12 +339,31 @@ class KpiEvaluationPersonalController extends DefaultController
                 'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export PDF'><i class='ti ti-file'></i></a>"
             ],
         ];
+        
+        $customActions = [
+            [
+                'key' => 'export-laporan-bulanan-pdf-default',
+                'name' => 'Export Laporan Bulanan PDF',
+                'html_button' => '<button
+                    type="button"
+                    id="export-laporan-bulanan-pdf"
+                    class="btn btn-sm btn-primary radius-6"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalExportLaporanPdf"
+                    data-base-url="'.$baseUrlLaporanPdf.'"
+                    title="Cetak Laporan Bulanan PDF"
+                    >
+                    <i class="ti ti-file-report"></i>
+                    </button>
+                '
+            ],
+        ];
 
         $permissions =  $this->arrPermissions;
         if ($this->dynamicPermission) {
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
         }
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer_kpi_evaluation_personal';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
@@ -361,6 +384,7 @@ class KpiEvaluationPersonalController extends DefaultController
         }
         $data['permissions'] = $permissions;
         $data['more_actions'] = $moreActions;
+        $data['custom_actions'] = $customActions;
         $data['headerLayout'] = $this->pageHeaderLayout;
         $data['table_headers'] = $this->tableHeaders;
         $data['title'] = $this->title;
@@ -377,5 +401,75 @@ class KpiEvaluationPersonalController extends DefaultController
         $data['filters'] = $this->filters();
         
         return view($layout, $data);
+    }
+
+    public function exportPdfLaporanPersonalDefault(Request $request)
+    {
+        $nik = $request->input('nik');
+        $periode = $request->input('periode');
+        $stdDate = DatetimeHelper::getKpiPeriode($periode);
+        //dd($stdDate);
+        $carbonDate = Carbon::parse($stdDate);
+
+        $month = $carbonDate->month;
+        $year  = $carbonDate->year;
+        $data['bulanNama'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F'));
+        $data['tahun'] = $year;
+        $records = AspekKpiItem::join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
+            ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
+            ->join('kpi_evaluations', function ($join) use ($stdDate) {
+                $join->on('kpi_evaluations.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+                    ->where('kpi_evaluations.periode', $stdDate)
+                    ->where('kpi_evaluations.kategori', 'personal');
+            })
+            ->join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
+            ->where('kpi_employees.nik', $nik)
+            ->select(
+                'aspek_kpi_items.id', 
+                'aspek_kpi_items.bobot',
+                'aspek_kpi_items.target',
+                'master_kpis.nama as nama_kpi', 
+                'master_kpis.area_kinerja_utama as area_kinerja_utama',
+                'master_kpis.tipe as tipe',
+                'master_kpis.satuan as satuan',
+                'master_kpis.sumber_data_realisasi as sumber_data_realisasi',
+
+                'kpi_employees.nama',
+                'kpi_employees.nik',
+                'kpi_evaluations.periode',
+                'kpi_evaluations.aspek_values',
+                'kpi_evaluations.skor_akhir',
+            )
+            ->get();
+
+
+        $records = $records->map(function ($item) {
+            $values = collect(json_decode($item->aspek_values, true))
+                ->keyBy(fn ($v) => (int) $v['aspek_kpi_item_id']);
+
+            $match = $values->get((int) $item->id);
+
+            $item->skor       = $match['skor']       ?? null;
+            $item->realisasi  = $match['realisasi']  ?? null;
+            $item->skor_akhir = $match['skor_akhir'] ?? null;
+
+            unset($item->aspek_values);
+
+            return $item;
+        });
+
+
+        $data['records'] = $records;
+        //dd($data['records']);
+
+        $data['nama'] = $records[0]?->nama ?? '';
+        $data['nik'] = $records[0]?->nik ?? '';
+
+        $pdf = Pdf::loadView('pdf.kpi_production.laporan_kpi_personal', $data);
+        $pdf->setPaper('A4');
+
+        $fileName = 'laporan-kpi-personal-' . Carbon::now()->format('YmdHis') . '.pdf';
+
+        return $pdf->stream($fileName);
     }
 }

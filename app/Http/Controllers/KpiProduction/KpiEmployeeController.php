@@ -237,16 +237,12 @@ class KpiEmployeeController extends DefaultController
     {
         $request = request();
 
-        $validated = $request->validate([
-            'periode' => ['required'],
-        ]);
-
-        $periode = DatetimeHelper::getKpiPeriode($validated['periode']);
+        $query = $this->defaultDataQuery(); // usually kpi_employees
         $filterByExistEvaluasi = $request->boolean('filter_by_exist_evaluasi');
 
-        $query = $this->defaultDataQuery(); // usually kpi_employees
-
         if ($filterByExistEvaluasi) {
+            $periode = DatetimeHelper::getKpiPeriode($request->periode);
+
             // Left join evaluations to find employees that have NOT been evaluated yet
             $query = $query->leftJoin('kpi_evaluations', function ($join) use ($periode) {
                     $join->on('kpi_employees.nik', '=', 'kpi_evaluations.kode')

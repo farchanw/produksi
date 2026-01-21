@@ -58,3 +58,93 @@ body {
     margin-top: .5rem;
     text-align: right;
 }
+
+#laporan_kpi_personal {
+    color: #000;
+}
+
+#laporan_kpi_personal header h1 {
+    text-align: center;
+    margin: 2px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#laporan_kpi_personal .info {
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+#laporan_kpi_personal table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#laporan_kpi_personal th,
+#laporan_kpi_personal td {
+    border: 1px solid black;
+    padding: 8px 12px;
+    vertical-align: top;
+}
+
+#laporan_kpi_personal th {
+    background-color: #f9a800;
+    font-weight: bold;
+    text-align: center;
+}
+
+#laporan_kpi_personal td {
+    background-color: white;
+}
+
+#laporan_kpi_personal td:nth-child(1),
+#laporan_kpi_personal th:nth-child(1) {
+    text-align: center;
+    font-weight: bold;
+}
+
+#laporan_kpi_personal .bold {
+    font-weight: bold;
+}
+
+#laporan_kpi_personal .highlight {
+    background-color: #eaf1de;
+    font-weight: bold;
+    text-align: center;
+}
+
+#laporan_kpi_personal .center {
+    text-align: center;
+}
+
+#laporan_kpi_personal .info-table {
+  width: auto; 
+  margin: 16px 0;
+}
+
+#laporan_kpi_personal .info-table td {
+  border: none;      /* No borders */
+  padding: 0px;
+  margin: 0px;
+}
+
+#laporan_kpi_personal .info-table .label {
+    text-align: left;
+    font-weight: bold;
+}
+
+#laporan_kpi_personal .info-table .value {
+  font-weight: normal;
+  text-align: left;
+}
+
+#laporan_kpi_personal .info-table .separator {
+    padding: 0 4px;
+    margin: 0 4px;
+}
+
+#laporan_kpi_personal .signature-block {
+    margin-top: .5rem;
+    text-align: right;
+}

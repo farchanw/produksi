@@ -299,6 +299,31 @@ $( document ).ready(function() {
                 }
             });
         });
+
+        $('#modalExportLaporanPdf').on('show.bs.modal', function (event) {
+            const $select = $(event.currentTarget.querySelector('#laporan-personal-select-employee'));
+            $.ajax({
+                url: 'kpi-production-fetch-kpi-employee-default',
+                method: 'GET',
+                data: {},
+                success: function (response) {
+                    $select.empty();
+
+                    console.log($select)
+
+                    // Add new options
+                    response.forEach(opt => {
+                        const newOption = new Option(`${opt.nik} - ${opt.nama}`, opt.nik, false, false);
+                        $select.append(newOption);
+                    });
+
+                    console.log(response)
+
+                    // Refresh Select2 to recognize new options
+                    $select.trigger('change');
+                }
+            });
+        })
     }
 
 })
