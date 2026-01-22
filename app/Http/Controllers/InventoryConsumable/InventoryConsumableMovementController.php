@@ -191,7 +191,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'type' => 'hidden',
                         'label' => 'Kategori',
                         'name' =>  'category_id',
-                        'class' => 'col-md-12 my-2',
+                        'class' => '',
                         'required' => $this->flagRules('category_id', $id),
                         'value' => isset($edit) ? $edit->category_id : '',
                         'options' => $optionsCategory
@@ -200,7 +200,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'type' => 'hidden',
                         'label' => 'Nama Item',
                         'name' =>  'item_id',
-                        'class' => 'col-md-12 my-2',
+                        'class' => '',
                         'required' => $this->flagRules('item_id', $id),
                         'value' => (isset($edit)) ? $edit->item_id : '',
                         'options' => $optionsItem
@@ -235,7 +235,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'type' => 'hidden',
                         'label' => 'Tanggal',
                         'name' =>  'movement_datetime',
-                        'class' => 'col-md-12 my-2',
+                        'class' => '',
                         'required' => $this->flagRules('movement_datetime', $id),
                         'value' => (isset($edit)) ? $edit->movement_datetime : ''
                     ],

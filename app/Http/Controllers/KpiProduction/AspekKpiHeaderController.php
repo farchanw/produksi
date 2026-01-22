@@ -67,8 +67,16 @@ class AspekKpiHeaderController extends DefaultController
             $repeatableAspekKpiItemValue = AspekKpiItem::where('aspek_kpi_header_id', $edit->id)->get();
         }
 
-        $optionsSubsection = MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray();
-        array_unshift(['value' => '', 'text' => 'Pilih Subbagian...'], $optionsSubsection);
+        $optionsSubsection = MasterSubsection::select('id as value', 'nama as text')
+            ->orderBy('nama', 'ASC')
+            ->get()
+            ->toArray();
+
+        array_unshift($optionsSubsection, [
+            'value' => '',
+            'text'  => 'Pilih Subbagian...'
+        ]);
+
 
         $fields = [
                     [
