@@ -152,10 +152,6 @@
                         <label class="me-2 mb-0" style="min-width:70px;">Nama</label>
                         <select id="laporan-personal-select-employee" name="nik" class="form-control form-control-sm support-live-select2"></select>
                     </div>
-                </div>
-
-
-                <div class="modal-body">
                     <div class="d-flex align-items-center mb-2">
                         <label class="me-2 mb-0" style="min-width:70px;">Periode</label>
                         <input 
@@ -167,10 +163,9 @@
                         >
                     </div>
                 </div>
-                
 
 
-                <div class="modal-footer">
+                <div class="modal-footer mt-2">
                     <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
                         Batal
                     </button>

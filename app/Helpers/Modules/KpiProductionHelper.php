@@ -2,7 +2,17 @@
 
 namespace App\Helpers\Modules;
 
+use App\Models\MasterSection;
+
 class KpiProductionHelper {
+    public static function optionsForSections() {
+        return MasterSection::select('id as value', 'nama as text')
+            ->orderBy('nama', 'ASC')
+            ->get();
+    }
+
+
+
     public static function optionsKategori()
     {
         return [
@@ -10,6 +20,8 @@ class KpiProductionHelper {
             ['value' => 'divisi', 'text' => 'Divisi'],
         ];
     }
+
+
 
     public static function calculateScore($values)
     {

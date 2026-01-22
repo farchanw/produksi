@@ -64,7 +64,7 @@ class MasterKpiController extends DefaultController
         }
 
         $optionsSubsection = MasterSubsection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray();
-        $optionsSubsection = array_merge([['value' => '', 'text' => 'Pilih Subbagian...']], $optionsSubsection);
+        array_unshift($optionsSubsection, ['value' => '', 'text' => 'Pilih Subbagian...']);
 
         $fields = [
                     [

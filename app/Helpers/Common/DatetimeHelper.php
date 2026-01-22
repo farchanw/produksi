@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Common;
 
+use Carbon\Exceptions\InvalidFormatException;
 use Carbon\Carbon;
 
 class DatetimeHelper {
@@ -46,25 +47,33 @@ class DatetimeHelper {
         ];
 
         if ($withPlaceholder) {
-            $optionsMonth = array_merge([['value' => '', 'text' => 'Select...']], $optionsMonth);
+            array_unshift($optionsMonth, ['value' => '', 'text' => 'Select...']);
         }
 
         return $optionsMonth;
     }
 
-    public static function getKpiPeriode($date) 
+    public static function getKpiPeriode($date)
     {
-        $date = Carbon::createFromFormat('Y-m', $date);
-
-        return $date->startOfMonth()->format('Y-m-d');
+        try {
+            return Carbon::createFromFormat('Y-m', $date)
+                ->startOfMonth()
+                ->format('Y-m-d');
+        } catch (InvalidFormatException $e) {
+            return null;
+        }
     }
 
-    public static function getKpiPeriodeValue($date) 
+    public static function getKpiPeriodeValue($date)
     {
-        $date = Carbon::createFromFormat('Y-m-d', $date);
-
-        return $date->format('Y-m');
+        try {
+            return Carbon::createFromFormat('Y-m-d', $date)
+                ->format('Y-m');
+        } catch (InvalidFormatException $e) {
+            return null;
+        }
     }
+
 
 
 }

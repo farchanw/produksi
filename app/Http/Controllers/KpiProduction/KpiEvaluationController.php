@@ -74,7 +74,7 @@ class KpiEvaluationController extends DefaultController
         }
 
         $optionsAspekKpiHeader = AspekKpiHeader::select('id as value', 'nama as text')->get()->toArray();
-        $optionsAspekKpiHeader = array_merge([['value' => '', 'text' => 'Select...']], $optionsAspekKpiHeader);
+        array_unshift($optionsAspekKpiHeader, ['value' => '', 'text' => 'Select...']);
         $optionsEmployee = [];/*KpiEmployee::select('id as value', DB::raw("CONCAT(nama, ' / ', nik) as text"))
             // filter not exist in kpi evaluation
             //->whereNotIn('id', KpiEvaluation::select('kode')->where('kategori', 'personal')->get()->pluck('kode')->toArray())

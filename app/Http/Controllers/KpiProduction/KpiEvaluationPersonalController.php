@@ -39,9 +39,10 @@ class KpiEvaluationPersonalController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
+                    ['name' => 'Nama', 'column' => 'nama', 'order' => true],
                     ['name' => 'Nik', 'column' => 'kode', 'order' => true],
                     ['name' => 'Periode', 'column' => 'periode', 'order' => true, 'formatting' => 'toKpiPeriodDate'],
-                    ['name' => 'Aspek', 'column' => 'aspek_kpi_header_id', 'order' => true],
+                    ['name' => 'Aspek', 'column' => 'aspek', 'order' => true],
                     ['name' => 'Skor akhir', 'column' => 'skor_akhir', 'order' => true], 
                     ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
                     ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
@@ -75,9 +76,10 @@ class KpiEvaluationPersonalController extends DefaultController
         }
 
         $optionsAspekKpiHeader = AspekKpiHeader::select('id as value', 'nama as text')->get()->toArray();
-        $optionsAspekKpiHeader = array_merge([['value' => '', 'text' => 'Select...']], $optionsAspekKpiHeader);
-        $optionsEmployee = [];
-        $optionsEmployee = array_merge([['value' => '', 'text' => 'Select...']], $optionsEmployee);
+        array_unshift($optionsAspekKpiHeader, ['value' => '', 'text' => 'Select...']);
+        $optionsEmployee = [
+            ['value' => '', 'text' => 'Select...']
+        ];
 
         $emptyAspekValues = [];
 
@@ -120,6 +122,33 @@ class KpiEvaluationPersonalController extends DefaultController
         
         return $fields;
     }
+
+
+
+    protected function filters()
+    {
+        $optionsSection = KpiProductionHelper::optionsForSections()->toArray();
+        array_unshift($optionsSection, ['value' => '', 'text' => 'Semua']);
+
+        $fields = [
+            [
+                'type' => 'select',
+                'label' => 'Bagian',
+                'name' =>  'section_id',
+                'class' => 'col-md-3',
+                'options' => $optionsSection,
+            ],
+            [
+                'type' => 'month',
+                'label' => 'Periode',
+                'name' =>  'periode',
+                'class' => 'col-md-3',
+            ]
+        ];
+
+        return $fields;
+    }
+
 
 
 
@@ -413,7 +442,7 @@ class KpiEvaluationPersonalController extends DefaultController
 
         $month = $carbonDate->month;
         $year  = $carbonDate->year;
-        $data['bulanNama'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F'));
+        $data['bulanNama'] = Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F');
         $data['tahun'] = $year;
         $records = AspekKpiItem::join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
             ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
@@ -471,5 +500,59 @@ class KpiEvaluationPersonalController extends DefaultController
         $fileName = 'laporan-kpi-personal-' . Carbon::now()->format('YmdHis') . '.pdf';
 
         return $pdf->stream($fileName);
+    }
+
+
+
+    protected function defaultDataQuery()
+    {
+        $filters = [];
+        $orThose = null;
+        $orderBy = 'id';
+        $orderState = 'DESC';
+        if (request('search')) {
+            $orThose = request('search');
+        }
+        if (request('order')) {
+            $orderBy = request('order');
+            $orderState = request('order_state');
+        }
+        // filters
+        if (request('section_id')) {
+            $filters[] = ['aspek_kpi_headers.master_section_id', '=', request('section_id')];
+        }
+        if (request('periode')) {
+            $filters[] = ['kpi_evaluations.periode', '=', DatetimeHelper::getKpiPeriode(request('periode'))];
+        }
+
+        $dataQueries = $this->modelClass::join('kpi_employees', 'kpi_evaluations.kode', '=', 'kpi_employees.nik')
+            ->join('aspek_kpi_headers', 'kpi_evaluations.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+            ->where($filters)
+            ->where(function ($query) use ($orThose) {
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'aspek_kpi_header_id', 'nama', 'aspek'];
+
+                foreach ($this->tableHeaders as $key => $th) {
+                    if (array_key_exists('search', $th) && $th['search'] == false) {
+                        $efc[] = $th['column'];
+                    }
+                    if(!in_array($th['column'], $efc))
+                    {
+                        if($key == 0){
+                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }else{
+                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                        }
+                    }
+                }
+            })
+            ->orderBy($orderBy, $orderState)
+            ->select(
+                'kpi_evaluations.*',
+                'kpi_employees.nama',
+                'kpi_employees.nik',
+                'aspek_kpi_headers.nama as aspek',
+            );
+
+        return $dataQueries;
     }
 }
