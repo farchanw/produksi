@@ -1,3 +1,14 @@
+$( document ).ajaxStop(function() {
+    $('.support-live-select2').each(function () {
+        $(this).select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $(this).parent(),// fix select2 search input focus bug
+        })
+        
+    })
+});
+
+
 document.addEventListener('change', function (event) {
     if (event.target.matches('select[name="master_subsection_id"]')) {
         const subsectionId = event.target.closest('form').querySelector('[name="master_subsection_id"]').value;
@@ -124,16 +135,6 @@ function reindexAspekKpiItem(prefix = '') {
 }
 
 
-$( document ).ajaxStop(function() {
-    $('.support-live-select2').each(function () {
-        $(this).select2({
-            theme: 'bootstrap-5',
-            dropdownParent: $(this).parent(),// fix select2 search input focus bug
-        })
-        
-    })
-});
-
 
 
 function renderAspekKpiItem(selectElement, response) {
@@ -235,6 +236,97 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
     });
 });
  */
+
+
+
+
+
+// Modal Export Laporan PDF
+const tmplModalExportLaporanPdf = /*html*/`
+<div class="modal fade" id="modalExportLaporanPdf" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="get" id="formExportLaporanPdf" target="_blank">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title text-white">Cetak Laporan Bulanan PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="me-2 mb-0" style="min-width:70px;">Nama</label>
+                        <select id="laporan-personal-select-employee" name="nik" class="form-control form-control-sm support-live-select2"></select>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="me-2 mb-0" style="min-width:70px;">Periode</label>
+                        <input 
+                            type="month"
+                            name="periode"
+                            class="form-control form-control-sm"
+                            required
+                        >
+                    </div>
+                </div>
+
+
+                <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Cetak
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>`
+
+$('body').append(tmplModalExportLaporanPdf);
+
+ 
+// Modal Bulk Action
+const tmplModalBulkAction = /*html*/`
+<div class="modal fade" id="modalBulkAction" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" id="formBulkAction" target="_blank">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title text-white">Bulk Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <span></span>
+                </div>
+
+
+                <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>`
+
+$('body').append(tmplModalBulkAction);
+
+
+
+
+
+
+
+
+
+
+
+
 $( document ).ready(function() {
     const $kategori = $('[name="kategori"]');
     if ($kategori.length) {
@@ -267,6 +359,8 @@ $( document ).ready(function() {
             }
         });
     });
+
+
 
     // get employee list
     const currentKategori = window.formKategoriValue || ''
@@ -317,13 +411,67 @@ $( document ).ready(function() {
                         $select.append(newOption);
                     });
 
-                    console.log(response)
-
                     // Refresh Select2 to recognize new options
                     $select.trigger('change');
                 }
             });
         })
+
+        $('#modalBulkAction').on('show.bs.modal', function (event) {
+            // get all selected data
+            const $table = $('.pc-container').find('table');
+            const checkboxes = $table.find('input[type="checkbox"][class^="cb-list-"]:checked');
+
+            const modalBody = $(event.currentTarget.querySelector('.modal-body'));
+            modalBody.html(/*html*/`
+                <div class="form-group">
+                    <label class="form-label">
+                        Pilih aksi untuk ${checkboxes.length} data yang dipilih:
+                    </label>
+
+                    <select name="bulk_action" class="form-control form-control-sm">
+                        <option value="export-laporan">Cetak Laporan Bulanan PDF</option>
+                    </select>
+                </div>
+            `);
+        })
+
+        $('#modalBulkAction').find('form').on('submit', function (event) {
+            event.preventDefault();
+
+            const $form = $(this);
+            const $table = $('.pc-container').find('table');
+            const checkboxes = $table.find('input[type="checkbox"][class^="cb-list-"]:checked');
+            const values = checkboxes.map((_, cb) => cb.value).get();
+
+            $('<input>', {
+                type: 'hidden',
+                name: 'kpi_evaluation_ids',
+                value: JSON.stringify(values)
+            }).appendTo($form);
+
+            this.submit();
+        });
+
     }
 
+
+    document.getElementById('export-laporan-bulanan-pdf').addEventListener('click', function() {
+        const baseUrl = this.getAttribute('data-base-url');
+        document.getElementById('formExportLaporanPdf').setAttribute('action', baseUrl);
+    });
+
+    document.getElementById('bulk-action').addEventListener('click', function() {
+        const baseUrl = this.getAttribute('data-base-url');
+        document.getElementById('formBulkAction').setAttribute('action', baseUrl);
+
+        const csrfInput = document.createElement('input')
+        csrfInput.setAttribute('type', 'hidden')
+        csrfInput.setAttribute('name', '_token')
+        csrfInput.setAttribute('value', this.dataset.csrf)
+        document.getElementById('formBulkAction').appendChild(csrfInput)
+    });
 })
+
+
+

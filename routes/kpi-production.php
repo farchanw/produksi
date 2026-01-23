@@ -25,6 +25,8 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
 
     
     Route::get('kpi-production-export-pdf-laporan-personal-default', [KpiEvaluationPersonalController::class, 'exportPdfLaporanPersonalDefault'])->name('kpi-evaluation-personal.export-pdf-laporan-personal-default');
+    
+    Route::post('kpi-production-kpi-evaluation-personal-bulk-action-default', [KpiEvaluationPersonalController::class, 'bulkAction'])->name('kpi-evaluation-personal.bulk-action-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {

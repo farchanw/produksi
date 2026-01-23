@@ -729,6 +729,9 @@ function formattingColumn(items, col, dcfs) {
     if (dcf === "toKpiPeriodDate") {
         mItem = formatToKpiPeriodDate(item);
     }
+    if (dcf === "toBulkActionCheckbox") {
+        mItem = formatToBulkActionCheckbox(item);
+    }
 
     return mItem;
 }
@@ -811,7 +814,9 @@ const formatToKpiPeriodDate = (date) => {
     });
 }
 
-
+const formatToBulkActionCheckbox = (id) => {
+    return `<input type="checkbox" class="form-check-input" name="bulk-action-checkbox" value="${id}">`;
+}
 
 
 

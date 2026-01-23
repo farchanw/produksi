@@ -59,4 +59,39 @@ class KpiProductionHelper {
             ];
         });
     }
+
+
+
+    public static function mapLaporanPersonal($records)
+    {
+        return $records->map(function ($item) {
+            $values = collect(json_decode($item->aspek_values, true))
+                ->keyBy(fn ($v) => (int) $v['aspek_kpi_item_id']);
+
+            $match = $values->get((int) $item->id);
+
+            $item->skor       = $match['skor']       ?? null;
+            $item->realisasi  = $match['realisasi']  ?? null;
+            $item->skor_akhir = $match['skor_akhir'] ?? null;
+
+            unset($item->aspek_values);
+
+            return $item;
+        });
+    }
+
+    public static function mapLaporanPersonalBulk($records)
+    {
+        return collect(json_decode($records, true))->map(function ($item) {
+            $values = collect($item);
+ 
+            $item['skor']       = $values->get('skor')       ?? null;
+            $item['realisasi']  = $values->get('realisasi')  ?? null;
+            $item['skor_akhir'] = $values->get('skor_akhir') ?? null;
+
+            unset($item->aspek_values);
+
+            return $item;
+        });
+    }
 }

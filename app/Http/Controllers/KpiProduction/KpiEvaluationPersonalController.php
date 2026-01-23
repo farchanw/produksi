@@ -25,6 +25,7 @@ class KpiEvaluationPersonalController extends DefaultController
     protected $title;
     protected $generalUri;
     protected $tableHeaders;
+    protected $dynamicPermission = true;
     // protected $actionButtons;
     // protected $arrPermissions;
     protected $importExcelConfig;
@@ -34,7 +35,10 @@ class KpiEvaluationPersonalController extends DefaultController
         $this->title = 'Pencatatan';
         $this->title = 'Penilaian';
         $this->generalUri = 'kpi-evaluation-personal';
-        // $this->arrPermissions = [];
+        $this->arrPermissions = [
+            'export-laporan-bulanan-pdf-default',
+            'bulk-action-default', 
+        ];
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
@@ -351,6 +355,8 @@ class KpiEvaluationPersonalController extends DefaultController
         $baseUrlPdf = route($this->generalUri.'.export-pdf-default');
         $baseUrlLaporanPdf = route($this->generalUri.'.export-pdf-laporan-personal-default');
 
+        $baseUrlBulkAction = route($this->generalUri.'.bulk-action-default');
+
         $moreActions = [
             [
                 'key' => 'import-excel-default',
@@ -386,13 +392,34 @@ class KpiEvaluationPersonalController extends DefaultController
                     </button>
                 '
             ],
+            [
+                'key' => 'bulk-action-default',
+                'name' => 'Bulk Action',
+                'html_button' => '<button
+                    type="button"
+                    id="bulk-action"
+                    class="btn btn-sm radius-6 bg-primary text-white"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalBulkAction"
+                    data-base-url="'.$baseUrlBulkAction.'"
+                    data-csrf="'.csrf_token().'"
+                    title="Bulk Action"
+                    >
+                    <i class="ti ti-checkbox"></i>
+                    </button>
+                '
+            ],
         ];
+
+        $moreActions = array_merge($moreActions, $customActions);
 
         $permissions =  $this->arrPermissions;
         if ($this->dynamicPermission) {
             $permissions = (new Constant())->permissionByMenu($this->generalUri);
+            $permissions = array_merge($permissions, $this->arrPermissions);
         }
-        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer_kpi_evaluation_personal';
+        //dd($permissions);
+        $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer_with_checkbox';
         if(isset($this->drawerLayout)){
             $layout = $this->drawerLayout;
         }
@@ -413,7 +440,6 @@ class KpiEvaluationPersonalController extends DefaultController
         }
         $data['permissions'] = $permissions;
         $data['more_actions'] = $moreActions;
-        $data['custom_actions'] = $customActions;
         $data['headerLayout'] = $this->pageHeaderLayout;
         $data['table_headers'] = $this->tableHeaders;
         $data['title'] = $this->title;
@@ -432,75 +458,6 @@ class KpiEvaluationPersonalController extends DefaultController
         return view($layout, $data);
     }
 
-    public function exportPdfLaporanPersonalDefault(Request $request)
-    {
-        $nik = $request->input('nik');
-        $periode = $request->input('periode');
-        $stdDate = DatetimeHelper::getKpiPeriode($periode);
-        //dd($stdDate);
-        $carbonDate = Carbon::parse($stdDate);
-
-        $month = $carbonDate->month;
-        $year  = $carbonDate->year;
-        $data['bulanNama'] = Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F');
-        $data['tahun'] = $year;
-        $records = AspekKpiItem::join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
-            ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
-            ->join('kpi_evaluations', function ($join) use ($stdDate) {
-                $join->on('kpi_evaluations.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
-                    ->where('kpi_evaluations.periode', $stdDate)
-                    ->where('kpi_evaluations.kategori', 'personal');
-            })
-            ->join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
-            ->where('kpi_employees.nik', $nik)
-            ->select(
-                'aspek_kpi_items.id', 
-                'aspek_kpi_items.bobot',
-                'aspek_kpi_items.target',
-                'master_kpis.nama as nama_kpi', 
-                'master_kpis.area_kinerja_utama as area_kinerja_utama',
-                'master_kpis.tipe as tipe',
-                'master_kpis.satuan as satuan',
-                'master_kpis.sumber_data_realisasi as sumber_data_realisasi',
-
-                'kpi_employees.nama',
-                'kpi_employees.nik',
-                'kpi_evaluations.periode',
-                'kpi_evaluations.aspek_values',
-                'kpi_evaluations.skor_akhir',
-            )
-            ->get();
-
-
-        $records = $records->map(function ($item) {
-            $values = collect(json_decode($item->aspek_values, true))
-                ->keyBy(fn ($v) => (int) $v['aspek_kpi_item_id']);
-
-            $match = $values->get((int) $item->id);
-
-            $item->skor       = $match['skor']       ?? null;
-            $item->realisasi  = $match['realisasi']  ?? null;
-            $item->skor_akhir = $match['skor_akhir'] ?? null;
-
-            unset($item->aspek_values);
-
-            return $item;
-        });
-
-
-        $data['records'] = $records;
-        //dd($data['records']);
-
-        $data['nama'] = $records[0]?->nama ?? '';
-        $data['nik'] = $records[0]?->nik ?? '';
-
-        $pdf = Pdf::loadView('pdf.kpi_production.laporan_kpi_personal', $data);
-        $pdf->setPaper('A4');
-
-        $fileName = 'laporan-kpi-personal-' . Carbon::now()->format('YmdHis') . '.pdf';
-
-        return $pdf->stream($fileName);
-    }
 
 
 
@@ -554,5 +511,154 @@ class KpiEvaluationPersonalController extends DefaultController
             );
 
         return $dataQueries;
+    }
+
+
+
+    
+    public function exportPdfLaporanPersonalDefault(Request $request)
+    {
+        $nik = $request->input('nik');
+        $periode = $request->input('periode');
+
+        $stdDate = DatetimeHelper::getKpiPeriode($periode);
+        //dd($stdDate);
+        $carbonDate = Carbon::parse($stdDate);
+
+        $month = $carbonDate->month;
+        $year  = $carbonDate->year;
+        $data['bulanNama'] = Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F');
+        $data['tahun'] = $year;
+        $records = AspekKpiItem::join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
+            ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
+            ->join('kpi_evaluations', function ($join) use ($stdDate) {
+                $join->on('kpi_evaluations.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+                    ->where('kpi_evaluations.periode', $stdDate)
+                    ->where('kpi_evaluations.kategori', 'personal');
+            })
+            ->join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
+            ->where('kpi_employees.nik', $nik)
+            ->select(
+                'aspek_kpi_items.id', 
+                'aspek_kpi_items.bobot',
+                'aspek_kpi_items.target',
+                'master_kpis.nama as nama_kpi', 
+                'master_kpis.area_kinerja_utama as area_kinerja_utama',
+                'master_kpis.tipe as tipe',
+                'master_kpis.satuan as satuan',
+                'master_kpis.sumber_data_realisasi as sumber_data_realisasi',
+
+                'kpi_employees.nama',
+                'kpi_employees.nik',
+                'kpi_evaluations.periode',
+                'kpi_evaluations.aspek_values',
+                'kpi_evaluations.skor_akhir',
+            )
+            ->get();
+
+
+        $data['records'] = KpiProductionHelper::mapLaporanPersonal($records);
+        //dd($data['records']);
+
+        $data['nama'] = $records[0]?->nama ?? '';
+        $data['nik'] = $records[0]?->nik ?? '';
+
+        $pdf = Pdf::loadView('pdf.kpi_production.laporan_kpi_personal', $data);
+        $pdf->setPaper('A4');
+
+        $fileName = 'laporan-kpi-personal-' . Carbon::now()->format('YmdHis') . '.pdf';
+
+        return $pdf->stream($fileName);
+    }
+
+
+
+    public function bulkAction(Request $request)
+    {
+        $bulkAction = $request->input('bulk_action');
+
+
+
+        if ($bulkAction == 'export-laporan') {
+            $evaluationIds = $request->input('kpi_evaluation_ids', []);
+
+            if (empty($evaluationIds)) {
+                return response()->json(['message' => 'No KPI evaluations selected'], 422);
+            }
+
+            $evaluationIds = json_decode($evaluationIds);
+
+            // ===== Fetch evaluations with employee info in bulk =====
+            $evaluations = KpiEvaluation::join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
+                ->whereIn('kpi_evaluations.id', $evaluationIds)
+                ->where('kpi_evaluations.kategori', 'personal')
+                ->select(
+                    'kpi_evaluations.id as evaluation_id',
+                    'kpi_evaluations.periode',
+                    'kpi_evaluations.aspek_values',
+                    'kpi_evaluations.skor_akhir',
+                    'kpi_employees.nama',
+                    'kpi_employees.nik',
+                    'kpi_evaluations.aspek_kpi_header_id'
+                )
+                ->get();
+
+            $evaluationIdsFetched = $evaluations->pluck('evaluation_id')->toArray();
+
+            $items = AspekKpiItem::join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
+                ->join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
+                ->whereIn('aspek_kpi_headers.id', $evaluations->pluck('aspek_kpi_header_id')->toArray())
+                ->select(
+                    'aspek_kpi_items.id as item_id',
+                    'aspek_kpi_items.bobot',
+                    'aspek_kpi_items.target',
+                    'aspek_kpi_items.aspek_kpi_header_id',
+                    'master_kpis.nama as nama_kpi',
+                    'master_kpis.area_kinerja_utama',
+                    'master_kpis.tipe',
+                    'master_kpis.satuan',
+                    'master_kpis.sumber_data_realisasi'
+                )
+                ->get();
+
+            // ===== Group items by header ID for fast lookup =====
+            $itemsGrouped = $items->groupBy('aspek_kpi_header_id');
+
+            // ===== Build evaluations array with items =====
+            $data['evaluations'] = $evaluations->map(function ($evaluation) use ($itemsGrouped) {
+                //$evaluation->aspek_values = KpiProductionHelper::mapLaporanPersonalBulk($evaluation->aspek_values);
+
+                return [
+                    'evaluation_id' => $evaluation->evaluation_id,
+                    'periode'       => $evaluation->periode,
+                    'skor_akhir'    => $evaluation->skor_akhir,
+                    'aspek_values'  => $evaluation->aspek_values,
+                    'nama'          => $evaluation->nama,
+                    'nik'           => $evaluation->nik,
+                    'records'       => $itemsGrouped[$evaluation->aspek_kpi_header_id] ?? collect(),
+                ];
+            });
+
+            // ===== Get month & year from first evaluation (optional) =====
+            $firstPeriode = $evaluations->first()?->periode;
+            $carbonDate   = Carbon::parse($firstPeriode ?? now());
+
+            $data['bulanNama'] = Carbon::createFromFormat('m', $carbonDate->month)
+                ->locale('id')
+                ->translatedFormat('F');
+            $data['tahun'] = $carbonDate->year;
+
+            // ===== Generate PDF =====
+            $pdf = Pdf::loadView('pdf.kpi_production.bulk_laporan_kpi_personal', $data);
+            $pdf->setPaper('A4');
+
+            $fileName = 'bulk-laporan-kpi-personal-' . Carbon::now()->format('YmdHis') . '.pdf';
+
+            return $pdf->stream($fileName);
+
+
+
+
+        }
     }
 }
