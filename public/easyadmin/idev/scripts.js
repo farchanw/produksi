@@ -1075,9 +1075,12 @@ function idevSetEdit(id, uriKey, prefix = "") {
                     const checkboxValue = Number(this.value);
                     $(this).prop("checked", field.value.includes(checkboxValue));
                 });
-
-
-            } else {
+            } else if (field.type == "onlyview_alt") {
+                $("#edit_" + field.name).val(field.value);
+                $("#edit_" + field.name).trigger("change");
+                $("#text_edit_" + field.name).text(field.text || field.value);
+            }
+            else {
                 $("#edit_" + field.name).val(field.value);
                 $("#edit_" + field.name).trigger("change");
 

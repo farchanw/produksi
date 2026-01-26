@@ -68,8 +68,8 @@ class KpiProductionHelper {
             $values = collect(json_decode($item->aspek_values, true))
                 ->keyBy(fn ($v) => (int) $v['aspek_kpi_item_id']);
 
-            $match = $values->get((int) $item->id);
-
+            $match = $values->get((int) $item->aspek_kpi_item_id);
+ 
             $item->skor       = $match['skor']       ?? null;
             $item->realisasi  = $match['realisasi']  ?? null;
             $item->skor_akhir = $match['skor_akhir'] ?? null;

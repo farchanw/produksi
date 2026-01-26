@@ -238,6 +238,7 @@ class KpiEmployeeController extends DefaultController
         $request = request();
 
         $query = $this->defaultDataQuery(); // usually kpi_employees
+        $kode = $request->kode;
         $filterByExistEvaluasi = $request->boolean('filter_by_exist_evaluasi');
 
         if ($filterByExistEvaluasi) {
@@ -251,6 +252,10 @@ class KpiEmployeeController extends DefaultController
                 })
                 ->whereNull('kpi_evaluations.kode') // only employees without evaluation
                 ->select('kpi_employees.nik as value', 'kpi_employees.nama as text'); // avoid duplicate columns
+        }
+
+        if ($kode) {
+            $query->where('kpi_employees.nik', $kode);
         }
 
         $data = $query->get();

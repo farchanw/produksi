@@ -45,7 +45,6 @@ function addAspekKpiItem(prefix = '', values = {}, optionsKpiMaster = window.Kpi
     const nodeTemplate = document.querySelector('#node-repeatable-aspek-kpi-item-template');
     const fragment = document.importNode(nodeTemplate.content, true);
 
-    // 🔥 IMPORTANT: get the real section element
     const section = fragment.querySelector('.repeatable-kpi-field-sections');
     section.id = `${prefix}repeatable-${newIndex}`;
 
@@ -208,9 +207,52 @@ function renderAspekKpiItem(selectElement, response) {
 
         // Realisasi input is already editable, just set its name
         $(clone).find('.input-realisasi').attr('name', `aspek_values_input[${index}][realisasi]`);
+        $(clone).find('.input-realisasi').on('input', function () {
+            console.log('aaaaaaaaaaaaauasibabcsj')
+            const realisasi = parseFloat($(this).val()) || 0;
+            let valueSkor = 0;
+
+            if (item.tipe === 'max') {
+                valueSkor = realisasi / item.target * 100;
+            } else if (item.tipe === 'min') {
+                valueSkor = realisasi <= 0 ? 100 : item.target / realisasi * 100;
+            }
+
+            const valueSkorAkhir = valueSkor * (item.bobot / 100);
+
+            $(clone).find('.input-skor').val(valueSkor);
+            $(clone).find('.input-skor-akhir').val(valueSkorAkhir);
+        });
 
         $container.append(clone);
+
     });
+
+
+    // live update on input change
+    $container.on('input', '.input-realisasi', function () {
+        const $row = $(this).closest('.row');
+        const target = $row.find('.input-target').val();
+        const bobot = $row.find('.input-bobot').val();
+
+        const realisasi = parseFloat(this.value) || 0;
+
+        let tipe = $row.find('.input-tipe').val().toLowerCase();
+        let valueSkor = 0;
+
+        if (tipe === 'max') {
+            valueSkor = realisasi / target * 100;
+        } else if (tipe === 'min') {
+            valueSkor = realisasi <= 0 ? 100 : target / realisasi * 100;
+        }
+
+        const valueSkorAkhir = valueSkor * (bobot / 100);
+
+        $row.find('.input-skor').val(valueSkor.toFixed(2));
+        $row.find('.input-skor-akhir').val(valueSkorAkhir.toFixed(2));
+    });
+
+
 }
 /* 
 $('[name="aspek_kpi_header_id"]').on('change', function () {
@@ -365,34 +407,63 @@ $( document ).ready(function() {
     // get employee list
     const currentKategori = window.formKategoriValue || ''
     if(currentKategori === 'personal') {
-        $('[name="periode"]').on('change', function () {
-            // fetch employee list
-            const $form = $(this).closest('form');
-            const $select = $form.find('[name="kode"]');
-            const periode = $form.find('[name="periode"]').val();
-            const $container = $('.dynamic-form-kpi-aspek-values');
-            $.ajax({
-                url: 'kpi-production-fetch-kpi-employee-default',
-                method: 'GET',
-                data: { 
-                    periode: periode,
-                    filter_by_exist_evaluasi: true
-                },
-                success: function (response) {
-                    $select.empty(); 
 
-                    // Add new options
-                    response.forEach(opt => {
-                        const newOption = new Option(opt.text, opt.value, false, false);
-                        $select.append(newOption);
-                    });
 
-                    // Refresh Select2 to recognize new options
-                    $select.trigger('change');
 
-                }
+
+
+$(document).on('change', '[name="periode"]', function () {
+    const $offcanvas = $(this).closest('.offcanvas');
+    const $form = $offcanvas.find('form');
+
+    // stop if offcanvas is not show
+    if (!$offcanvas.hasClass('show')) return;
+
+    const isEdit = $form.attr('id')?.startsWith('form-edit-');
+    const isCreate = $form.attr('id')?.startsWith('form-create-');
+
+
+    const $select = $form.find('[name="kode"]');
+    const $container = $form.find('.dynamic-form-kpi-aspek-values');
+    const periode = $(this).val();
+
+    console.log($select.val())
+
+    const params = { periode };
+
+    if (isCreate) {
+        params.filter_by_exist_evaluasi = true;
+    }
+
+    $.ajax({
+        url: 'kpi-production-fetch-kpi-employee-default',
+        method: 'GET',
+        data: params,
+        success(response) { 
+            $select.empty();
+
+            response.forEach(opt => {
+                $select.append(new Option(opt.text, opt.value));
             });
-        });
+
+            // Trigger Select2 update only for THIS form
+            $select.trigger('change.select2');
+        }
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         $('#modalExportLaporanPdf').on('show.bs.modal', function (event) {
             const $select = $(event.currentTarget.querySelector('#laporan-personal-select-employee'));

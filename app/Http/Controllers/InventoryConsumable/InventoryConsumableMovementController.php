@@ -95,7 +95,7 @@ class InventoryConsumableMovementController extends DefaultController
             ->where('inventory_consumable_movements.id', $id)->first();
         }
 
-        $optionsItem = InventoryConsumable::select('id as value', DB::raw('CONCAT_WS(" - ", sku, name) as text'))
+        $optionsItem = InventoryConsumable::select('id as value', 'name as text')
             ->orderBy('name', 'ASC')
             ->get()
             ->toArray();

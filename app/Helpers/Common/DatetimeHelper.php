@@ -60,7 +60,7 @@ class DatetimeHelper {
                 ->startOfMonth()
                 ->format('Y-m-d');
         } catch (InvalidFormatException $e) {
-            return null;
+            return $date;
         }
     }
 
@@ -70,7 +70,18 @@ class DatetimeHelper {
             return Carbon::createFromFormat('Y-m-d', $date)
                 ->format('Y-m');
         } catch (InvalidFormatException $e) {
-            return null;
+            return $date;
+        }
+    }
+
+    public static function getKpiPeriodeFormatted($date)
+    {
+        try {
+            return Carbon::createFromFormat('Y-m-d', $date)
+                ->locale('id')
+                ->translatedFormat('F Y');
+        } catch (InvalidFormatException $e) {
+            return $date;
         }
     }
 

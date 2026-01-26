@@ -85,8 +85,12 @@ class KpiEvaluationPersonalController extends DefaultController
             ['value' => '', 'text' => 'Select...']
         ];
 
-        $emptyAspekValues = [];
+        if (isset($edit)) {
+            $optionsEmployee = KpiEmployee::select('id as value', 'nik as text')->where('nik', $edit->kode)->get()->toArray(); 
+        }
 
+        $emptyAspekValues = [];
+    
         $fields = [
                     [
                         'type' => 'hidden',
@@ -123,6 +127,46 @@ class KpiEvaluationPersonalController extends DefaultController
                         'field_values' => (isset($edit)) ? json_decode($edit->aspek_values) : $emptyAspekValues,
                     ],
         ];
+
+        if ($mode === 'edit') {
+            $fields = [
+                    [
+                        'type' => 'hidden',
+                        'label' => 'Kategori',
+                        'name' =>  'kategori',
+                        'class' => ' ',
+                        'required' => $this->flagRules('kategori', $id),
+                        'value' => 'personal',
+                    ],
+                    [
+                        'type' => 'onlyview_alt',
+                        'label' => 'Periode',
+                        'name' =>  'periode',
+                        'class' => 'col-4 my-2',
+                        'required' => $this->flagRules('periode', $id),
+                        'value' => (isset($edit)) ? $edit->periode : '',
+                        'text' => (isset($edit)) ? DatetimeHelper::getKpiPeriodeFormatted($edit->periode) : '',
+                    ],
+                    [
+                        'type' => 'onlyview_alt',
+                        'label' => 'NIK',
+                        'name' =>  'kode',
+                        'class' => 'col-8 my-2',
+                        'required' => $this->flagRules('kode', $id),
+                        'value' => (isset($edit)) ? $edit->kode : '',
+                        'text'  => (isset($edit)) ? $edit->kode . ' - ' . KpiEmployee::where('nik', $edit->kode)->first()->nama : '', 
+                    ],
+                    [
+                        'type' => 'dynamic_form_kpi_aspek_values',
+                        'label' => 'Penilaian',
+                        'name' =>  'aspek_values',
+                        'class' => 'col-12 my-2',
+                        'required' => $this->flagRules('aspek_values', $id),
+                        'value' => (isset($edit)) ? $edit->aspek_values : '',
+                        'field_values' => (isset($edit)) ? json_decode($edit->aspek_values) : $emptyAspekValues,
+                    ],
+            ];
+        }
         
         return $fields;
     }
@@ -529,33 +573,31 @@ class KpiEvaluationPersonalController extends DefaultController
         $year  = $carbonDate->year;
         $data['bulanNama'] = Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F');
         $data['tahun'] = $year;
-        $records = AspekKpiItem::join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
-            ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
-            ->join('kpi_evaluations', function ($join) use ($stdDate) {
-                $join->on('kpi_evaluations.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
-                    ->where('kpi_evaluations.periode', $stdDate)
-                    ->where('kpi_evaluations.kategori', 'personal');
-            })
-            ->join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
-            ->where('kpi_employees.nik', $nik)
-            ->select(
-                'aspek_kpi_items.id', 
-                'aspek_kpi_items.bobot',
-                'aspek_kpi_items.target',
-                'master_kpis.nama as nama_kpi', 
-                'master_kpis.area_kinerja_utama as area_kinerja_utama',
-                'master_kpis.tipe as tipe',
-                'master_kpis.satuan as satuan',
-                'master_kpis.sumber_data_realisasi as sumber_data_realisasi',
-
-                'kpi_employees.nama',
-                'kpi_employees.nik',
-                'kpi_evaluations.periode',
-                'kpi_evaluations.aspek_values',
-                'kpi_evaluations.skor_akhir',
-            )
-            ->get();
-
+        $records = KpiEvaluation::join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
+    ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'kpi_evaluations.aspek_kpi_header_id')
+    ->join('aspek_kpi_items', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+    ->join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
+    ->where('kpi_employees.nik', $nik)
+    ->where('kpi_evaluations.periode', $stdDate)
+    ->where('kpi_evaluations.kategori', 'personal')
+    ->select(
+        'kpi_evaluations.id as evaluation_id',
+        'kpi_evaluations.periode',
+        'kpi_evaluations.aspek_values',
+        'kpi_evaluations.skor_akhir',
+        'kpi_employees.nama',
+        'kpi_employees.nik',
+        'aspek_kpi_headers.id as aspek_kpi_header_id',
+        'aspek_kpi_items.id as aspek_kpi_item_id',
+        'aspek_kpi_items.target',
+        'aspek_kpi_items.bobot',
+        'master_kpis.nama as nama_kpi',
+        'master_kpis.area_kinerja_utama as area_kinerja_utama',
+        'master_kpis.tipe',
+        'master_kpis.satuan',
+        'master_kpis.sumber_data_realisasi'
+    )
+    ->get();
 
         $data['records'] = KpiProductionHelper::mapLaporanPersonal($records);
         //dd($data['records']);
