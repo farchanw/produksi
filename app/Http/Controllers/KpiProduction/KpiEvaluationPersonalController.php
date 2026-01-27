@@ -149,7 +149,7 @@ class KpiEvaluationPersonalController extends DefaultController
                     ],
                     [
                         'type' => 'onlyview_alt',
-                        'label' => 'NIK',
+                        'label' => 'Nama',
                         'name' =>  'kode',
                         'class' => 'col-8 my-2',
                         'required' => $this->flagRules('kode', $id),
@@ -574,30 +574,30 @@ class KpiEvaluationPersonalController extends DefaultController
         $data['bulanNama'] = Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('F');
         $data['tahun'] = $year;
         $records = KpiEvaluation::join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
-    ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'kpi_evaluations.aspek_kpi_header_id')
-    ->join('aspek_kpi_items', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
-    ->join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
-    ->where('kpi_employees.nik', $nik)
-    ->where('kpi_evaluations.periode', $stdDate)
-    ->where('kpi_evaluations.kategori', 'personal')
-    ->select(
-        'kpi_evaluations.id as evaluation_id',
-        'kpi_evaluations.periode',
-        'kpi_evaluations.aspek_values',
-        'kpi_evaluations.skor_akhir',
-        'kpi_employees.nama',
-        'kpi_employees.nik',
-        'aspek_kpi_headers.id as aspek_kpi_header_id',
-        'aspek_kpi_items.id as aspek_kpi_item_id',
-        'aspek_kpi_items.target',
-        'aspek_kpi_items.bobot',
-        'master_kpis.nama as nama_kpi',
-        'master_kpis.area_kinerja_utama as area_kinerja_utama',
-        'master_kpis.tipe',
-        'master_kpis.satuan',
-        'master_kpis.sumber_data_realisasi'
-    )
-    ->get();
+            ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'kpi_evaluations.aspek_kpi_header_id')
+            ->join('aspek_kpi_items', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+            ->join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
+            ->where('kpi_employees.nik', $nik)
+            ->where('kpi_evaluations.periode', $stdDate)
+            ->where('kpi_evaluations.kategori', 'personal')
+            ->select(
+                'kpi_evaluations.id as evaluation_id',
+                'kpi_evaluations.periode',
+                'kpi_evaluations.aspek_values',
+                'kpi_evaluations.skor_akhir',
+                'kpi_employees.nama',
+                'kpi_employees.nik',
+                'aspek_kpi_headers.id as aspek_kpi_header_id',
+                'aspek_kpi_items.id as aspek_kpi_item_id',
+                'aspek_kpi_items.target',
+                'aspek_kpi_items.bobot',
+                'master_kpis.nama as nama_kpi',
+                'master_kpis.area_kinerja_utama as area_kinerja_utama',
+                'master_kpis.tipe',
+                'master_kpis.satuan',
+                'master_kpis.sumber_data_realisasi'
+            )
+            ->get();
 
         $data['records'] = KpiProductionHelper::mapLaporanPersonal($records);
         //dd($data['records']);
@@ -619,8 +619,6 @@ class KpiEvaluationPersonalController extends DefaultController
     {
         $bulkAction = $request->input('bulk_action');
 
-
-
         if ($bulkAction == 'export-laporan') {
             $evaluationIds = $request->input('kpi_evaluation_ids', []);
 
@@ -630,8 +628,10 @@ class KpiEvaluationPersonalController extends DefaultController
 
             $evaluationIds = json_decode($evaluationIds);
 
-            // ===== Fetch evaluations with employee info in bulk =====
-            $evaluations = KpiEvaluation::join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
+            $records = KpiEvaluation::join('kpi_employees', 'kpi_employees.nik', '=', 'kpi_evaluations.kode')
+                ->join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'kpi_evaluations.aspek_kpi_header_id')
+                ->join('aspek_kpi_items', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+                ->join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
                 ->whereIn('kpi_evaluations.id', $evaluationIds)
                 ->where('kpi_evaluations.kategori', 'personal')
                 ->select(
@@ -641,48 +641,34 @@ class KpiEvaluationPersonalController extends DefaultController
                     'kpi_evaluations.skor_akhir',
                     'kpi_employees.nama',
                     'kpi_employees.nik',
-                    'kpi_evaluations.aspek_kpi_header_id'
-                )
-                ->get();
-
-            $evaluationIdsFetched = $evaluations->pluck('evaluation_id')->toArray();
-
-            $items = AspekKpiItem::join('aspek_kpi_headers', 'aspek_kpi_headers.id', '=', 'aspek_kpi_items.aspek_kpi_header_id')
-                ->join('master_kpis', 'master_kpis.id', '=', 'aspek_kpi_items.master_kpi_id')
-                ->whereIn('aspek_kpi_headers.id', $evaluations->pluck('aspek_kpi_header_id')->toArray())
-                ->select(
-                    'aspek_kpi_items.id as item_id',
-                    'aspek_kpi_items.bobot',
+                    'aspek_kpi_headers.id as aspek_kpi_header_id',
+                    'aspek_kpi_items.id as aspek_kpi_item_id',
                     'aspek_kpi_items.target',
-                    'aspek_kpi_items.aspek_kpi_header_id',
+                    'aspek_kpi_items.bobot',
                     'master_kpis.nama as nama_kpi',
-                    'master_kpis.area_kinerja_utama',
+                    'master_kpis.area_kinerja_utama as area_kinerja_utama',
                     'master_kpis.tipe',
                     'master_kpis.satuan',
                     'master_kpis.sumber_data_realisasi'
                 )
                 ->get();
 
-            // ===== Group items by header ID for fast lookup =====
-            $itemsGrouped = $items->groupBy('aspek_kpi_header_id');
+            $groupedByEvaluation = $records->groupBy('evaluation_id');
 
-            // ===== Build evaluations array with items =====
-            $data['evaluations'] = $evaluations->map(function ($evaluation) use ($itemsGrouped) {
-                //$evaluation->aspek_values = KpiProductionHelper::mapLaporanPersonalBulk($evaluation->aspek_values);
-
+            $data['evaluations'] = $groupedByEvaluation->map(function ($evaluationRecords) {
+                $firstRecord = $evaluationRecords->first();
+                
                 return [
-                    'evaluation_id' => $evaluation->evaluation_id,
-                    'periode'       => $evaluation->periode,
-                    'skor_akhir'    => $evaluation->skor_akhir,
-                    'aspek_values'  => $evaluation->aspek_values,
-                    'nama'          => $evaluation->nama,
-                    'nik'           => $evaluation->nik,
-                    'records'       => $itemsGrouped[$evaluation->aspek_kpi_header_id] ?? collect(),
+                    'evaluation_id' => $firstRecord->evaluation_id,
+                    'periode'       => $firstRecord->periode,
+                    'skor_akhir'    => $firstRecord->skor_akhir,
+                    'nama'          => $firstRecord->nama,
+                    'nik'           => $firstRecord->nik,
+                    'records'       => KpiProductionHelper::mapLaporanPersonal($evaluationRecords),
                 ];
-            });
+            })->values();
 
-            // ===== Get month & year from first evaluation (optional) =====
-            $firstPeriode = $evaluations->first()?->periode;
+            $firstPeriode = $records->first()?->periode;
             $carbonDate   = Carbon::parse($firstPeriode ?? now());
 
             $data['bulanNama'] = Carbon::createFromFormat('m', $carbonDate->month)
@@ -690,17 +676,12 @@ class KpiEvaluationPersonalController extends DefaultController
                 ->translatedFormat('F');
             $data['tahun'] = $carbonDate->year;
 
-            // ===== Generate PDF =====
             $pdf = Pdf::loadView('pdf.kpi_production.bulk_laporan_kpi_personal', $data);
             $pdf->setPaper('A4');
 
             $fileName = 'bulk-laporan-kpi-personal-' . Carbon::now()->format('YmdHis') . '.pdf';
 
             return $pdf->stream($fileName);
-
-
-
-
         }
     }
 }

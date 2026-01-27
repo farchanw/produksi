@@ -58,14 +58,13 @@
                 </thead>
                 <tbody>
                     @foreach ($evaluation['records'] as $item)
-                        @dd($item)
                         <tr>
                             <td class="bold center">{{ $loop->iteration }}</td>
                             <td>{{ $item->area_kinerja_utama }}</td>
                             <td>{{ $item->nama_kpi }}</td>
                             <td class="center">{{ $item->bobot }}</td>
                             <td class="center">{{ $item->target }}</td>
-                            <td class="highlight">{{ $item['aspek_values'][$loop->iteration - 1]['realisasi'] }}</td>
+                            <td class="highlight">{{ $item['realisasi'] }}</td>
                             <td class="center bold">{{ $item['skor'] }}</td>
                             <td class="center bold">{{ $item->skor_akhir }}</td>
                         </tr>
@@ -101,7 +100,10 @@
         </main>
     </div>
 
-    <div style="page-break-before: always;"></div>
+    @if (!$loop->last)
+        <div style="page-break-before: always;"></div>
+    @endif
+
     @endforeach
 </body>
 
