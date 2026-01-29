@@ -22,7 +22,7 @@ class WelcomeController extends Controller
                 'title' => 'Kartu Stok',
                 'link' => url('inventory-consumable/dashboard-inventory-consumable'),
                 'active' => true,
-                'icon' => asset('module-icons/inventory.png')
+                'icon' => asset('module-icons/pos.png')
             ],
             [
                 'title' => 'Utilisasi Produksi',
@@ -35,6 +35,12 @@ class WelcomeController extends Controller
                 'link' => url('kpi-production/dashboard-kpi-production'),
                 'active' => true,
                 'icon' => asset('module-icons/hr.png')
+            ],
+            [
+                'title' => 'OEE',
+                'link' => url('kpi-production/oee'),
+                'active' => true,
+                'icon' => asset('module-icons/inventory.png')
             ],
             [
                 'title' => 'Setting',

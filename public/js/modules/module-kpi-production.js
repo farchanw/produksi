@@ -408,67 +408,45 @@ $( document ).ready(function() {
     const currentKategori = window.formKategoriValue || ''
     if(currentKategori === 'personal') {
 
+        $(document).on('change', '[name="periode"]', function () {
+            const $offcanvas = $(this).closest('.offcanvas');
+            const $form = $offcanvas.find('form');
 
+            // stop if offcanvas is not show
+            if (!$offcanvas.hasClass('show')) return;
 
+            const isEdit = $form.attr('id')?.startsWith('form-edit-');
+            const isCreate = $form.attr('id')?.startsWith('form-create-');
 
+            const $selectKode = $form.find('[name="kode"]');
+            const $container = $form.find('.dynamic-form-kpi-aspek-values');
+            const periode = $(this).val();
+            const params = { periode };
 
-$(document).on('change', '[name="periode"]', function () {
-    const $offcanvas = $(this).closest('.offcanvas');
-    const $form = $offcanvas.find('form');
+            if (isCreate) {
+                params.filter_by_exist_evaluasi = true;
+            }
 
-    // stop if offcanvas is not show
-    if (!$offcanvas.hasClass('show')) return;
+            $.ajax({
+                url: 'kpi-production-fetch-kpi-employee-default',
+                method: 'GET',
+                data: params,
+                success(response) { 
+                    $selectKode.empty();
+                    $selectKode.append(new Option('Select...', ''));
 
-    const isEdit = $form.attr('id')?.startsWith('form-edit-');
-    const isCreate = $form.attr('id')?.startsWith('form-create-');
+                    response.forEach(opt => {
+                        $selectKode.append(new Option(opt.text, opt.value));
+                    });
 
-
-    const $selectKode = $form.find('[name="kode"]');
-    const $container = $form.find('.dynamic-form-kpi-aspek-values');
-    const periode = $(this).val();
-
-    console.log($selectKode.val())
-
-    const params = { periode };
-
-    if (isCreate) {
-        params.filter_by_exist_evaluasi = true;
-    }
-
-    $.ajax({
-        url: 'kpi-production-fetch-kpi-employee-default',
-        method: 'GET',
-        data: params,
-        success(response) { 
-            $selectKode.empty();
-
-            // placeholder
-            $selectKode.append(new Option('Select...', ''));
-
-            response.forEach(opt => {
-                $selectKode.append(new Option(opt.text, opt.value));
+                    $selectKode.trigger('change.select2');
+                    $selectKode.trigger('change');
+                }
             });
-
-            // Trigger Select2 update only for THIS form
-            $selectKode.trigger('change.select2');
-            $selectKode.trigger('change');
-        }
-    });
-});
+        });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+        
         $('#modalExportLaporanPdf').on('show.bs.modal', function (event) {
             const $select = $(event.currentTarget.querySelector('#laporan-personal-select-employee'));
             $.ajax({

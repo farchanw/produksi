@@ -34,7 +34,7 @@
         <div class="col my-2">
             <label>KPI</label>
             <select name="kpi[0][master_kpi_id]"
-                    class="form-control idev-form">
+                    class="form-control form-control-sm idev-form">
                 <option value="">Select...</option>
                 @foreach ($field['field_data']['master_kpi'] as $k)
                     <option value="{{ $k['value'] }}">
@@ -48,14 +48,14 @@
             <label>Bobot</label>
             <input type="number"
                     name="kpi[0][bobot]"
-                    class="form-control idev-form">
+                    class="form-control form-control-sm idev-form">
         </div>
 
         <div class="col-md-1 my-2">
             <label>Target</label>
             <input type="number"
                     name="kpi[0][target]"
-                    class="form-control idev-form">
+                    class="form-control form-control-sm idev-form">
         </div>
 
         <div class="col-md-1 my-2 remove-section">
