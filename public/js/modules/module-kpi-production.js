@@ -423,11 +423,11 @@ $(document).on('change', '[name="periode"]', function () {
     const isCreate = $form.attr('id')?.startsWith('form-create-');
 
 
-    const $select = $form.find('[name="kode"]');
+    const $selectKode = $form.find('[name="kode"]');
     const $container = $form.find('.dynamic-form-kpi-aspek-values');
     const periode = $(this).val();
 
-    console.log($select.val())
+    console.log($selectKode.val())
 
     const params = { periode };
 
@@ -440,14 +440,18 @@ $(document).on('change', '[name="periode"]', function () {
         method: 'GET',
         data: params,
         success(response) { 
-            $select.empty();
+            $selectKode.empty();
+
+            // placeholder
+            $selectKode.append(new Option('Select...', ''));
 
             response.forEach(opt => {
-                $select.append(new Option(opt.text, opt.value));
+                $selectKode.append(new Option(opt.text, opt.value));
             });
 
             // Trigger Select2 update only for THIS form
-            $select.trigger('change.select2');
+            $selectKode.trigger('change.select2');
+            $selectKode.trigger('change');
         }
     });
 });
