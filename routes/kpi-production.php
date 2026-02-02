@@ -10,8 +10,24 @@ use App\Http\Controllers\KpiProduction\KpiEvaluationController;
 use App\Http\Controllers\KpiProduction\KpiEvaluationPersonalController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\TestPersonalOeeController;
+
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], function () {
+    Route::post('/test-upload-oee', [TestPersonalOeeController::class, 'upload']);
+    Route::get('/test-upload-oee', function () {
+        $csrf = csrf_token();
+        return <<<HTML
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{$csrf}">
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+        HTML;
+    });
+
+
+
     Route::resource('dashboard-kpi-production', DashboardKpiProductionController::class);
     Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-kpi-production.listapi');
 
@@ -26,6 +42,8 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
     
     Route::get('kpi-production-export-pdf-laporan-personal-default', [KpiEvaluationPersonalController::class, 'exportPdfLaporanPersonalDefault'])->name('kpi-evaluation-personal.export-pdf-laporan-personal-default');
     
+
+
     Route::post('kpi-production-kpi-evaluation-personal-bulk-action-default', [KpiEvaluationPersonalController::class, 'bulkAction'])->name('kpi-evaluation-personal.bulk-action-default');
 });
 
