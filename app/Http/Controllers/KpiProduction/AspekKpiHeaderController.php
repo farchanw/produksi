@@ -8,6 +8,7 @@ use App\Models\MasterSection;
 use App\Models\MasterSubsection;
 use App\Models\AspekKpiHeader;
 use App\Models\AspekKpiItem;
+use App\Helpers\Common\EasyAdminHelper;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Idev\EasyAdmin\app\Helpers\Constant;
 use Illuminate\Http\Request;
@@ -411,20 +412,18 @@ class AspekKpiHeaderController extends DefaultController
 
         
         /* Override edit button */
-        // unset first
-        if (($key = array_search('easyadmin::backend.idev.buttons.edit', $this->actionButtonViews)) !== false) {
-            unset($this->actionButtonViews[$key]);
-            // set new edit button
-            $this->actionButtonViews[] = 'backend.idev.buttons.edit';
-        }
+        $this->actionButtonViews = EasyAdminHelper::replaceActionButton(
+            $this->actionButtonViews, 
+            'easyadmin::backend.idev.buttons.edit', 
+            'backend.idev.buttons.edit'
+        );
 
         /* Override delete button */
-        // unset first
-        if (($key = array_search('easyadmin::backend.idev.buttons.delete', $this->actionButtonViews)) !== false) {
-            unset($this->actionButtonViews[$key]);
-            // set new delete button
-            $this->actionButtonViews[] = 'backend.idev.buttons.delete';
-        }
+        $this->actionButtonViews = EasyAdminHelper::replaceActionButton(
+            $this->actionButtonViews, 
+            'easyadmin::backend.idev.buttons.delete', 
+            'backend.idev.buttons.delete'
+        );
 
         $data['permissions'] = $permissions;
         $data['more_actions'] = $moreActions;

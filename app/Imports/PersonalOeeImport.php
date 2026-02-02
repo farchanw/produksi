@@ -34,7 +34,7 @@ class PersonalOeeImport implements ToCollection, WithHeadingRow
             ->map(function ($items) {
                 return [
                     'avg_oee' => round($items->avg('oee'), 2),
-                    'records' => $items->count(),
+                    'count' => $items->count(),
                 ];
             });
     }
