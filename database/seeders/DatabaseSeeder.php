@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Admin',
                 'email' => 'admin',
-                'password' => bcrypt('produksi@123'),
+                'password' => bcrypt('prod@123'),
                 'role_id' => Role::where('name', 'admin')->first()->id,
             ]
         );
