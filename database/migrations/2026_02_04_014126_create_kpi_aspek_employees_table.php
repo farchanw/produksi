@@ -11,24 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kpi_employees', function (Blueprint $table) {
+        Schema::create('kpi_aspek_employees', function (Blueprint $table) {
             $table->id();
-            $table->string('nama', 255);
-            $table->string('nik')->unique();
-            
-            $table->foreignId('master_section_id')
-                ->nullable()
-                ->constrained('master_sections')
-                ->nullOnDelete();
 
-            $table->foreignId('master_subsection_id')
-                ->nullable()
-                ->constrained('master_subsections')
-                ->nullOnDelete();
+            $table->foreignId('kpi_employee_id')
+                ->constrained('kpi_employees')
+                ->cascadeOnDelete();
 
+            $table->foreignId('aspek_kpi_header_id')
+                ->nullable()
+                ->constrained('aspek_kpi_headers')
+                ->nullOnDelete();
 
             $table->timestamps();
         });
+
     }
 
     /**
@@ -36,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kpi_employees');
+        Schema::dropIfExists('kpi_aspek_employees');
     }
 };

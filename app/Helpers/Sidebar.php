@@ -169,7 +169,7 @@ class Sidebar
                 'name' => 'Data Bagian',
                 'icon' => 'ti ti-tag',
                 'key' => '',
-                'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('master-section') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => [
                     [
@@ -194,6 +194,53 @@ class Sidebar
             ],
 
             [
+                'name' => 'Data Karyawan',
+                'icon' => 'ti ti-user',
+                'key' => 'kpi-employee',
+                'base_key' => 'kpi-employee',
+                'visibility' => $this->canAccessMenu('kpi-employee') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => []
+            ],
+
+            [
+                'name' => 'Data Personal',
+                'icon' => 'ti ti-report',
+                'key' => '',
+                'visibility' => true,//$this->canAccessMenu('kpi-personal-oee') && $module == $currentModule,
+                'ajax_load' => false,
+                'childrens' => [
+                    [
+                        'name' => 'OEE Personal',
+                        'icon' => 'ti ti-menu',
+                        'key' => 'kpi-personal-oee.index',
+                        'base_key' => 'kpi-personal-oee.index',
+                        'visibility' => $this->canAccessMenu('kpi-personal-oee') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                    [
+                        'name' => 'LPP Personal',
+                        'icon' => 'ti ti-menu',
+                        'key' => 'kpi-personal-lpp.index',
+                        'base_key' => 'kpi-personal-lpp.index',
+                        'visibility' => $this->canAccessMenu('kpi-personal-lpp') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                    [
+                        'name' => 'Absensi Personal',
+                        'icon' => 'ti ti-menu',
+                        'key' => 'kpi-personal-absensi.index',
+                        'base_key' => 'kpi-personal-absensi.index',
+                        'visibility' => $this->canAccessMenu('kpi-personal-absensi') && $module == $currentModule,
+                        'ajax_load' => false,
+                        'childrens' => []
+                    ],
+                ]
+            ],
+
+            [
                 'name' => 'KPI',
                 'icon' => 'ti ti-menu',
                 'key' => 'master-kpi',
@@ -209,15 +256,6 @@ class Sidebar
                 'key' => 'aspek-kpi-header',
                 'base_key' => 'aspek-kpi-header',
                 'visibility' => $this->canAccessMenu('aspek-kpi-header') && $module == $currentModule,
-                'ajax_load' => false,
-                'childrens' => []
-            ],
-            [
-                'name' => 'Employee',
-                'icon' => 'ti ti-menu',
-                'key' => 'kpi-employee',
-                'base_key' => 'kpi-employee',
-                'visibility' => $this->canAccessMenu('kpi-employee') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => []
             ],

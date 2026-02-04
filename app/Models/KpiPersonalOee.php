@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class KpiEmployee extends Model
+class KpiPersonalOee extends Model
 {
     use HasFactory;
 
-    protected $table = 'kpi_employees';
+    protected $table = 'kpi_personal_oees';
     protected $primaryKey = 'id';
-    protected $fillable = ["nama","nik","master_section_id","master_subsection_id","aspek_kpi_header_id"];
+    protected $fillable = ["kpi_employees_id","periode","availability","performance","quality","oee","target","bobot","nilai"];
     protected $appends = ['btn_delete', 'btn_edit', 'btn_show'];
 
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\KpiProduction\AspekKpiItemController;
 use App\Http\Controllers\KpiProduction\KpiEmployeeController;
 use App\Http\Controllers\KpiProduction\KpiEvaluationController;
 use App\Http\Controllers\KpiProduction\KpiEvaluationPersonalController;
+use App\Http\Controllers\KpiProduction\KpiPersonalOeeController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\TestPersonalOeeController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\TestPersonalOeeController;
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], function () {
     Route::post('/test-upload-oee', [TestPersonalOeeController::class, 'upload']);
+    
     Route::get('/test-upload-oee', function () {
         $csrf = csrf_token();
         return <<<HTML
@@ -45,6 +47,10 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
 
 
     Route::post('kpi-production-kpi-evaluation-personal-bulk-action-default', [KpiEvaluationPersonalController::class, 'bulkAction'])->name('kpi-evaluation-personal.bulk-action-default');
+
+
+
+    Route::post('import-excel-oee-personal-bulanan-default', [KpiPersonalOeeController::class, 'importExcelBulanan'])->name('kpi-personal-oee.import-excel-oee-personal-bulanan-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {
@@ -109,4 +115,11 @@ Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' =>
     Route::get('kpi-evaluation-personal-export-pdf-default', [KpiEvaluationPersonalController::class, 'exportPdf'])->name('kpi-evaluation-personal.export-pdf-default');
     Route::get('kpi-evaluation-personal-export-excel-default', [KpiEvaluationPersonalController::class, 'exportExcel'])->name('kpi-evaluation-personal.export-excel-default');
     Route::post('kpi-evaluation-personal-import-excel-default', [KpiEvaluationPersonalController::class, 'importExcel'])->name('kpi-evaluation-personal.import-excel-default');
+
+
+    Route::resource('kpi-personal-oee', KpiPersonalOeeController::class);
+    Route::get('kpi-personal-oee-api', [KpiPersonalOeeController::class, 'indexApi'])->name('kpi-personal-oee.listapi');
+    Route::get('kpi-personal-oee-export-pdf-default', [KpiPersonalOeeController::class, 'exportPdf'])->name('kpi-personal-oee.export-pdf-default');
+    Route::get('kpi-personal-oee-export-excel-default', [KpiPersonalOeeController::class, 'exportExcel'])->name('kpi-personal-oee.export-excel-default');
+    Route::post('kpi-personal-oee-import-excel-default', [KpiPersonalOeeController::class, 'importExcel'])->name('kpi-personal-oee.import-excel-default');
 });

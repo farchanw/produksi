@@ -284,7 +284,7 @@ $('[name="aspek_kpi_header_id"]').on('change', function () {
 
 
 // Modal Export Laporan PDF
-const tmplModalExportLaporanPdf = /*html*/`
+$('body').append(/*html*/`
 <div class="modal fade" id="modalExportLaporanPdf" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form method="get" id="formExportLaporanPdf" target="_blank">
@@ -322,13 +322,11 @@ const tmplModalExportLaporanPdf = /*html*/`
             </div>
         </form>
     </div>
-</div>`
-
-$('body').append(tmplModalExportLaporanPdf);
+</div>`);
 
  
 // Modal Bulk Action
-const tmplModalBulkAction = /*html*/`
+$('body').append(/*html*/`
 <div class="modal fade" id="modalBulkAction" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form method="post" id="formBulkAction" target="_blank">
@@ -354,10 +352,54 @@ const tmplModalBulkAction = /*html*/`
             </div>
         </form>
     </div>
-</div>`
+</div>`);
 
-$('body').append(tmplModalBulkAction);
+// Modal import excel oee
+$('body').append(/*html*/`
+<div class="modal fade" id="modalImportExcelOeePersonalBulananDefault" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" id="formImportExcelOeePersonalBulananDefault" enctype="multipart/form-data" action="${
+                document.querySelector('#import-excel-oee-personal-bulanan-default').dataset.baseUrl
+            }">
+            <input type="hidden" name="_token" value="${
+                document.querySelector('#import-excel-oee-personal-bulanan-default').dataset.csrf
+            }">
 
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title text-white">Import Excel Data OEE Personal Bulanan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="me-2 mb-0" style="min-width:70px;">Periode</label>
+                        <input 
+                            type="month"
+                            name="periode"
+                            class="form-control form-control-sm"
+                            required
+                        >
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <label class="me-2 mb-0" style="min-width:70px;">File</label>
+                        <input type="file" name="file" class="form-control form-control-sm" accept=".xlsx, .xls">
+                    </div>
+                </div>
+
+
+                <div class="modal-footer mt-2">
+                    <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Cetak
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>`);
 
 
 

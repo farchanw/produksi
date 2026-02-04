@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('inventory_consumables', function (Blueprint $table) {
             $table->id();
             $table->string('sku')->unique();
-            $table->string('name');
+            $table->string('name')->index();
             $table->foreignId('kind_id')->constrained('inventory_consumable_kinds')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained('inventory_consumable_categories')->cascadeOnDelete();
             $table->integer('minimum_stock')->default(0);
