@@ -161,6 +161,21 @@ class KpiPersonalOeeController extends DefaultController
     }
 
 
+    protected function filters()
+    {
+        $fields = [
+            [
+                'type' => 'month',
+                'label' => 'Periode',
+                'name' =>  'periode',
+                'class' => 'col-md-3',
+            ]
+        ];
+
+        return $fields;
+    }
+
+
     protected function rules($id = null)
     {
         $rules = [
@@ -190,6 +205,10 @@ class KpiPersonalOeeController extends DefaultController
         if (request('order')) {
             $orderBy = request('order');
             $orderState = request('order_state');
+        }
+        // filters
+        if (request('periode')) {
+            $filters[] = ['periode', '=', DatetimeHelper::getKpiPeriode(request('periode'))];
         }
 
         $dataQueries = $this->modelClass::join('kpi_employees', 'kpi_employees.id', '=', 'kpi_personal_oees.kpi_employees_id')
@@ -306,33 +325,67 @@ class KpiPersonalOeeController extends DefaultController
         $import = new PersonalOeeImport();
         Excel::import($import, $request->file('file'));
 
-        $periode = $request->periode;
-        $periode = DatetimeHelper::getKpiPeriode($periode);
+        $periode = DatetimeHelper::getKpiPeriode($request->periode);
         $pattern = '/^(\d+(?:\.\d+)*)\s*-\s*(.*)$/';
+
+        $employeeCreated = 0;
+        $employeeSkipped = 0;
+
+        $oeeCreated = 0;
+        $oeeUpdated = 0;
+        $oeeSkipped = 0;
 
         foreach ($import->result as $id => $value) {
             $nik = $id;
             $nama = $id;
+
             if (preg_match($pattern, $id, $matches)) {
                 [, $nik, $nama] = $matches;
             }
+
             $employee = KpiEmployee::firstOrCreate([
-                'nik' => $nik,
+                'nik'  => $nik,
                 'nama' => $nama,
             ]);
 
-            $personalOee = KpiPersonalOee::updateOrCreate([
-                'kpi_employees_id' => $employee->id,
-            ], [
-                'periode' => $periode,
-                'oee' => $value['avg_oee'],
-                'availability' => $value['avg_a'],
-                'performance' => $value['avg_p'],
-                'quality' => $value['avg_q'],
-            ]);
+            if ($employee->wasRecentlyCreated) {
+                $employeeCreated++;
+            } else {
+                $employeeSkipped++;
+            }
+
+            $personalOee = KpiPersonalOee::updateOrCreate(
+                [
+                    'kpi_employees_id' => $employee->id,
+                    'periode'       => $periode,
+                ],
+                [
+                    'oee'            => $value['avg_oee'],
+                    'availability'  => $value['avg_a'],
+                    'performance'   => $value['avg_p'],
+                    'quality'       => $value['avg_q'],
+                ]
+            );
+
+            if ($personalOee->wasRecentlyCreated) {
+                $oeeCreated++;
+            } elseif ($personalOee->wasChanged()) {
+                $oeeUpdated++;
+            } else {
+                $oeeSkipped++;
+            }
         }
 
-        return redirect()->route($this->generalUri.'.index');
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'employee_created' => $employeeCreated,
+                'employee_skipped' => $employeeSkipped,
+                'oee_created' => $oeeCreated,
+                'oee_updated' => $oeeUpdated,
+                'oee_skipped' => $oeeSkipped,
+            ],
+        ]);
     }
 
 }

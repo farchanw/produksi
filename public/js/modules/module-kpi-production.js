@@ -2,7 +2,7 @@ $( document ).ajaxStop(function() {
     $('.support-live-select2').each(function () {
         $(this).select2({
             theme: 'bootstrap-5',
-            dropdownParent: $(this).parent(),// fix select2 search input focus bug
+            dropdownParent: $(this).parent(),
         })
         
     })
@@ -401,6 +401,64 @@ $('body').append(/*html*/`
     </div>
 </div>`);
 
+document.getElementById('formImportExcelOeePersonalBulananDefault').addEventListener('submit', function (e) {
+
+    e.preventDefault(); // stop normal submit
+
+    const form = this;
+    const formData = new FormData(form);
+
+    const modalEl = form.closest('.modal');
+    bootstrap.Modal.getInstance(modalEl).hide();
+
+    Swal.fire({
+        title: 'Mengimpor data...',
+        text: 'Mohon tunggu...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(res => {
+        Swal.close();
+
+        if (res.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Data berhasil diimport',
+
+                html: `
+                    <p>${res.data['oee_created']} data baru disimpan</p>
+                    <p>${res.data['oee_updated']} data diperbarui</p>
+                    <p>${res.data['oee_skipped']} data dilewati (duplikat/sudah ada)</p>
+                `
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed',
+                text: res.message || 'Import failed'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.close();
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong'
+        });
+        console.error(error);
+    });
+});
 
 
 
