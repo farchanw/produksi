@@ -393,7 +393,7 @@ $('body').append(/*html*/`
                         Batal
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        Cetak
+                        Impor
                     </button>
                 </div>
             </div>

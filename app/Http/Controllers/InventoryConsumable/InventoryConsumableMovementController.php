@@ -112,7 +112,7 @@ class InventoryConsumableMovementController extends DefaultController
                         'type' => 'select',
                         'label' => 'Kategori Barang',
                         'name' =>  'category_id',
-                        'class' => 'col-md-3 my-2',
+                        'class' => 'col-md-4 my-2',
                         'required' => $this->flagRules('category_id', $id),
                         'value' => isset($edit) ? $edit->category_id : '',
                         'options' => $optionsCategory
@@ -121,24 +121,16 @@ class InventoryConsumableMovementController extends DefaultController
                         'type' => 'select2_data_attr',
                         'label' => 'Nama Barang',
                         'name' =>  'item_id',
-                        'class' => 'col-md-9 my-2',
+                        'class' => 'col-md-8 my-2',
                         'required' => $this->flagRules('item_id', $id),
                         'value' => (isset($edit)) ? $edit->item_id : '',
                         'options' => $optionsItem
                     ],
                     [
-                        'type' => 'datetime',
-                        'label' => 'Tanggal',
-                        'name' =>  'movement_datetime',
-                        'class' => 'col-md-3 my-2',
-                        'required' => $this->flagRules('movement_datetime', $id),
-                        'value' => (isset($edit)) ? $edit->movement_datetime : date('Y-m-d H:i:s'),
-                    ],
-                    [
                         'type' => 'select',
                         'label' => 'Type',
                         'name' =>  'type',
-                        'class' => 'col-md-3 my-2',
+                        'class' => 'col-md-2 my-2',
                         'required' => $this->flagRules('type', $id),
                         'value' => (isset($edit)) ? $edit->type : '',
                         'options' => InventoryConsumableHelper::optionsForMovementTypes(true),
@@ -148,19 +140,31 @@ class InventoryConsumableMovementController extends DefaultController
                         'type' => 'number_text_group',
                         'label' => 'Qty',
                         'name' =>  'qty',
-                        'class' => 'col-md-3 my-2',
+                        'class' => 'col-md-2 my-2',
                         'required' => $this->flagRules('qty', $id),
                         'value' => (isset($edit)) ? $edit->qty : '0',
                         'suffix' => '-',
                     ],
                     [
-                        'type' => 'number_text_group',
-                        'label' => 'Harga Satuan',
-                        'name' =>  'harga_satuan',
-                        'class' => 'col-md-3 my-2',
-                        'required' => $this->flagRules('harga_satuan', $id),
-                        'value' => (isset($edit)) ? $edit->harga_satuan : '0',
+                        'type' => 'number_harga',
+                        'label' => 'Harga',
+                        'name' =>  'harga',
+                        'class' => 'col-md-5 my-2',
+                        'required' => $this->flagRules('harga', $id),
+                        'value' => (isset($edit)) ? $edit->harga_total : $edit->harga_satuan ?? '0',
                         'prefix' => 'Rp',
+                        'options' => [
+                            ['value' => 'satuan', 'text' => 'Satuan'],
+                            ['value' => 'total', 'text' => 'Total'],
+                        ]
+                    ],
+                    [
+                        'type' => 'datetime',
+                        'label' => 'Tanggal',
+                        'name' =>  'movement_datetime',
+                        'class' => 'col-md-3 my-2',
+                        'required' => $this->flagRules('movement_datetime', $id),
+                        'value' => (isset($edit)) ? $edit->movement_datetime : date('Y-m-d H:i:s'),
                     ],
                     [
                         'type' => 'checklist_searchable',
@@ -221,12 +225,17 @@ class InventoryConsumableMovementController extends DefaultController
                         'value' => (isset($edit)) ? $edit->qty : ''
                     ],
                     [
-                        'type' => 'number',
-                        'label' => 'Harga Satuan',
-                        'name' =>  'harga_satuan',
+                        'type' => 'number_harga',
+                        'label' => 'Harga',
+                        'name' =>  'harga',
                         'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('harga_satuan', $id),
-                        'value' => (isset($edit)) ? $edit->harga_satuan : ''
+                        'required' => $this->flagRules('harga', $id),
+                        'value' => (isset($edit)) ? $edit->harga_total : '0',
+                        'prefix' => 'Rp',
+                        'options' => [
+                            ['value' => 'satuan', 'text' => 'Satuan'],
+                            ['value' => 'total', 'text' => 'Total', 'checked' => true],
+                        ]
                     ],
                     [
                         'type' => 'hidden',
@@ -547,26 +556,33 @@ class InventoryConsumableMovementController extends DefaultController
                 ->value('stock') ?? 0;
 
             $inputQty       = (int) $request->qty;
-            $hargaSatuan    = (int) ($request->harga_satuan ?? 0);
             $type           = $request->type;
+
 
             // SET QTY & STOCK
             if ($type === 'in') {
                 $qty        = abs($inputQty);
                 $stockAkhir = $currentStock + $qty;
-                $hargaTotal = $qty * $hargaSatuan;
 
+                $hargaType      = $request->harga_type;
+                if ($hargaType === 'satuan') {
+                    $hargaSatuan = $request->harga;
+                    $hargaTotal  = $hargaSatuan * $qty;
+                }
+                if ($hargaType === 'total') {
+                    $hargaSatuan = $request->harga / $qty;
+                    $hargaTotal  = $request->harga;
+                }
+                
             } elseif ($type === 'out') {
                 $qty        = -abs($inputQty);
                 $stockAkhir = $currentStock + $qty;
-                
 
                 if ($stockAkhir < 0) {
                     throw new Exception('Stock tidak mencukupi');
                 }
 
                 $hargaTotal = 0;
-
             } elseif ($type === 'adjust') {
                 $stockAkhir = $inputQty;
 
@@ -603,7 +619,11 @@ class InventoryConsumableMovementController extends DefaultController
             $insert->movement_datetime = $request->movement_datetime ?? now();
 
             $dataSubcategory = $request->subcategory_id ?? [];
-            unset($insert->subcategory_id, $insert->category_id);
+            unset(
+                $insert->subcategory_id, 
+                $insert->category_id, 
+                $insert->harga
+            );
 
             $insert->save();
 

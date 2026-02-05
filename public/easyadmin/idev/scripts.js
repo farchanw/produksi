@@ -1080,6 +1080,11 @@ function idevSetEdit(id, uriKey, prefix = "") {
                 $("#edit_" + field.name).trigger("change");
                 $("#text_edit_" + field.name).text(field.text || field.value);
             }
+            else if (field.type == "number_harga") {
+                $("#edit_" + field.name).val(field.value);
+                $("#edit_" + field.name).trigger("change");
+                $("#edit_" + field.name + "_select").val("total").trigger("change");
+            }
             else {
                 $("#edit_" + field.name).val(field.value);
                 $("#edit_" + field.name).trigger("change");
