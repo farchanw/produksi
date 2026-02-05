@@ -36,12 +36,14 @@ class WelcomeController extends Controller
                 'active' => true,
                 'icon' => asset('module-icons/hr.png')
             ],
+            /*
             [
                 'title' => 'OEE',
                 'link' => url('kpi-production/oee'),
                 'active' => true,
                 'icon' => asset('module-icons/inventory.png')
             ],
+            */
             [
                 'title' => 'Setting',
                 'link' => url('setting/dashboard-setting'),

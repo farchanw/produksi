@@ -95,13 +95,8 @@ class InventoryConsumableMovementController extends DefaultController
             ->where('inventory_consumable_movements.id', $id)->first();
         }
 
-        $optionsItem = InventoryConsumable::select('id as value', 'name as text')
-            ->orderBy('name', 'ASC')
-            ->get()
-            ->toArray();
-        array_unshift($optionsItem, ['value' => '', 'text' => 'Pilih Item']);
-
-        $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
+        $optionsItem = InventoryConsumableHelper::optionsForItems(true);
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories(true);
         $optionsSubcategory = [];
         
         if (isset($edit->item_id)) {
@@ -115,70 +110,72 @@ class InventoryConsumableMovementController extends DefaultController
             $fields = [
                     [
                         'type' => 'select',
-                        'label' => 'Kategori',
+                        'label' => 'Kategori Barang',
                         'name' =>  'category_id',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-md-3 my-2',
                         'required' => $this->flagRules('category_id', $id),
                         'value' => isset($edit) ? $edit->category_id : '',
                         'options' => $optionsCategory
                     ],
                     [
-                        'type' => 'select2',
-                        'label' => 'Nama Item',
+                        'type' => 'select2_data_attr',
+                        'label' => 'Nama Barang',
                         'name' =>  'item_id',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-md-9 my-2',
                         'required' => $this->flagRules('item_id', $id),
                         'value' => (isset($edit)) ? $edit->item_id : '',
                         'options' => $optionsItem
                     ],
                     [
-                        'type' => 'checklist_searchable',
-                        'label' => 'Subkategori',
-                        'name' =>  'subcategory_id',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('subcategory_id', $id),
-                        'value' => isset($edit) ? $edit->subcategory_id : '',
-                        'options' => $optionsSubcategory,
+                        'type' => 'datetime',
+                        'label' => 'Tanggal',
+                        'name' =>  'movement_datetime',
+                        'class' => 'col-md-3 my-2',
+                        'required' => $this->flagRules('movement_datetime', $id),
+                        'value' => (isset($edit)) ? $edit->movement_datetime : date('Y-m-d H:i:s'),
                     ],
                     [
                         'type' => 'select',
                         'label' => 'Type',
                         'name' =>  'type',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-md-3 my-2',
                         'required' => $this->flagRules('type', $id),
                         'value' => (isset($edit)) ? $edit->type : '',
-                        'options' => InventoryConsumableHelper::optionsForMovementTypes(),
+                        'options' => InventoryConsumableHelper::optionsForMovementTypes(true),
                         'filter' => true,
                     ],
                     [
-                        'type' => 'number',
+                        'type' => 'number_text_group',
                         'label' => 'Qty',
                         'name' =>  'qty',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-md-3 my-2',
                         'required' => $this->flagRules('qty', $id),
-                        'value' => (isset($edit)) ? $edit->qty : ''
+                        'value' => (isset($edit)) ? $edit->qty : '0',
+                        'suffix' => '-',
                     ],
                     [
-                        'type' => 'number',
+                        'type' => 'number_text_group',
                         'label' => 'Harga Satuan',
                         'name' =>  'harga_satuan',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-md-3 my-2',
                         'required' => $this->flagRules('harga_satuan', $id),
-                        'value' => (isset($edit)) ? $edit->harga_satuan : ''
+                        'value' => (isset($edit)) ? $edit->harga_satuan : '0',
+                        'prefix' => 'Rp',
                     ],
                     [
-                        'type' => 'datetime',
-                        'label' => 'Tanggal',
-                        'name' =>  'movement_datetime',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('movement_datetime', $id),
-                        'value' => (isset($edit)) ? $edit->movement_datetime : ''
+                        'type' => 'checklist_searchable',
+                        'label' => 'Subkategori',
+                        'name' =>  'subcategory_id',
+                        'class' => 'col-md-6 my-2',
+                        'required' => $this->flagRules('subcategory_id', $id),
+                        'value' => isset($edit) ? $edit->subcategory_id : '',
+                        'options' => $optionsSubcategory,
                     ],
                     [
                         'type' => 'textarea',
                         'label' => 'Catatan',
                         'name' =>  'notes',
-                        'class' => 'col-md-12 my-2',
+                        'class' => 'col-md-6 my-2',
                         'required' => $this->flagRules('notes', $id),
                         'value' => (isset($edit)) ? $edit->notes : ''
                     ],
@@ -197,10 +194,10 @@ class InventoryConsumableMovementController extends DefaultController
                         'options' => $optionsCategory
                     ],
                     [
-                        'type' => 'hidden',
-                        'label' => 'Nama Item',
+                        'type' => 'onlyview',
+                        'label' => 'Nama Barang',
                         'name' =>  'item_id',
-                        'class' => '',
+                        'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('item_id', $id),
                         'value' => (isset($edit)) ? $edit->item_id : '',
                         'options' => $optionsItem
@@ -257,7 +254,7 @@ class InventoryConsumableMovementController extends DefaultController
 
     protected function filters()
     {
-        $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories();
         array_unshift($optionsCategory, ['value' => '', 'text' => 'Semua']);
         $optionsType = InventoryConsumableHelper::optionsForMovementTypes();
         array_unshift($optionsType, ['value' => '', 'text' => 'Semua']);
@@ -280,7 +277,7 @@ class InventoryConsumableMovementController extends DefaultController
             ],
             [
                 'type' => 'monthrange',
-                'label' => 'Tanggal',
+                'label' => 'Periode',
                 'name' =>  'tanggal',
                 'class' => 'col-md-4',
             ],
@@ -297,7 +294,7 @@ class InventoryConsumableMovementController extends DefaultController
                     'qty' => 'required|numeric',
                     'type' => 'required|string',
                     'movement_datetime' => 'required|string',
-                    'harga_satuan' => 'required|integer',
+                    //'harga_satuan' => 'required|integer',
         ];
 
         return $rules;
@@ -562,6 +559,7 @@ class InventoryConsumableMovementController extends DefaultController
             } elseif ($type === 'out') {
                 $qty        = -abs($inputQty);
                 $stockAkhir = $currentStock + $qty;
+                
 
                 if ($stockAkhir < 0) {
                     throw new Exception('Stock tidak mencukupi');

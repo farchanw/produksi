@@ -15,20 +15,33 @@ class InventoryConsumableHelper
         return 'inventory-consumable';
     }
 
-    public static function optionsForMovementTypes()
+    public static function optionsForMovementTypes($withPlaceholder = false)
     {
-        return [
+        $options = [
             ['value' => 'in', 'text' => 'In'],
             ['value' => 'out', 'text' => 'Out'],
             ['value' => 'adjust', 'text' => 'Adjust'],
         ];
+
+        if ($withPlaceholder) {
+            array_unshift($options, ['value' => '', 'text' => 'Pilih...']);
+        }
+
+        return $options;
     }
 
-    public static function optionsForCategories()
+    public static function optionsForCategories($withPlaceholder = false)
     {
-        return InventoryConsumableCategory::select('id as value', 'name as text')
+        $options = InventoryConsumableCategory::select('id as value', 'name as text')
             ->orderBy('name', 'ASC')
-            ->get();
+            ->get()
+            ->toArray();
+
+        if ($withPlaceholder) {
+            array_unshift($options, ['value' => '', 'text' => 'Semua']);
+        }
+
+        return $options;
     }
 
     public static function optionsForSubcategories()
@@ -38,16 +51,15 @@ class InventoryConsumableHelper
             ->get();
     }
 
-    public static function optionsForItems()
+    public static function optionsForItems($withPlaceholder = false)
     {
-        return InventoryConsumable::select(
-                'id as value', 
-                //DB::raw('CONCAT_WS(" - ", sku, name) as text')
-                'name as text'
-            )
-            ->orderBy('name', 'ASC')
-            ->get()
-            ->toArray();
+        $options = InventoryConsumableHelper::getItemsByCategory()->toArray();
+    
+        if ($withPlaceholder) {
+            array_unshift($options, ['value' => '', 'text' => 'Pilih Barang...']);
+        }
+
+        return $options;
     }
 
     public static function optionsForKinds()
@@ -58,20 +70,62 @@ class InventoryConsumableHelper
             ->toArray();
     }
 
+    public static function getItemsByCategory($categoryId = null)
+    {
+        $items = InventoryConsumable::select(
+            'id as value',
+            'name as text',
+            'satuan as data_satuan',
+            DB::raw('LPAD(sku, 4, "0") as data_sku'),
+            /*
+            DB::raw("
+                JSON_OBJECT(
+                    'sku', LPAD(sku, 4, '0'),
+                    'name', name,
+                    'satuan', satuan
+                ) AS text
+            ")
+            */
+        );
+
+        if ($categoryId) {
+            $items->where('category_id', $categoryId);
+        }
+
+        $items->orderBy('name', 'ASC');
+
+        return $items->get();
+    }
+
     public static function getItemSubcategories($id = null)
     {
-        $query = InventoryConsumable::leftJoin('inventory_consumable_item_subcategory as pivot', 'inventory_consumables.id', '=', 'pivot.item_id')
-            ->leftJoin('inventory_consumable_subcategories as subcategories', 'pivot.subcategory_id', '=', 'subcategories.id')
-            ;
+        $query = InventoryConsumable::leftJoin(
+                'inventory_consumable_item_subcategory as pivot',
+                'inventory_consumables.id',
+                '=',
+                'pivot.item_id'
+            )
+            ->leftJoin(
+                'inventory_consumable_subcategories as subcategories',
+                'pivot.subcategory_id',
+                '=',
+                'subcategories.id'
+            );
 
         if ($id) {
             $query->where('inventory_consumables.id', $id);
         }
 
-        $query->select('subcategory_id as value', 'subcategories.name as text');
-
-        return $query->get();
+        return $query
+            ->select(
+                'pivot.subcategory_id as value',
+                'subcategories.name as text'
+            )
+            ->whereNotNull('pivot.subcategory_id')
+            ->whereNotNull('subcategories.name')
+            ->get();
     }
+
 
     public static function getDataExportLaporanBulanan($query, $year, $month)
     {

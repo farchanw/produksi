@@ -207,7 +207,7 @@ class Sidebar
                 'name' => 'Data Personal',
                 'icon' => 'ti ti-report',
                 'key' => '',
-                'visibility' => true,//$this->canAccessMenu('kpi-personal-oee') && $module == $currentModule,
+                'visibility' => $this->canAccessMenu('kpi-personal-oee') && $module == $currentModule,
                 'ajax_load' => false,
                 'childrens' => [
                     [

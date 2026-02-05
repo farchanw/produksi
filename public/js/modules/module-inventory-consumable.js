@@ -105,16 +105,23 @@ $(document).on('change', 'select[name="category_id"]', function () {
     const selectItem = $('select[name="item_id"]');
     selectItem.empty().trigger('change');
 
-    if (!categoryId) return;
-
     selectItem.prop('disabled', true);
     selectItem.html('<option value=""> [Loading...] </option>');
 
     $.getJSON('inventory-consumable-fetch-items-by-category-default', { category_id: categoryId }, function (data) {
         selectItem.prop('disabled', false);
         selectItem.empty()
-        data.forEach(function (item) {
+        data.forEach(function(item) {
             const option = new Option(item.text, item.value, false, false);
+
+            // Add any data-* attributes
+            Object.entries(item).forEach(([key, val]) => {
+                if (key.startsWith('data_') || key.startsWith('data-')) {
+                    const attr = key.replace(/_/g, '-');
+                    option.setAttribute(attr, val);
+                }
+            });
+
             selectItem.append(option);
         });
 
@@ -138,6 +145,21 @@ $( document ).ajaxStop(function() {
 $(document).on('change select2:select select2:clear', '[name="item_id"]', function (e) {
     const form = this.closest('form');
 
+    const $select = $(this);
+
+    let selectedOption;
+
+    if (e.type === 'select2:select' || e.type === 'select2:clear') {
+        if (e.params && e.params.data && e.params.data.element) {
+            selectedOption = $(e.params.data.element);
+        } else {
+            selectedOption = $select.find(':selected');
+        }
+    } else {
+        // Regular change event
+        selectedOption = $select.find(':selected');
+    }
+
     if (
         form.id !== 'form-edit-inventory-consumable-movement' &&
         form.id !== 'form-create-inventory-consumable-movement'
@@ -156,6 +178,14 @@ $(document).on('change select2:select select2:clear', '[name="item_id"]', functi
         .then(r => r.json())
         .then(data => {
             subCheckItemList.replaceChildren();
+
+            if (data.length && data.length > 0) {
+                form.querySelector('.checklist-searchable-empty-option-message').classList.add('d-none');
+                form.querySelector('.checklist-searchable-header-menu').classList.remove('d-none');
+            } else {
+                form.querySelector('.checklist-searchable-empty-option-message').classList.remove('d-none');
+                form.querySelector('.checklist-searchable-header-menu').classList.add('d-none');
+            }
 
             data.forEach((dt, index) => {
                 if (!dt.value || !dt.text) return;
@@ -178,4 +208,14 @@ $(document).on('change select2:select select2:clear', '[name="item_id"]', functi
                 `);
             });
         });
+
+
+    // satuan
+    form.querySelector('.field-number-text-group-qty .input-group-text').textContent = selectedOption.data('satuan');
 });
+
+
+// make offcanvas width 100% only for specified form
+if ( document.querySelector(`#createForm-inventory-consumable-movement`) ) {
+    document.querySelector(`#createForm-inventory-consumable-movement`).style.width = '100%';
+}

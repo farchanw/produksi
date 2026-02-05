@@ -16,7 +16,13 @@ $selectedValues = isset($field['value'])
         </label>
 
         <div class="form-control mt-2" style="max-height: 8rem; overflow-y: auto">
-            <div style="display: grid; grid-template-columns: auto 2.5rem 2.5rem; gap: .75rem;">
+            <div class="checklist-searchable-header-menu
+            
+                @if (empty($field['options'])) 
+                    d-none 
+                @endif
+                
+                " style="display: grid; grid-template-columns: auto 2.5rem 2.5rem; gap: .75rem;">
                 <input placeholder="Search..." class="form-control form-field-checklist-searchable-filter">
                 <button type="button" class="btn btn-sm btn-primary form-field-checklist-searchable-select-all" title="Select All">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -31,6 +37,13 @@ $selectedValues = isset($field['value'])
                     </svg>
                 </button>
             </div>
+            <div class="checklist-searchable-empty-option-message text-muted text-sm 
+            
+                @if (!empty($field['options'])) 
+                    d-none 
+                @endif
+            
+            ">Tidak ada data {{ $field['label'] ?? 'Label '.$key }}.</div>
             
             <div class="form-field-checklist-searchable-check-item-list">
                 @foreach($field['options'] as $key => $opt)

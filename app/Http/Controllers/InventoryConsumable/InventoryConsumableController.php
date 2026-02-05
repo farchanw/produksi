@@ -99,7 +99,7 @@ class InventoryConsumableController extends DefaultController
                         'name' =>  'sku',
                         'class' => 'col-md-12 my-2',
                         'required' => $this->flagRules('sku', $id),
-                        'value' => (isset($edit)) ? $edit->sku : ''
+                        'value' => (isset($edit)) ? $edit->sku : InventoryConsumable::select(DB::raw('MAX(sku) as sku'))->first()->sku + 1
                     ],
                     [
                         'type' => 'select',
@@ -162,7 +162,7 @@ class InventoryConsumableController extends DefaultController
 
     protected function filters()
     {
-        $optionsCategory = InventoryConsumableHelper::optionsForCategories()->toArray();
+        $optionsCategory = InventoryConsumableHelper::optionsForCategories();
         array_unshift($optionsCategory, ['value' => '', 'text' => 'Semua']);
 
         $fields = [
@@ -634,19 +634,7 @@ class InventoryConsumableController extends DefaultController
 
     public function fetchItemsByCategory(Request $request)
     {
-        $categoryId = $request->category_id;
-
-        if (!$categoryId) {
-            return response()->json([]);
-        }
-
-        $items = InventoryConsumable::select(
-                'id as value',
-                //DB::raw("CONCAT(sku, ' - ', name) AS text")
-                'name as text'
-            )
-            ->where('category_id', $categoryId)
-            ->get();
+        $items = InventoryConsumableHelper::getItemsByCategory($request->category_id);
 
         return response()->json($items);
     }

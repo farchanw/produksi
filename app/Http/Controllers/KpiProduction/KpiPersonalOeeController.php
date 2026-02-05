@@ -34,7 +34,7 @@ class KpiPersonalOeeController extends DefaultController
 
         $this->tableHeaders = [
                     ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Nama', 'column' => 'nama', 'order' => true],
+                    ['name' => 'Nama Karyawan', 'column' => 'nama', 'order' => true],
                     ['name' => 'Nik', 'column' => 'nik', 'order' => true],
                     ['name' => 'Periode', 'column' => 'periode', 'order' => true, 'formatting' => 'toKpiPeriodDate'],
                     ['name' => 'A (%)', 'column' => 'availability', 'order' => true],
