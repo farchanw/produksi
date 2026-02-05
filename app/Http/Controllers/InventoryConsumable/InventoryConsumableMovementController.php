@@ -276,10 +276,10 @@ class InventoryConsumableMovementController extends DefaultController
                 'options' => $optionsType,
             ],
             [
-                'type' => 'monthrange',
+                'type' => 'month',
                 'label' => 'Periode',
                 'name' =>  'tanggal',
-                'class' => 'col-md-4',
+                'class' => 'col-md-2',
             ],
         ];
 
@@ -331,19 +331,19 @@ class InventoryConsumableMovementController extends DefaultController
             $filters[] = ['subcategories.id', '=', request('subcategory_id')];
         }
 
-        if (request('tanggal_start') && request('tanggal_end')) {
+        if (request('tanggal')) {
+            $date = Carbon::createFromFormat('Y-m', request('tanggal'));
+
             $filters[] = [
                 'inventory_consumable_movements.movement_datetime',
                 '>=',
-                request('tanggal_start') . '-01 00:00:00'
+                $date->copy()->startOfMonth()
             ];
 
             $filters[] = [
                 'inventory_consumable_movements.movement_datetime',
-                '<',
-                Carbon::parse(request('tanggal_end') . '-01')
-                    ->addMonth()
-                    ->format('Y-m-d 00:00:00')
+                '<=',
+                $date->copy()->endOfMonth()
             ];
         }
 
