@@ -2,20 +2,18 @@
 
 namespace App\Http\Controllers\InventoryConsumable;
 
-use App\Models\InventoryConsumable;
-use App\Models\InventoryConsumableMovement;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
-use App\Models\InventoryConsumableSubcategory;
-use Idev\EasyAdmin\app\Models\Role;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DashboardInventoryConsumableController extends Controller
 {
     private $title;
+
     private $generalUri;
+
     protected $importScripts = [];
+
     protected $importStyles = [];
 
     public function __construct()
@@ -34,7 +32,6 @@ class DashboardInventoryConsumableController extends Controller
         ];
     }
 
-
     public function index()
     {
         session(['module' => 'inventory-consumable']);
@@ -51,5 +48,4 @@ class DashboardInventoryConsumableController extends Controller
 
         return view($layout, $data);
     }
-
 }

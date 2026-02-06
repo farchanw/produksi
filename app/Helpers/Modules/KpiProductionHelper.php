@@ -4,14 +4,14 @@ namespace App\Helpers\Modules;
 
 use App\Models\MasterSection;
 
-class KpiProductionHelper {
-    public static function optionsForSections() {
+class KpiProductionHelper
+{
+    public static function optionsForSections()
+    {
         return MasterSection::select('id as value', 'nama as text')
             ->orderBy('nama', 'ASC')
             ->get();
     }
-
-
 
     public static function optionsKategori()
     {
@@ -21,15 +21,13 @@ class KpiProductionHelper {
         ];
     }
 
-
-
     public static function calculateScore($values)
     {
-        return collect($values)->map(function($item) {
+        return collect($values)->map(function ($item) {
             $realisasi = isset($item['realisasi']) ? floatval($item['realisasi']) : 0;
-            $target    = isset($item['target']) ? floatval($item['target']) : 1;
-            $tipe      = $item['tipe'] ?? 'Max';
-            $bobot     = isset($item['bobot']) ? floatval($item['bobot']) : 1;
+            $target = isset($item['target']) ? floatval($item['target']) : 1;
+            $tipe = $item['tipe'] ?? 'Max';
+            $bobot = isset($item['bobot']) ? floatval($item['bobot']) : 1;
 
             $tipe = strtolower($tipe);
             $skor = 0;
@@ -53,14 +51,12 @@ class KpiProductionHelper {
 
             return [
                 'aspek_kpi_item_id' => $item['aspek_kpi_item_id'],
-                'realisasi'         => $realisasi,
-                'skor'              => $skor,
-                'skor_akhir'        => $skor_akhir,
+                'realisasi' => $realisasi,
+                'skor' => $skor,
+                'skor_akhir' => $skor_akhir,
             ];
         });
     }
-
-
 
     public static function mapLaporanPersonal($records)
     {
@@ -69,9 +65,9 @@ class KpiProductionHelper {
                 ->keyBy(fn ($v) => (int) $v['aspek_kpi_item_id']);
 
             $match = $values->get((int) $item->aspek_kpi_item_id);
- 
-            $item->skor       = $match['skor']       ?? null;
-            $item->realisasi  = $match['realisasi']  ?? null;
+
+            $item->skor = $match['skor'] ?? null;
+            $item->realisasi = $match['realisasi'] ?? null;
             $item->skor_akhir = $match['skor_akhir'] ?? null;
 
             unset($item->aspek_values);
@@ -84,9 +80,9 @@ class KpiProductionHelper {
     {
         return collect(json_decode($records, true))->map(function ($item) {
             $values = collect($item);
- 
-            $item['skor']       = $values->get('skor')       ?? null;
-            $item['realisasi']  = $values->get('realisasi')  ?? null;
+
+            $item['skor'] = $values->get('skor') ?? null;
+            $item['realisasi'] = $values->get('realisasi') ?? null;
             $item['skor_akhir'] = $values->get('skor_akhir') ?? null;
 
             unset($item->aspek_values);

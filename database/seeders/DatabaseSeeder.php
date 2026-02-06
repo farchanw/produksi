@@ -16,14 +16,14 @@ class DatabaseSeeder extends Seeder
     {
         $this->role();
         $this->user();
-       // $this->sampleData();
+        // $this->sampleData();
     }
 
     public function role()
     {
         Role::updateOrCreate(
             [
-                'name' => 'admin'
+                'name' => 'admin',
             ],
             [
                 'name' => 'admin',
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
 
         Role::updateOrCreate(
             [
-                'name' => 'operator'
+                'name' => 'operator',
             ],
             [
                 'name' => 'operator',
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
 
         Role::updateOrCreate(
             [
-                'name' => 'staff-administrasi'
+                'name' => 'staff-administrasi',
             ],
             [
                 'name' => 'staff-administrasi',
@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
 
         Role::updateOrCreate(
             [
-                'name' => 'Supervisi'
+                'name' => 'Supervisi',
             ],
             [
                 'name' => 'supervisi',
@@ -61,9 +61,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
-
-
-    
 
     public function user()
     {

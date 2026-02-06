@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\UtilisationProduction;
 
 use App\Http\Controllers\Controller;
-use Idev\EasyAdmin\app\Models\Role;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DashboardUtilisationProductionController extends Controller
 {
     private $title;
+
     private $generalUri;
 
     public function __construct()
@@ -17,7 +15,6 @@ class DashboardUtilisationProductionController extends Controller
         $this->title = 'Dashboard Sistem Utilisasi Produksi';
         $this->generalUri = 'dashboard-utilisation-production';
     }
-
 
     public function index()
     {
@@ -28,5 +25,4 @@ class DashboardUtilisationProductionController extends Controller
 
         return view($layout, $data);
     }
-
 }

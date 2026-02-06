@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-
 class WelcomeController extends Controller
 {
     private $title;
+
     private $generalUri;
 
     public function __construct()
@@ -22,19 +21,19 @@ class WelcomeController extends Controller
                 'title' => 'Kartu Stok',
                 'link' => url('inventory-consumable/dashboard-inventory-consumable'),
                 'active' => true,
-                'icon' => asset('module-icons/pos.png')
+                'icon' => asset('module-icons/pos.png'),
             ],
             [
                 'title' => 'Utilisasi Produksi',
                 'link' => url('utilisation-production/dashboard-utilisation-production'),
                 'active' => true,
-                'icon' => asset('module-icons/project-management.png')
+                'icon' => asset('module-icons/project-management.png'),
             ],
             [
                 'title' => 'KPI Produksi',
                 'link' => url('kpi-production/dashboard-kpi-production'),
                 'active' => true,
-                'icon' => asset('module-icons/hr.png')
+                'icon' => asset('module-icons/hr.png'),
             ],
             /*
             [
@@ -48,7 +47,7 @@ class WelcomeController extends Controller
                 'title' => 'Setting',
                 'link' => url('setting/dashboard-setting'),
                 'active' => true,
-                'icon' => asset('module-icons/settings.png')
+                'icon' => asset('module-icons/settings.png'),
             ],
         ];
 
@@ -57,5 +56,4 @@ class WelcomeController extends Controller
 
         return view('frontend.welcome', $data);
     }
-
 }

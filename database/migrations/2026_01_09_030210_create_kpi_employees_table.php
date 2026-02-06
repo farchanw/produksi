@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama', 255);
             $table->string('nik')->unique();
-            
+
             $table->foreignId('master_section_id')
                 ->nullable()
                 ->constrained('master_sections')
@@ -25,7 +25,6 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('master_subsections')
                 ->nullOnDelete();
-
 
             $table->timestamps();
         });

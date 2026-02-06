@@ -8,42 +8,40 @@ use Illuminate\Support\Facades\Route;
 
 class Sidebar
 {
-    
     public function generate()
-  {
-    $menus = $this->menus();
-    $arrMenu = [];
+    {
+        $menus = $this->menus();
+        $arrMenu = [];
 
-    foreach ($menus as $menu) {
+        foreach ($menus as $menu) {
 
-      // 🔴 INI KUNCINYA
-      if (empty($menu['visibility'])) {
-        continue;
-      }
+            // 🔴 INI KUNCINYA
+            if (empty($menu['visibility'])) {
+                continue;
+            }
 
-      $menu['url'] = Route::has($menu['key'] . '.index')
-        ? route($menu['key'] . '.index')
-        : '/home-admin';
+            $menu['url'] = Route::has($menu['key'].'.index')
+              ? route($menu['key'].'.index')
+              : '/home-admin';
 
-      $menu['base_key'] = $menu['key'];
-      $menu['key'] = $menu['key'] . '.index';
+            $menu['base_key'] = $menu['key'];
+            $menu['key'] = $menu['key'].'.index';
 
-      $arrMenu[] = $menu;
+            $arrMenu[] = $menu;
+        }
+
+        return $arrMenu;
     }
 
-    return $arrMenu;
-  }
-    
-    
     public function menus()
     {
-        $role = "admin";
+        $role = 'admin';
         $currentModule = session()->get('module');
-        
+
         if (config('idev.enable_role', true)) {
             $role = Auth::user()->role->name;
         }
-        
+
         $generalMenu = [
             [
                 'name' => 'Back Home',
@@ -52,34 +50,33 @@ class Sidebar
                 'base_key' => 'home-admin',
                 'visibility' => true,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
             [
                 'name' => 'Dashboard',
                 'icon' => 'ti ti-dashboard',
-                'key' => 'dashboard-' . $currentModule,
-                'base_key' => 'dashboard-' . $currentModule,
+                'key' => 'dashboard-'.$currentModule,
+                'base_key' => 'dashboard-'.$currentModule,
                 'visibility' => true,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
         ];
-        
+
         return array_merge(
             $generalMenu,
             $this->menuInventoryConsumable($role, $currentModule),
             $this->menuUtilisationProduction($role, $currentModule),
             $this->menuSetting($role, $currentModule),
             $this->menuKpiProduction($role, $currentModule),
-            
+
         );
     }
-    
-    
+
     private function menuInventoryConsumable($role, $module)
     {
         $currentModule = 'inventory-consumable';
-        
+
         return [
             [
                 'name' => 'Item',
@@ -88,7 +85,7 @@ class Sidebar
                 'base_key' => 'inventory-consumable',
                 'visibility' => $this->canAccessMenu('inventory-consumable') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
             [
                 'name' => 'Kartu Stock',
@@ -97,7 +94,7 @@ class Sidebar
                 'base_key' => 'inventory-consumable-movement',
                 'visibility' => $this->canAccessMenu('inventory-consumable-movement') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
             [
                 'name' => 'Data Kategori',
@@ -113,7 +110,7 @@ class Sidebar
                         'base_key' => 'inventory-consumable-kind.index',
                         'visibility' => $this->canAccessMenu('inventory-consumable-kind') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
                     [
                         'name' => 'Kategori',
@@ -122,7 +119,7 @@ class Sidebar
                         'base_key' => '',
                         'visibility' => $this->canAccessMenu('inventory-consumable-category') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
                     [
                         'name' => 'Subkategori',
@@ -131,20 +128,18 @@ class Sidebar
                         'base_key' => '',
                         'visibility' => $this->canAccessMenu('inventory-consumable-subcategory') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
-                ]
+                ],
             ],
-            
+
         ];
     }
-
-
 
     private function menuUtilisationProduction($role, $module)
     {
         $currentModule = 'utilisation-production';
-        
+
         return [
             [
                 'name' => 'Utilisasi Produksi',
@@ -153,17 +148,15 @@ class Sidebar
                 'base_key' => 'utilisation-production',
                 'visibility' => $this->canAccessMenu('utilisation-production') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
         ];
     }
 
-
-
     private function menuKpiProduction($role, $module)
     {
         $currentModule = 'kpi-production';
-        
+
         return [
             [
                 'name' => 'Data Bagian',
@@ -179,7 +172,7 @@ class Sidebar
                         'base_key' => 'master-section.index',
                         'visibility' => $this->canAccessMenu('master-section') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
                     [
                         'name' => 'Subbagian',
@@ -188,9 +181,9 @@ class Sidebar
                         'base_key' => 'master-subsection.index',
                         'visibility' => $this->canAccessMenu('master-subsection') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
-                ]
+                ],
             ],
 
             [
@@ -200,7 +193,7 @@ class Sidebar
                 'base_key' => 'kpi-employee',
                 'visibility' => $this->canAccessMenu('kpi-employee') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
 
             [
@@ -217,7 +210,7 @@ class Sidebar
                         'base_key' => 'kpi-personal-oee.index',
                         'visibility' => $this->canAccessMenu('kpi-personal-oee') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
                     [
                         'name' => 'LPP Personal',
@@ -226,7 +219,7 @@ class Sidebar
                         'base_key' => 'kpi-personal-lpp.index',
                         'visibility' => $this->canAccessMenu('kpi-personal-lpp') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
                     [
                         'name' => 'Absensi Personal',
@@ -235,9 +228,9 @@ class Sidebar
                         'base_key' => 'kpi-personal-absensi.index',
                         'visibility' => $this->canAccessMenu('kpi-personal-absensi') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
-                ]
+                ],
             ],
 
             [
@@ -247,9 +240,9 @@ class Sidebar
                 'base_key' => 'master-kpi',
                 'visibility' => $this->canAccessMenu('master-kpi') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
-            
+
             [
                 'name' => 'Aspek KPI',
                 'icon' => 'ti ti-menu',
@@ -257,10 +250,10 @@ class Sidebar
                 'base_key' => 'aspek-kpi-header',
                 'visibility' => $this->canAccessMenu('aspek-kpi-header') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
             [
-                //'name' => 'Pencatatan',
+                // 'name' => 'Pencatatan',
                 'name' => 'Penilaian',
                 'icon' => 'ti ti-menu',
                 'key' => 'kpi-evaluation',
@@ -275,7 +268,7 @@ class Sidebar
                         'base_key' => 'kpi-evaluation-personal.index',
                         'visibility' => $this->canAccessMenu('kpi-evaluation-personal') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
                     [
                         'name' => 'Penilaian Divisi',
@@ -284,21 +277,18 @@ class Sidebar
                         'base_key' => 'kpi-evaluation-division.index',
                         'visibility' => $this->canAccessMenu('kpi-evaluation-division') && $module == $currentModule,
                         'ajax_load' => false,
-                        'childrens' => []
+                        'childrens' => [],
                     ],
-                ]
+                ],
             ],
-            
 
         ];
     }
-    
-    
-    
+
     private function menuSetting($role, $module)
     {
         $currentModule = 'setting';
-        
+
         return [
             [
                 'name' => 'Role',
@@ -307,7 +297,7 @@ class Sidebar
                 'base_key' => 'role',
                 'visibility' => $this->canAccessMenu('role') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
             [
                 'name' => 'User',
@@ -316,46 +306,41 @@ class Sidebar
                 'base_key' => 'user',
                 'visibility' => $this->canAccessMenu('user') && $module == $currentModule,
                 'ajax_load' => false,
-                'childrens' => []
+                'childrens' => [],
             ],
         ];
     }
-    
+
     public function defaultAllAccess($exclude = [])
     {
         return ['list', 'create', 'show', 'edit', 'delete', 'import-excel-default', 'export-excel-default', 'export-pdf-default'];
     }
-    
-    
+
     public function accessCustomize($menuKey)
     {
         $accessInventoryConsumableMovement = array_merge($this->defaultAllAccess(), ['export-laporan-bulanan-default']);
-
-
 
         $arrMenu = [
             'dashboard' => ['list'],
 
             'inventory-consumable-movement' => $accessInventoryConsumableMovement,
         ];
-        
+
         return $arrMenu[$menuKey] ?? $this->defaultAllAccess();
     }
 
-    
-  private function canAccessMenu($menuKey)
-  {
-    $permission = (new Constant())->permissions();
+    private function canAccessMenu($menuKey)
+    {
+        $permission = (new Constant)->permissions();
 
-    if (!isset($permission['list_access'])) {
-      return false;
+        if (! isset($permission['list_access'])) {
+            return false;
+        }
+
+        // DEBUG (boleh aktifkan sementara)
+        // dd($menuKey, $permission['list_access']);
+
+        // cek minimal boleh list/index
+        return in_array($menuKey.'.index', $permission['list_access']);
     }
-
-    // DEBUG (boleh aktifkan sementara)
-    // dd($menuKey, $permission['list_access']);
-
-    // cek minimal boleh list/index
-    return in_array($menuKey . '.index', $permission['list_access']);
-  }
-
 }

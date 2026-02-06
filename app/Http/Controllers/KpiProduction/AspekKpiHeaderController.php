@@ -2,28 +2,32 @@
 
 namespace App\Http\Controllers\KpiProduction;
 
-
+use App\Helpers\Common\EasyAdminHelper;
+use App\Models\AspekKpiHeader;
+use App\Models\AspekKpiItem;
 use App\Models\MasterKpi;
 use App\Models\MasterSection;
 use App\Models\MasterSubsection;
-use App\Models\AspekKpiHeader;
-use App\Models\AspekKpiItem;
-use App\Helpers\Common\EasyAdminHelper;
-use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
+use Exception;
 use Idev\EasyAdmin\app\Helpers\Constant;
+use Idev\EasyAdmin\app\Helpers\Validation;
+use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Idev\EasyAdmin\app\Helpers\Validation;
 use Illuminate\Support\Facades\Validator;
-use Exception;
 
 class AspekKpiHeaderController extends DefaultController
 {
     protected $modelClass = AspekKpiHeader::class;
+
     protected $title;
+
     protected $generalUri;
+
     protected $tableHeaders;
+
     protected $dynamicPermission = true;
+
     // protected $actionButtons;
     // protected $arrPermissions;
     protected $importExcelConfig;
@@ -36,31 +40,29 @@ class AspekKpiHeaderController extends DefaultController
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
-                    ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Nama', 'column' => 'nama', 'order' => true],
-                    ['name' => 'Bagian', 'column' => 'master_section', 'order' => true],
-                    ['name' => 'Subbagian', 'column' => 'master_subsection', 'order' => true],
-                    ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
-                    ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+            ['name' => 'No', 'column' => '#', 'order' => true],
+            ['name' => 'Nama', 'column' => 'nama', 'order' => true],
+            ['name' => 'Bagian', 'column' => 'master_section', 'order' => true],
+            ['name' => 'Subbagian', 'column' => 'master_subsection', 'order' => true],
+            ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+            ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
 
-
-        $this->importExcelConfig = [ 
+        $this->importExcelConfig = [
             'primaryKeys' => ['master_section_id'],
             'headers' => [
-                    ['name' => 'Master section id', 'column' => 'master_section_id'],
-                    ['name' => 'Master subsection id', 'column' => 'master_subsection_id'],
-            ]
+                ['name' => 'Master section id', 'column' => 'master_section_id'],
+                ['name' => 'Master subsection id', 'column' => 'master_subsection_id'],
+            ],
         ];
 
         $this->importScripts = [
             ['source' => asset('js/modules/module-kpi-production.js')],
-            
+
         ];
     }
 
-
-    protected function fields($mode = "create", $id = '-')
+    protected function fields($mode = 'create', $id = '-')
     {
         $edit = null;
         if ($id != '-') {
@@ -75,66 +77,64 @@ class AspekKpiHeaderController extends DefaultController
 
         array_unshift($optionsSubsection, [
             'value' => '',
-            'text'  => 'Pilih Subbagian...'
+            'text' => 'Pilih Subbagian...',
         ]);
 
-
         $fields = [
-                    [
-                        'type' => 'text',
-                        'label' => 'Nama',
-                        'name' =>  'nama',
-                        'class' => 'col-4 my-2',
-                        'required' => $this->flagRules('nama', $id),
-                        'value' => (isset($edit)) ? $edit->nama : ''
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Bagian',
-                        'name' =>  'master_section_id',
-                        'class' => 'col-4 my-2',
-                        'required' => $this->flagRules('master_section_id', $id),
-                        'value' => (isset($edit)) ? $edit->master_section_id : '',
-                        'options' => MasterSection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Subbagian',
-                        'name' =>  'master_subsection_id',
-                        'class' => 'col-4 my-2',
-                        'required' => $this->flagRules('master_subsection_id', $id),
-                        'value' => (isset($edit)) ? $edit->master_subsection_id : '',
-                        'options' => $optionsSubsection,
-                    ],
-                    [
-                        'type' => 'repeatable_aspek_kpi_item',
-                        'label' => 'Aspek KPI',
-                        'name' =>  'aspek_kpi',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('aspek_kpi', $id),
-                        'value' => (isset($edit)) ? $repeatableAspekKpiItemValue : '',
-                        'enable_action' => true,
-                        'field_data' => [
-                            'master_kpi' => MasterKpi::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(), 
-                        ],
-                    ],
+            [
+                'type' => 'text',
+                'label' => 'Nama',
+                'name' => 'nama',
+                'class' => 'col-4 my-2',
+                'required' => $this->flagRules('nama', $id),
+                'value' => (isset($edit)) ? $edit->nama : '',
+            ],
+            [
+                'type' => 'select',
+                'label' => 'Bagian',
+                'name' => 'master_section_id',
+                'class' => 'col-4 my-2',
+                'required' => $this->flagRules('master_section_id', $id),
+                'value' => (isset($edit)) ? $edit->master_section_id : '',
+                'options' => MasterSection::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
+            ],
+            [
+                'type' => 'select',
+                'label' => 'Subbagian',
+                'name' => 'master_subsection_id',
+                'class' => 'col-4 my-2',
+                'required' => $this->flagRules('master_subsection_id', $id),
+                'value' => (isset($edit)) ? $edit->master_subsection_id : '',
+                'options' => $optionsSubsection,
+            ],
+            [
+                'type' => 'repeatable_aspek_kpi_item',
+                'label' => 'Aspek KPI',
+                'name' => 'aspek_kpi',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('aspek_kpi', $id),
+                'value' => (isset($edit)) ? $repeatableAspekKpiItemValue : '',
+                'enable_action' => true,
+                'field_data' => [
+                    'master_kpi' => MasterKpi::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
+                ],
+            ],
         ];
-        
+
         return $fields;
     }
-
 
     protected function rules($id = null)
     {
         $rules = [
-                    'nama' => 'required|string',
-                    'master_section_id' => 'required|string',
-                    'master_subsection_id' => 'required|string',
+            'nama' => 'required|string',
+            'master_section_id' => 'required|string',
+            'master_subsection_id' => 'required|string',
 
-                    'kpi'                   => 'required|array|min:1',
-                    'kpi.*.master_kpi_id'   => 'required|integer',
-                    'kpi.*.bobot'           => 'required|numeric|min:0',
-                    'kpi.*.target'          => 'required|numeric|min:0',
+            'kpi' => 'required|array|min:1',
+            'kpi.*.master_kpi_id' => 'required|integer',
+            'kpi.*.bobot' => 'required|numeric|min:0',
+            'kpi.*.target' => 'required|numeric|min:0',
         ];
 
         return $rules;
@@ -165,7 +165,7 @@ class AspekKpiHeaderController extends DefaultController
             return response()->json([
                 'status' => false,
                 'alert' => 'danger',
-                'message' => 'Total bobot tidak valid: '. $totalBobot . '%. Total bobot harus 100%.',
+                'message' => 'Total bobot tidak valid: '.$totalBobot.'%. Total bobot harus 100%.',
             ], 200);
         }
 
@@ -178,12 +178,12 @@ class AspekKpiHeaderController extends DefaultController
 
         try {
             $appendStore = $this->appendStore($request);
-            
+
             if (array_key_exists('error', $appendStore)) {
                 return response()->json($appendStore['error'], 200);
             }
 
-            $insert = new $this->modelClass();
+            $insert = new $this->modelClass;
             foreach ($this->fields('create') as $key => $th) {
                 if ($request[$th['name']]) {
                     $insert->{$th['name']} = $request[$th['name']];
@@ -201,10 +201,10 @@ class AspekKpiHeaderController extends DefaultController
 
             foreach ($request->kpi as $row) {
                 AspekKpiItem::create([
-                    'aspek_kpi_header_id'   => $insert->id,
-                    'master_kpi_id'         => $row['master_kpi_id'],
-                    'bobot'                 => $row['bobot'],
-                    'target'                => $row['target'],
+                    'aspek_kpi_header_id' => $insert->id,
+                    'master_kpi_id' => $row['master_kpi_id'],
+                    'bobot' => $row['bobot'],
+                    'target' => $row['target'],
                 ]);
             }
 
@@ -217,6 +217,7 @@ class AspekKpiHeaderController extends DefaultController
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -227,7 +228,7 @@ class AspekKpiHeaderController extends DefaultController
     protected function update(Request $request, $id)
     {
         $rules = $this->rules($id);
-        
+
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             $messageErrors = (new Validation)->modify($validator, $rules);
@@ -253,7 +254,7 @@ class AspekKpiHeaderController extends DefaultController
             return response()->json([
                 'status' => false,
                 'alert' => 'danger',
-                'message' => 'Total bobot tidak valid: '. $totalBobot . '%. Total bobot harus 100%.',
+                'message' => 'Total bobot tidak valid: '.$totalBobot.'%. Total bobot harus 100%.',
             ], 200);
         }
 
@@ -273,7 +274,7 @@ class AspekKpiHeaderController extends DefaultController
                     $change->{$as['name']} = $as['value'];
                 }
             }
-            
+
             $change->save();
 
             $this->afterMainUpdate($change, $request);
@@ -293,11 +294,11 @@ class AspekKpiHeaderController extends DefaultController
 
             $data = collect($request->kpi)->map(function ($row) use ($change) {
                 return [
-                    'id'                   => $row['id'] ?? null,
-                    'aspek_kpi_header_id'   => $change->id,
-                    'master_kpi_id'         => $row['master_kpi_id'],
-                    'bobot'                => $row['bobot'],
-                    'target'               => $row['target'],
+                    'id' => $row['id'] ?? null,
+                    'aspek_kpi_header_id' => $change->id,
+                    'master_kpi_id' => $row['master_kpi_id'],
+                    'bobot' => $row['bobot'],
+                    'target' => $row['target'],
                 ];
             })->toArray();
 
@@ -312,9 +313,6 @@ class AspekKpiHeaderController extends DefaultController
                 ['id'], // unique key
                 ['master_kpi_id', 'bobot', 'target']
             );
-
-
-
 
             DB::commit();
 
@@ -358,12 +356,11 @@ class AspekKpiHeaderController extends DefaultController
                     if (array_key_exists('search', $th) && $th['search'] == false) {
                         $efc[] = $th['column'];
                     }
-                    if(!in_array($th['column'], $efc))
-                    {
-                        if($key == 0){
-                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
-                        }else{
-                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                    if (! in_array($th['column'], $efc)) {
+                        if ($key == 0) {
+                            $query->where($th['column'], 'LIKE', '%'.$orThose.'%');
+                        } else {
+                            $query->orWhere($th['column'], 'LIKE', '%'.$orThose.'%');
                         }
                     }
                 }
@@ -387,41 +384,40 @@ class AspekKpiHeaderController extends DefaultController
             [
                 'key' => 'import-excel-default',
                 'name' => 'Import Excel',
-                'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>"
+                'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>",
             ],
             [
                 'key' => 'export-excel-default',
                 'name' => 'Export Excel',
-                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='" . $baseUrlExcel . "'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>"
+                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='".$baseUrlExcel."'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>",
             ],
             [
                 'key' => 'export-pdf-default',
                 'name' => 'Export Pdf',
-                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export PDF'><i class='ti ti-file'></i></a>"
+                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='".$baseUrlPdf."' title='Export PDF'><i class='ti ti-file'></i></a>",
             ],
         ];
 
-        $permissions =  $this->arrPermissions;
+        $permissions = $this->arrPermissions;
         if ($this->dynamicPermission) {
-            $permissions = (new Constant())->permissionByMenu($this->generalUri);
+            $permissions = (new Constant)->permissionByMenu($this->generalUri);
         }
         $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
-        if(isset($this->drawerLayout)){
+        if (isset($this->drawerLayout)) {
             $layout = $this->drawerLayout;
         }
 
-        
         /* Override edit button */
         $this->actionButtonViews = EasyAdminHelper::replaceActionButton(
-            $this->actionButtonViews, 
-            'easyadmin::backend.idev.buttons.edit', 
+            $this->actionButtonViews,
+            'easyadmin::backend.idev.buttons.edit',
             'backend.idev.buttons.edit'
         );
 
         /* Override delete button */
         $this->actionButtonViews = EasyAdminHelper::replaceActionButton(
-            $this->actionButtonViews, 
-            'easyadmin::backend.idev.buttons.delete', 
+            $this->actionButtonViews,
+            'easyadmin::backend.idev.buttons.delete',
             'backend.idev.buttons.delete'
         );
 
@@ -431,19 +427,17 @@ class AspekKpiHeaderController extends DefaultController
         $data['table_headers'] = $this->tableHeaders;
         $data['title'] = $this->title;
         $data['uri_key'] = $this->generalUri;
-        $data['uri_list_api'] = route($this->generalUri . '.listapi');
-        $data['uri_create'] = route($this->generalUri . '.create');
-        $data['url_store'] = route($this->generalUri . '.store');
+        $data['uri_list_api'] = route($this->generalUri.'.listapi');
+        $data['uri_create'] = route($this->generalUri.'.create');
+        $data['url_store'] = route($this->generalUri.'.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
         $data['actionButtonViews'] = $this->actionButtonViews;
-        $data['templateImportExcel'] = "#";
+        $data['templateImportExcel'] = '#';
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
-        
+
         return view($layout, $data);
     }
-
-
 }

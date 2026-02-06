@@ -13,6 +13,7 @@ class ExcelLaporanBulananExport implements FromView
     {
         $this->data = $data;
     }
+
     public function view(): View
     {
         return view('excel.inventory_consumable.laporan_bulanan_inventaris', $this->data);

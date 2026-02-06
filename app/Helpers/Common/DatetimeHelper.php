@@ -2,10 +2,11 @@
 
 namespace App\Helpers\Common;
 
-use Carbon\Exceptions\InvalidFormatException;
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 
-class DatetimeHelper {
+class DatetimeHelper
+{
     public static function optionsForYears($withPlaceholder = true)
     {
         $optionsYear = [];
@@ -13,7 +14,7 @@ class DatetimeHelper {
         if ($withPlaceholder) {
             $optionsYear[] = [
                 'value' => '',
-                'text'  => 'Select...',
+                'text' => 'Select...',
             ];
         }
 
@@ -22,14 +23,14 @@ class DatetimeHelper {
         for ($y = $currentYear; $y >= $currentYear - 50; $y--) {
             $optionsYear[] = [
                 'value' => $y,
-                'text'  => $y,
+                'text' => $y,
             ];
         }
 
         return $optionsYear;
     }
 
-    public static function optionsForMonths($withPlaceholder = true) 
+    public static function optionsForMonths($withPlaceholder = true)
     {
         $optionsMonth = [
             ['value' => 1, 'text' => 'Januari'],
@@ -84,7 +85,4 @@ class DatetimeHelper {
             return $date;
         }
     }
-
-
-
 }

@@ -2,25 +2,29 @@
 
 namespace App\Http\Controllers\KpiProduction;
 
-use App\Helpers\Modules\KpiProductionHelper;
 use App\Helpers\Common\DatetimeHelper;
+use App\Imports\PersonalOeeImport;
+use App\Models\KpiEmployee;
 use App\Models\KpiPersonalOee;
 use Idev\EasyAdmin\app\Helpers\Constant;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Illuminate\Http\Request;
-use App\Imports\PersonalOeeImport;
-use App\Models\KpiEmployee;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KpiPersonalOeeController extends DefaultController
 {
     protected $modelClass = KpiPersonalOee::class;
+
     protected $title;
+
     protected $generalUri;
+
     protected $tableHeaders;
+
     // protected $actionButtons;
     // protected $arrPermissions;
     protected $dynamicPermission = true;
+
     protected $importExcelConfig;
 
     public function __construct()
@@ -33,35 +37,34 @@ class KpiPersonalOeeController extends DefaultController
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
-                    ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Nama Karyawan', 'column' => 'nama', 'order' => true],
-                    ['name' => 'Nik', 'column' => 'nik', 'order' => true],
-                    ['name' => 'Periode', 'column' => 'periode', 'order' => true, 'formatting' => 'toKpiPeriodDate'],
-                    ['name' => 'A (%)', 'column' => 'availability', 'order' => true],
-                    ['name' => 'P (%)', 'column' => 'performance', 'order' => true],
-                    ['name' => 'Q (%)', 'column' => 'quality', 'order' => true],
-                    ['name' => 'OEE (%)', 'column' => 'oee', 'order' => true],
-                    ['name' => 'Target', 'column' => 'target', 'order' => true],
-                    ['name' => 'Bobot', 'column' => 'bobot', 'order' => true],
-                    ['name' => 'Nilai', 'column' => 'nilai', 'order' => true], 
-                    //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
-                    //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+            ['name' => 'No', 'column' => '#', 'order' => true],
+            ['name' => 'Nama Karyawan', 'column' => 'nama', 'order' => true],
+            ['name' => 'Nik', 'column' => 'nik', 'order' => true],
+            ['name' => 'Periode', 'column' => 'periode', 'order' => true, 'formatting' => 'toKpiPeriodDate'],
+            ['name' => 'A (%)', 'column' => 'availability', 'order' => true],
+            ['name' => 'P (%)', 'column' => 'performance', 'order' => true],
+            ['name' => 'Q (%)', 'column' => 'quality', 'order' => true],
+            ['name' => 'OEE (%)', 'column' => 'oee', 'order' => true],
+            ['name' => 'Target', 'column' => 'target', 'order' => true],
+            ['name' => 'Bobot', 'column' => 'bobot', 'order' => true],
+            ['name' => 'Nilai', 'column' => 'nilai', 'order' => true],
+            // ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+            // ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
 
-
-        $this->importExcelConfig = [ 
+        $this->importExcelConfig = [
             'primaryKeys' => ['kpi_employees_id'],
             'headers' => [
-                    ['name' => 'Kpi employees id', 'column' => 'kpi_employees_id'],
-                    ['name' => 'Periode', 'column' => 'periode'],
-                    ['name' => 'Availability', 'column' => 'availability'],
-                    ['name' => 'Performance', 'column' => 'performance'],
-                    ['name' => 'Quality', 'column' => 'quality'],
-                    ['name' => 'Oee', 'column' => 'oee'],
-                    ['name' => 'Target', 'column' => 'target'],
-                    ['name' => 'Bobot', 'column' => 'bobot'],
-                    ['name' => 'Nilai', 'column' => 'nilai'], 
-            ]
+                ['name' => 'Kpi employees id', 'column' => 'kpi_employees_id'],
+                ['name' => 'Periode', 'column' => 'periode'],
+                ['name' => 'Availability', 'column' => 'availability'],
+                ['name' => 'Performance', 'column' => 'performance'],
+                ['name' => 'Quality', 'column' => 'quality'],
+                ['name' => 'Oee', 'column' => 'oee'],
+                ['name' => 'Target', 'column' => 'target'],
+                ['name' => 'Bobot', 'column' => 'bobot'],
+                ['name' => 'Nilai', 'column' => 'nilai'],
+            ],
         ];
 
         $this->importScripts = [
@@ -74,8 +77,7 @@ class KpiPersonalOeeController extends DefaultController
         ];
     }
 
-
-    protected function fields($mode = "create", $id = '-')
+    protected function fields($mode = 'create', $id = '-')
     {
         $edit = null;
         if ($id != '-') {
@@ -83,83 +85,82 @@ class KpiPersonalOeeController extends DefaultController
         }
 
         $fields = [
-                    [
-                        'type' => 'text',
-                        'label' => 'Kpi employees id',
-                        'name' =>  'kpi_employees_id',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('kpi_employees_id', $id),
-                        'value' => (isset($edit)) ? $edit->kpi_employees_id : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Periode',
-                        'name' =>  'periode',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('periode', $id),
-                        'value' => (isset($edit)) ? $edit->periode : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Availability',
-                        'name' =>  'availability',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('availability', $id),
-                        'value' => (isset($edit)) ? $edit->availability : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Performance',
-                        'name' =>  'performance',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('performance', $id),
-                        'value' => (isset($edit)) ? $edit->performance : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Quality',
-                        'name' =>  'quality',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('quality', $id),
-                        'value' => (isset($edit)) ? $edit->quality : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Oee',
-                        'name' =>  'oee',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('oee', $id),
-                        'value' => (isset($edit)) ? $edit->oee : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Target',
-                        'name' =>  'target',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('target', $id),
-                        'value' => (isset($edit)) ? $edit->target : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Bobot',
-                        'name' =>  'bobot',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('bobot', $id),
-                        'value' => (isset($edit)) ? $edit->bobot : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Nilai',
-                        'name' =>  'nilai',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('nilai', $id),
-                        'value' => (isset($edit)) ? $edit->nilai : ''
-                    ],
+            [
+                'type' => 'text',
+                'label' => 'Kpi employees id',
+                'name' => 'kpi_employees_id',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('kpi_employees_id', $id),
+                'value' => (isset($edit)) ? $edit->kpi_employees_id : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Periode',
+                'name' => 'periode',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('periode', $id),
+                'value' => (isset($edit)) ? $edit->periode : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Availability',
+                'name' => 'availability',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('availability', $id),
+                'value' => (isset($edit)) ? $edit->availability : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Performance',
+                'name' => 'performance',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('performance', $id),
+                'value' => (isset($edit)) ? $edit->performance : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Quality',
+                'name' => 'quality',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('quality', $id),
+                'value' => (isset($edit)) ? $edit->quality : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Oee',
+                'name' => 'oee',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('oee', $id),
+                'value' => (isset($edit)) ? $edit->oee : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Target',
+                'name' => 'target',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('target', $id),
+                'value' => (isset($edit)) ? $edit->target : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Bobot',
+                'name' => 'bobot',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('bobot', $id),
+                'value' => (isset($edit)) ? $edit->bobot : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Nilai',
+                'name' => 'nilai',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('nilai', $id),
+                'value' => (isset($edit)) ? $edit->nilai : '',
+            ],
         ];
-        
+
         return $fields;
     }
-
 
     protected function filters()
     {
@@ -167,27 +168,26 @@ class KpiPersonalOeeController extends DefaultController
             [
                 'type' => 'month',
                 'label' => 'Periode',
-                'name' =>  'periode',
+                'name' => 'periode',
                 'class' => 'col-md-3',
-            ]
+            ],
         ];
 
         return $fields;
     }
 
-
     protected function rules($id = null)
     {
         $rules = [
-                    'kpi_employees_id' => 'required|string',
-                    'periode' => 'required|string',
-                    'availability' => 'required|string',
-                    'performance' => 'required|string',
-                    'quality' => 'required|string',
-                    'oee' => 'required|string',
-                    'target' => 'required|string',
-                    'bobot' => 'required|string',
-                    'nilai' => 'required|string',
+            'kpi_employees_id' => 'required|string',
+            'periode' => 'required|string',
+            'availability' => 'required|string',
+            'performance' => 'required|string',
+            'quality' => 'required|string',
+            'oee' => 'required|string',
+            'target' => 'required|string',
+            'bobot' => 'required|string',
+            'nilai' => 'required|string',
         ];
 
         return $rules;
@@ -220,12 +220,11 @@ class KpiPersonalOeeController extends DefaultController
                     if (array_key_exists('search', $th) && $th['search'] == false) {
                         $efc[] = $th['column'];
                     }
-                    if(!in_array($th['column'], $efc))
-                    {
-                        if($key == 0){
-                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
-                        }else{
-                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                    if (! in_array($th['column'], $efc)) {
+                        if ($key == 0) {
+                            $query->where($th['column'], 'LIKE', '%'.$orThose.'%');
+                        } else {
+                            $query->orWhere($th['column'], 'LIKE', '%'.$orThose.'%');
                         }
                     }
                 }
@@ -250,18 +249,18 @@ class KpiPersonalOeeController extends DefaultController
             [
                 'key' => 'import-excel-default',
                 'name' => 'Import Excel',
-                //'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>"
-                'html_button' => ''
+                // 'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>"
+                'html_button' => '',
             ],
             [
                 'key' => 'export-excel-default',
                 'name' => 'Export Excel',
-                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='" . $baseUrlExcel . "'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>"
+                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='".$baseUrlExcel."'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>",
             ],
             [
                 'key' => 'export-pdf-default',
                 'name' => 'Export Pdf',
-                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export PDF'><i class='ti ti-file'></i></a>"
+                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='".$baseUrlPdf."' title='Export PDF'><i class='ti ti-file'></i></a>",
             ],
         ];
 
@@ -281,19 +280,19 @@ class KpiPersonalOeeController extends DefaultController
                     >
                     <i class="ti ti-upload"></i>
                     </button>
-                '
+                ',
             ],
         ];
 
         $moreActions = array_merge($moreActions, $customActions);
 
-        $permissions =  $this->arrPermissions;
+        $permissions = $this->arrPermissions;
         if ($this->dynamicPermission) {
-            $permissions = (new Constant())->permissionByMenu($this->generalUri);
+            $permissions = (new Constant)->permissionByMenu($this->generalUri);
             $permissions = array_merge($permissions, $this->arrPermissions);
         }
         $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'easyadmin::backend.idev.list_drawer';
-        if(isset($this->drawerLayout)){
+        if (isset($this->drawerLayout)) {
             $layout = $this->drawerLayout;
         }
         $data['permissions'] = $permissions;
@@ -302,27 +301,27 @@ class KpiPersonalOeeController extends DefaultController
         $data['table_headers'] = $this->tableHeaders;
         $data['title'] = $this->title;
         $data['uri_key'] = $this->generalUri;
-        $data['uri_list_api'] = route($this->generalUri . '.listapi');
-        $data['uri_create'] = route($this->generalUri . '.create');
-        $data['url_store'] = route($this->generalUri . '.store');
+        $data['uri_list_api'] = route($this->generalUri.'.listapi');
+        $data['uri_create'] = route($this->generalUri.'.create');
+        $data['url_store'] = route($this->generalUri.'.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
         $data['actionButtonViews'] = $this->actionButtonViews;
-        $data['templateImportExcel'] = "#";
+        $data['templateImportExcel'] = '#';
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
-        
+
         return view($layout, $data);
     }
 
     public function importExcelBulanan(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|mimes:xlsx,xls',
         ]);
 
-        $import = new PersonalOeeImport();
+        $import = new PersonalOeeImport;
         Excel::import($import, $request->file('file'));
 
         $periode = DatetimeHelper::getKpiPeriode($request->periode);
@@ -344,7 +343,7 @@ class KpiPersonalOeeController extends DefaultController
             }
 
             $employee = KpiEmployee::firstOrCreate([
-                'nik'  => $nik,
+                'nik' => $nik,
                 'nama' => $nama,
             ]);
 
@@ -357,13 +356,13 @@ class KpiPersonalOeeController extends DefaultController
             $personalOee = KpiPersonalOee::updateOrCreate(
                 [
                     'kpi_employees_id' => $employee->id,
-                    'periode'       => $periode,
+                    'periode' => $periode,
                 ],
                 [
-                    'oee'            => $value['avg_oee'],
-                    'availability'  => $value['avg_a'],
-                    'performance'   => $value['avg_p'],
-                    'quality'       => $value['avg_q'],
+                    'oee' => $value['avg_oee'],
+                    'availability' => $value['avg_a'],
+                    'performance' => $value['avg_p'],
+                    'quality' => $value['avg_q'],
                 ]
             );
 
@@ -387,5 +386,4 @@ class KpiPersonalOeeController extends DefaultController
             ],
         ]);
     }
-
 }

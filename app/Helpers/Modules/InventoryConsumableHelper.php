@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Helpers\Modules;
+
 use App\Models\InventoryConsumable;
 use App\Models\InventoryConsumableCategory;
-use App\Models\InventoryConsumableSubcategory;
 use App\Models\InventoryConsumableKind;
 use App\Models\InventoryConsumableMovement;
+use App\Models\InventoryConsumableSubcategory;
 use Illuminate\Support\Facades\DB;
 
 class InventoryConsumableHelper
@@ -54,7 +55,7 @@ class InventoryConsumableHelper
     public static function optionsForItems($withPlaceholder = false)
     {
         $options = InventoryConsumableHelper::getItemsByCategory()->toArray();
-    
+
         if ($withPlaceholder) {
             array_unshift($options, ['value' => '', 'text' => 'Pilih Barang...']);
         }
@@ -100,11 +101,11 @@ class InventoryConsumableHelper
     public static function getItemSubcategories($id = null)
     {
         $query = InventoryConsumable::leftJoin(
-                'inventory_consumable_item_subcategory as pivot',
-                'inventory_consumables.id',
-                '=',
-                'pivot.item_id'
-            )
+            'inventory_consumable_item_subcategory as pivot',
+            'inventory_consumables.id',
+            '=',
+            'pivot.item_id'
+        )
             ->leftJoin(
                 'inventory_consumable_subcategories as subcategories',
                 'pivot.subcategory_id',
@@ -125,7 +126,6 @@ class InventoryConsumableHelper
             ->whereNotNull('subcategories.name')
             ->get();
     }
-
 
     public static function getDataExportLaporanBulanan($query, $year, $month)
     {
@@ -166,27 +166,27 @@ class InventoryConsumableHelper
                     ->map(function ($categoryRows) {
 
                         $items = $categoryRows
-                            ->groupBy(fn ($row) => $row->item . '|' . $row->satuan)
+                            ->groupBy(fn ($row) => $row->item.'|'.$row->satuan)
                             ->map(function ($rows) {
                                 return [
-                                    'name'   => $rows->first()->item,
+                                    'name' => $rows->first()->item,
                                     'satuan' => $rows->first()->satuan,
-                                    'qty'    => $rows->sum('qty'),
-                                    'price'  => $rows->sum('price'),
+                                    'qty' => $rows->sum('qty'),
+                                    'price' => $rows->sum('price'),
                                 ];
                             })
                             ->values();
 
                         return [
-                            'name'  => $categoryRows->first()->category,
+                            'name' => $categoryRows->first()->category,
                             'items' => $items,
                         ];
                     })
                     ->values();
 
                 return [
-                    'kind_id'    => $kindRows->first()->kind_id,
-                    'kind'       => $kindName,
+                    'kind_id' => $kindRows->first()->kind_id,
+                    'kind' => $kindName,
                     'categories' => $categories,
                 ];
             })
@@ -196,17 +196,17 @@ class InventoryConsumableHelper
 
     public static function getMovementOutChartData($year, $itemId)
     {
-        $rows = InventoryConsumableMovement::selectRaw("
+        $rows = InventoryConsumableMovement::selectRaw('
             MONTH(movement_datetime) AS month,
             SUM(qty) AS total
-        ")
-        ->where('item_id', $itemId)
-        ->where('type', 'out')
-        ->whereYear('movement_datetime', $year)
-        ->groupBy('month')
-        ->orderBy('month')
-        ->get()
-        ->keyBy('month');
+        ')
+            ->where('item_id', $itemId)
+            ->where('type', 'out')
+            ->whereYear('movement_datetime', $year)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
 
         $labels = [];
         $values = [];

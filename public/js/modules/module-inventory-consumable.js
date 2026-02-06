@@ -170,10 +170,18 @@ $(document).on('change select2:select select2:clear', '[name="item_id"]', functi
     const itemId = $(this).val();
     if (!itemId) return;
 
+    // satuan
+    const fieldSatuan = form.querySelector('.field-number-text-group-qty .input-group-text')
+    if (!fieldSatuan) return;
+    fieldSatuan.textContent = selectedOption.data('satuan');
+
+
+    
+    // subkategori checklist
     const subCheckItemList = form.querySelector(
         '.form-field-checklist-searchable-check-item-list'
     );
-
+    if (!subCheckItemList) return;
     fetch(`inventory-consumable-fetch-item-subcategories-default?id=${itemId}`)
         .then(r => r.json())
         .then(data => {
@@ -208,10 +216,6 @@ $(document).on('change select2:select select2:clear', '[name="item_id"]', functi
                 `);
             });
         });
-
-
-    // satuan
-    form.querySelector('.field-number-text-group-qty .input-group-text').textContent = selectedOption.data('satuan');
 });
 
 

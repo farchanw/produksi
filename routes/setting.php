@@ -5,7 +5,6 @@ use Idev\EasyAdmin\app\Http\Controllers\RoleController;
 use Idev\EasyAdmin\app\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'setting'], function () {
     Route::get('dashboard-setting', [DashboardSettingController::class, 'index'])->name('dashboard-setting.index');
 
@@ -20,7 +19,7 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'setting'], function 
     Route::get('user-export-pdf-default', [UserController::class, 'exportPdf'])->name('user.export-pdf-default');
     Route::get('user-export-excel-default', [UserController::class, 'exportExcel'])->name('user.export-excel-default');
     Route::post('user-import-excel-default', [UserController::class, 'importExcel'])->name('user.import-excel-default');
-  
+
     Route::get('my-account', [UserController::class, 'profile']);
     Route::post('update-profile', [UserController::class, 'updateProfile']);
 });

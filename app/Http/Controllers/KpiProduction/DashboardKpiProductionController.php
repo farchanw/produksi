@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\KpiProduction;
 
 use App\Http\Controllers\Controller;
-use Idev\EasyAdmin\app\Models\Role;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class DashboardKpiProductionController extends Controller
 {
     private $title;
+
     private $generalUri;
 
     public function __construct()
@@ -17,7 +15,6 @@ class DashboardKpiProductionController extends Controller
         $this->title = 'Dashboard Sistem KPI Produksi';
         $this->generalUri = 'dashboard-kpi-production';
     }
-
 
     public function index()
     {
@@ -28,5 +25,4 @@ class DashboardKpiProductionController extends Controller
 
         return view($layout, $data);
     }
-
 }

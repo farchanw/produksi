@@ -5,17 +5,21 @@ namespace App\Http\Controllers\KpiProduction;
 use App\Models\AspekKpiItem;
 use App\Models\KpiEvaluation;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
-use Idev\EasyAdmin\app\Helpers\Constant;
 
 class AspekKpiItemController extends DefaultController
 {
     protected $modelClass = AspekKpiItem::class;
+
     protected $title;
+
     protected $generalUri;
+
     protected $tableHeaders;
+
     // protected $actionButtons;
     // protected $arrPermissions;
     protected $dynamicPermission = true;
+
     protected $importExcelConfig;
 
     public function __construct()
@@ -26,29 +30,27 @@ class AspekKpiItemController extends DefaultController
         $this->actionButtons = ['btn_edit', 'btn_show', 'btn_delete'];
 
         $this->tableHeaders = [
-                    ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Aspek kpi header id', 'column' => 'aspek_kpi_header_id', 'order' => true],
-                    ['name' => 'Master kpi id', 'column' => 'master_kpi_id', 'order' => true],
-                    ['name' => 'Bobot', 'column' => 'bobot', 'order' => true],
-                    ['name' => 'Target', 'column' => 'target', 'order' => true],
-                    ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
-                    ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+            ['name' => 'No', 'column' => '#', 'order' => true],
+            ['name' => 'Aspek kpi header id', 'column' => 'aspek_kpi_header_id', 'order' => true],
+            ['name' => 'Master kpi id', 'column' => 'master_kpi_id', 'order' => true],
+            ['name' => 'Bobot', 'column' => 'bobot', 'order' => true],
+            ['name' => 'Target', 'column' => 'target', 'order' => true],
+            ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+            ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
 
-
-        $this->importExcelConfig = [ 
+        $this->importExcelConfig = [
             'primaryKeys' => ['aspek_kpi_header_id'],
             'headers' => [
-                    ['name' => 'Aspek kpi header id', 'column' => 'aspek_kpi_header_id'],
-                    ['name' => 'Master kpi id', 'column' => 'master_kpi_id'],
-                    ['name' => 'Bobot', 'column' => 'bobot'],
-                    ['name' => 'Target', 'column' => 'target'],
-            ]
+                ['name' => 'Aspek kpi header id', 'column' => 'aspek_kpi_header_id'],
+                ['name' => 'Master kpi id', 'column' => 'master_kpi_id'],
+                ['name' => 'Bobot', 'column' => 'bobot'],
+                ['name' => 'Target', 'column' => 'target'],
+            ],
         ];
     }
 
-
-    protected function fields($mode = "create", $id = '-')
+    protected function fields($mode = 'create', $id = '-')
     {
         $edit = null;
         if ($id != '-') {
@@ -56,51 +58,50 @@ class AspekKpiItemController extends DefaultController
         }
 
         $fields = [
-                    [
-                        'type' => 'text',
-                        'label' => 'Aspek kpi header id',
-                        'name' =>  'aspek_kpi_header_id',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('aspek_kpi_header_id', $id),
-                        'value' => (isset($edit)) ? $edit->aspek_kpi_header_id : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Master kpi id',
-                        'name' =>  'master_kpi_id',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('master_kpi_id', $id),
-                        'value' => (isset($edit)) ? $edit->master_kpi_id : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Bobot',
-                        'name' =>  'bobot',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('bobot', $id),
-                        'value' => (isset($edit)) ? $edit->bobot : ''
-                    ],
-                    [
-                        'type' => 'text',
-                        'label' => 'Target',
-                        'name' =>  'target',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('target', $id),
-                        'value' => (isset($edit)) ? $edit->target : ''
-                    ],
+            [
+                'type' => 'text',
+                'label' => 'Aspek kpi header id',
+                'name' => 'aspek_kpi_header_id',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('aspek_kpi_header_id', $id),
+                'value' => (isset($edit)) ? $edit->aspek_kpi_header_id : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Master kpi id',
+                'name' => 'master_kpi_id',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('master_kpi_id', $id),
+                'value' => (isset($edit)) ? $edit->master_kpi_id : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Bobot',
+                'name' => 'bobot',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('bobot', $id),
+                'value' => (isset($edit)) ? $edit->bobot : '',
+            ],
+            [
+                'type' => 'text',
+                'label' => 'Target',
+                'name' => 'target',
+                'class' => 'col-md-12 my-2',
+                'required' => $this->flagRules('target', $id),
+                'value' => (isset($edit)) ? $edit->target : '',
+            ],
         ];
-        
+
         return $fields;
     }
-
 
     protected function rules($id = null)
     {
         $rules = [
-                    'aspek_kpi_header_id' => 'required|string',
-                    'master_kpi_id' => 'required|string',
-                    'bobot' => 'required|string',
-                    'target' => 'required|string',
+            'aspek_kpi_header_id' => 'required|string',
+            'master_kpi_id' => 'required|string',
+            'bobot' => 'required|string',
+            'target' => 'required|string',
         ];
 
         return $rules;
@@ -128,12 +129,11 @@ class AspekKpiItemController extends DefaultController
                     if (array_key_exists('search', $th) && $th['search'] == false) {
                         $efc[] = $th['column'];
                     }
-                    if(!in_array($th['column'], $efc))
-                    {
-                        if($key == 0){
-                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
-                        }else{
-                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                    if (! in_array($th['column'], $efc)) {
+                        if ($key == 0) {
+                            $query->where($th['column'], 'LIKE', '%'.$orThose.'%');
+                        } else {
+                            $query->orWhere($th['column'], 'LIKE', '%'.$orThose.'%');
                         }
                     }
                 }
@@ -143,7 +143,7 @@ class AspekKpiItemController extends DefaultController
         return $dataQueries;
     }
 
-    public function fetchDefault() 
+    public function fetchDefault()
     {
         $data = collect();
         $id = request('aspek_kpi_header_id');
@@ -178,14 +178,14 @@ class AspekKpiItemController extends DefaultController
                         });
                     }
                 }
-                
+
             }
         }
 
         return response()->json($data);
     }
 
-    public function fetchByKodeDefault() 
+    public function fetchByKodeDefault()
     {
         $data = collect();
         $kode = request('kode');
@@ -194,7 +194,7 @@ class AspekKpiItemController extends DefaultController
         $kategori = request('kategori');
         $periode = request('periode');
 
-        if (!$kode) {
+        if (! $kode) {
             return response()->json($data);
         }
 
@@ -214,8 +214,6 @@ class AspekKpiItemController extends DefaultController
                 ->get();
         }
 
-
         return response()->json($data);
     }
-
 }

@@ -3,34 +3,35 @@
 namespace App\Http\Controllers\InventoryConsumable;
 
 use App\Exports\ExcelLaporanBulananExport;
-use App\Models\InventoryConsumableMovement;
-use App\Models\InventoryConsumable;
-use App\Models\InventoryConsumableCategory;
-use App\Models\InventoryConsumableSubcategory;
 use App\Helpers\Modules\InventoryConsumableHelper;
+use App\Models\InventoryConsumableMovement;
 use App\Models\InventoryConsumableStock;
-use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
-use Idev\EasyAdmin\app\Helpers\Validation;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Exception;
 use Idev\EasyAdmin\app\Helpers\Constant;
+use Idev\EasyAdmin\app\Helpers\Validation;
+use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Exception;
-use Carbon\Carbon;
-use Illuminate\Validation\Rules\In;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InventoryConsumableMovementController extends DefaultController
 {
     protected $modelClass = InventoryConsumableMovement::class;
+
     protected $title;
+
     protected $generalUri;
+
     protected $tableHeaders;
+
     // protected $actionButtons;
     // protected $arrPermissions;
     protected $dynamicPermission = true;
+
     protected $importExcelConfig;
 
     public function __construct()
@@ -38,44 +39,42 @@ class InventoryConsumableMovementController extends DefaultController
         $this->title = 'Kartu Stok';
         $this->generalUri = 'inventory-consumable-movement';
         // $this->arrPermissions = [];
-        $this->actionButtons = ['btn_edit', 'btn_show', /*'btn_delete'*/];
+        $this->actionButtons = ['btn_edit', 'btn_show'/* 'btn_delete' */];
 
         $this->tableHeaders = [
-                    ['name' => 'No', 'column' => '#', 'order' => true],
-                    ['name' => 'Nama Barang', 'column' => 'item', 'order' => true],
-                    ['name' => 'Kategori', 'column' => 'category', 'order' => true],
-                    ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true],
-                    ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
-                    ['name' => 'Qty', 'column' => 'qty', 'order' => true],
-                    ['name' => 'Awal', 'column' => 'stock_awal', 'order' => true],
-                    ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => true],
-                    ['name' => 'Harga Satuan', 'column' => 'harga_satuan', 'order' => true, 'formatting' => 'toRupiah'],
-                    ['name' => 'Harga Total', 'column' => 'harga_total', 'order' => true, 'formatting' => 'toRupiah'],
-                    ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],
-                    ['name' => 'Catatan', 'column' => 'notes', 'order' => true], 
-                    //['name' => 'Created at', 'column' => 'created_at', 'order' => true],
-                    //['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
+            ['name' => 'No', 'column' => '#', 'order' => true],
+            ['name' => 'Nama Barang', 'column' => 'item', 'order' => true],
+            ['name' => 'Kategori', 'column' => 'category', 'order' => true],
+            ['name' => 'Subkategori', 'column' => 'subcategory', 'order' => true],
+            ['name' => 'Type', 'column' => 'type', 'order' => true, 'formatting' => 'toInventoryInOutBadge'],
+            ['name' => 'Qty', 'column' => 'qty', 'order' => true],
+            ['name' => 'Awal', 'column' => 'stock_awal', 'order' => true],
+            ['name' => 'Akhir', 'column' => 'stock_akhir', 'order' => true],
+            ['name' => 'Harga Satuan', 'column' => 'harga_satuan', 'order' => true, 'formatting' => 'toRupiah'],
+            ['name' => 'Harga Total', 'column' => 'harga_total', 'order' => true, 'formatting' => 'toRupiah'],
+            ['name' => 'Tanggal', 'column' => 'movement_datetime', 'order' => true],
+            ['name' => 'Catatan', 'column' => 'notes', 'order' => true],
+            // ['name' => 'Created at', 'column' => 'created_at', 'order' => true],
+            // ['name' => 'Updated at', 'column' => 'updated_at', 'order' => true],
         ];
 
-
-        $this->importExcelConfig = [ 
+        $this->importExcelConfig = [
             'primaryKeys' => ['qty'],
             'headers' => [
-                    ['name' => 'Item', 'column' => 'item'],
-                    ['name' => 'Type', 'column' => 'type'],
-                    ['name' => 'Qty', 'column' => 'qty'],
-                    ['name' => 'Harga', 'column' => 'harga'],
-                    ['name' => 'Movement datetime', 'column' => 'movement_datetime'],
-                    ['name' => 'Notes', 'column' => 'notes'],
-            ]
+                ['name' => 'Item', 'column' => 'item'],
+                ['name' => 'Type', 'column' => 'type'],
+                ['name' => 'Qty', 'column' => 'qty'],
+                ['name' => 'Harga', 'column' => 'harga'],
+                ['name' => 'Movement datetime', 'column' => 'movement_datetime'],
+                ['name' => 'Notes', 'column' => 'notes'],
+            ],
         ];
 
-        
         $this->importScripts = [
             ['source' => asset('vendor/select2/js/select2.min.js')],
             ['source' => asset('vendor/tom-select/tom-select.complete.min.js')],
             ['source' => asset('js/modules/module-inventory-consumable.js')],
-            
+
         ];
 
         $this->importStyles = [
@@ -86,19 +85,18 @@ class InventoryConsumableMovementController extends DefaultController
         ];
     }
 
-
-    protected function fields($mode = "create", $id = '-')
+    protected function fields($mode = 'create', $id = '-')
     {
         $edit = null;
         if ($id != '-') {
             $edit = $this->modelClass::join('inventory_consumables', 'inventory_consumable_movements.item_id', '=', 'inventory_consumables.id')
-            ->where('inventory_consumable_movements.id', $id)->first();
+                ->where('inventory_consumable_movements.id', $id)->first();
         }
 
         $optionsItem = InventoryConsumableHelper::optionsForItems(true);
         $optionsCategory = InventoryConsumableHelper::optionsForCategories(true);
         $optionsSubcategory = [];
-        
+
         if (isset($edit->item_id)) {
             $edit->subcategory_id = DB::table('inventory_consumable_movement_subcategory')
                 ->where('movement_id', $edit->id)
@@ -108,158 +106,157 @@ class InventoryConsumableMovementController extends DefaultController
 
         if ($mode == 'create') {
             $fields = [
-                    [
-                        'type' => 'select',
-                        'label' => 'Kategori Barang',
-                        'name' =>  'category_id',
-                        'class' => 'col-md-4 my-2',
-                        'required' => $this->flagRules('category_id', $id),
-                        'value' => isset($edit) ? $edit->category_id : '',
-                        'options' => $optionsCategory
+                [
+                    'type' => 'select',
+                    'label' => 'Kategori Barang',
+                    'name' => 'category_id',
+                    'class' => 'col-md-4 my-2',
+                    'required' => $this->flagRules('category_id', $id),
+                    'value' => isset($edit) ? $edit->category_id : '',
+                    'options' => $optionsCategory,
+                ],
+                [
+                    'type' => 'select2_data_attr',
+                    'label' => 'Nama Barang',
+                    'name' => 'item_id',
+                    'class' => 'col-md-8 my-2',
+                    'required' => $this->flagRules('item_id', $id),
+                    'value' => (isset($edit)) ? $edit->item_id : '',
+                    'options' => $optionsItem,
+                ],
+                [
+                    'type' => 'select',
+                    'label' => 'Type',
+                    'name' => 'type',
+                    'class' => 'col-md-2 my-2',
+                    'required' => $this->flagRules('type', $id),
+                    'value' => (isset($edit)) ? $edit->type : '',
+                    'options' => InventoryConsumableHelper::optionsForMovementTypes(true),
+                    'filter' => true,
+                ],
+                [
+                    'type' => 'number_text_group',
+                    'label' => 'Qty',
+                    'name' => 'qty',
+                    'class' => 'col-md-2 my-2',
+                    'required' => $this->flagRules('qty', $id),
+                    'value' => (isset($edit)) ? $edit->qty : '0',
+                    'suffix' => '-',
+                ],
+                [
+                    'type' => 'number_harga',
+                    'label' => 'Harga Pembelian',
+                    'name' => 'harga',
+                    'class' => 'col-md-5 my-2',
+                    'required' => $this->flagRules('harga', $id),
+                    'value' => (isset($edit)) ? $edit->harga_total : $edit->harga_satuan ?? '0',
+                    'prefix' => 'Rp',
+                    'options' => [
+                        ['value' => 'satuan', 'text' => 'Satuan'],
+                        ['value' => 'total', 'text' => 'Total'],
                     ],
-                    [
-                        'type' => 'select2_data_attr',
-                        'label' => 'Nama Barang',
-                        'name' =>  'item_id',
-                        'class' => 'col-md-8 my-2',
-                        'required' => $this->flagRules('item_id', $id),
-                        'value' => (isset($edit)) ? $edit->item_id : '',
-                        'options' => $optionsItem
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Type',
-                        'name' =>  'type',
-                        'class' => 'col-md-2 my-2',
-                        'required' => $this->flagRules('type', $id),
-                        'value' => (isset($edit)) ? $edit->type : '',
-                        'options' => InventoryConsumableHelper::optionsForMovementTypes(true),
-                        'filter' => true,
-                    ],
-                    [
-                        'type' => 'number_text_group',
-                        'label' => 'Qty',
-                        'name' =>  'qty',
-                        'class' => 'col-md-2 my-2',
-                        'required' => $this->flagRules('qty', $id),
-                        'value' => (isset($edit)) ? $edit->qty : '0',
-                        'suffix' => '-',
-                    ],
-                    [
-                        'type' => 'number_harga',
-                        'label' => 'Harga',
-                        'name' =>  'harga',
-                        'class' => 'col-md-5 my-2',
-                        'required' => $this->flagRules('harga', $id),
-                        'value' => (isset($edit)) ? $edit->harga_total : $edit->harga_satuan ?? '0',
-                        'prefix' => 'Rp',
-                        'options' => [
-                            ['value' => 'satuan', 'text' => 'Satuan'],
-                            ['value' => 'total', 'text' => 'Total'],
-                        ]
-                    ],
-                    [
-                        'type' => 'datetime',
-                        'label' => 'Tanggal',
-                        'name' =>  'movement_datetime',
-                        'class' => 'col-md-3 my-2',
-                        'required' => $this->flagRules('movement_datetime', $id),
-                        'value' => (isset($edit)) ? $edit->movement_datetime : date('Y-m-d H:i:s'),
-                    ],
-                    [
-                        'type' => 'checklist_searchable',
-                        'label' => 'Subkategori',
-                        'name' =>  'subcategory_id',
-                        'class' => 'col-md-6 my-2',
-                        'required' => $this->flagRules('subcategory_id', $id),
-                        'value' => isset($edit) ? $edit->subcategory_id : '',
-                        'options' => $optionsSubcategory,
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => 'Catatan',
-                        'name' =>  'notes',
-                        'class' => 'col-md-6 my-2',
-                        'required' => $this->flagRules('notes', $id),
-                        'value' => (isset($edit)) ? $edit->notes : ''
-                    ],
+                ],
+                [
+                    'type' => 'datetime',
+                    'label' => 'Tanggal',
+                    'name' => 'movement_datetime',
+                    'class' => 'col-md-3 my-2',
+                    'required' => $this->flagRules('movement_datetime', $id),
+                    'value' => (isset($edit)) ? $edit->movement_datetime : date('Y-m-d H:i:s'),
+                ],
+                [
+                    'type' => 'checklist_searchable',
+                    'label' => 'Subkategori',
+                    'name' => 'subcategory_id',
+                    'class' => 'col-md-6 my-2',
+                    'required' => $this->flagRules('subcategory_id', $id),
+                    'value' => isset($edit) ? $edit->subcategory_id : '',
+                    'options' => $optionsSubcategory,
+                ],
+                [
+                    'type' => 'textarea',
+                    'label' => 'Catatan',
+                    'name' => 'notes',
+                    'class' => 'col-md-6 my-2',
+                    'required' => $this->flagRules('notes', $id),
+                    'value' => (isset($edit)) ? $edit->notes : '',
+                ],
             ];
         }
 
         if ($mode == 'edit') {
+            // dd($edit);
             $fields = [
-                    [
-                        'type' => 'hidden',
-                        'label' => 'Kategori',
-                        'name' =>  'category_id',
-                        'class' => '',
-                        'required' => $this->flagRules('category_id', $id),
-                        'value' => isset($edit) ? $edit->category_id : '',
-                        'options' => $optionsCategory
+                [
+                    'type' => 'hidden',
+                    'label' => 'Kategori',
+                    'name' => 'category_id',
+                    'class' => '',
+                    'required' => $this->flagRules('category_id', $id),
+                    'value' => isset($edit) ? $edit->category_id : '',
+                    'options' => $optionsCategory,
+                ],
+                [
+                    'type' => 'onlyview_alt',
+                    'label' => 'Nama Barang',
+                    'name' => 'item_id',
+                    'class' => 'col-md-12 my-2',
+                    'required' => $this->flagRules('item_id', $id),
+                    'value' => (isset($edit)) ? $edit->item_id : '',
+                    'text' => isset($edit) ? $edit->name : '',
+                ],
+                [
+                    'type' => 'select',
+                    'label' => 'Type',
+                    'name' => 'type',
+                    'class' => 'col-md-12 my-2',
+                    'required' => $this->flagRules('type', $id),
+                    'value' => (isset($edit)) ? $edit->type : '',
+                    'options' => InventoryConsumableHelper::optionsForMovementTypes(),
+                    'filter' => true,
+                ],
+                [
+                    'type' => 'number',
+                    'label' => 'Qty',
+                    'name' => 'qty',
+                    'class' => 'col-md-12 my-2',
+                    'required' => $this->flagRules('qty', $id),
+                    'value' => (isset($edit)) ? $edit->qty : '',
+                ],
+                [
+                    'type' => 'number_harga',
+                    'label' => 'Harga Pembelian',
+                    'name' => 'harga',
+                    'class' => 'col-md-12 my-2',
+                    'required' => $this->flagRules('harga', $id),
+                    'value' => (isset($edit)) ? $edit->harga_total : '0',
+                    'prefix' => 'Rp',
+                    'options' => [
+                        ['value' => 'satuan', 'text' => 'Satuan'],
+                        ['value' => 'total', 'text' => 'Total', 'checked' => true],
                     ],
-                    [
-                        'type' => 'onlyview',
-                        'label' => 'Nama Barang',
-                        'name' =>  'item_id',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('item_id', $id),
-                        'value' => (isset($edit)) ? $edit->item_id : '',
-                        'options' => $optionsItem
-                    ],
-                    [
-                        'type' => 'select',
-                        'label' => 'Type',
-                        'name' =>  'type',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('type', $id),
-                        'value' => (isset($edit)) ? $edit->type : '',
-                        'options' => InventoryConsumableHelper::optionsForMovementTypes(),
-                        'filter' => true,
-                    ],
-                    [
-                        'type' => 'number',
-                        'label' => 'Qty',
-                        'name' =>  'qty',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('qty', $id),
-                        'value' => (isset($edit)) ? $edit->qty : ''
-                    ],
-                    [
-                        'type' => 'number_harga',
-                        'label' => 'Harga',
-                        'name' =>  'harga',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('harga', $id),
-                        'value' => (isset($edit)) ? $edit->harga_total : '0',
-                        'prefix' => 'Rp',
-                        'options' => [
-                            ['value' => 'satuan', 'text' => 'Satuan'],
-                            ['value' => 'total', 'text' => 'Total', 'checked' => true],
-                        ]
-                    ],
-                    [
-                        'type' => 'hidden',
-                        'label' => 'Tanggal',
-                        'name' =>  'movement_datetime',
-                        'class' => '',
-                        'required' => $this->flagRules('movement_datetime', $id),
-                        'value' => (isset($edit)) ? $edit->movement_datetime : ''
-                    ],
-                    [
-                        'type' => 'textarea',
-                        'label' => 'Catatan',
-                        'name' =>  'notes',
-                        'class' => 'col-md-12 my-2',
-                        'required' => $this->flagRules('notes', $id),
-                        'value' => (isset($edit)) ? $edit->notes : ''
-                    ],
+                ],
+                [
+                    'type' => 'hidden',
+                    'label' => 'Tanggal',
+                    'name' => 'movement_datetime',
+                    'class' => '',
+                    'required' => $this->flagRules('movement_datetime', $id),
+                    'value' => (isset($edit)) ? $edit->movement_datetime : '',
+                ],
+                [
+                    'type' => 'textarea',
+                    'label' => 'Catatan',
+                    'name' => 'notes',
+                    'class' => 'col-md-12 my-2',
+                    'required' => $this->flagRules('notes', $id),
+                    'value' => (isset($edit)) ? $edit->notes : '',
+                ],
             ];
         }
-        
+
         return $fields;
     }
-
-
 
     protected function filters()
     {
@@ -268,26 +265,25 @@ class InventoryConsumableMovementController extends DefaultController
         $optionsType = InventoryConsumableHelper::optionsForMovementTypes();
         array_unshift($optionsType, ['value' => '', 'text' => 'Semua']);
 
-
         $fields = [
             [
                 'type' => 'select',
                 'label' => 'Kategori',
-                'name' =>  'category_id',
+                'name' => 'category_id',
                 'class' => 'col-md-2',
                 'options' => $optionsCategory,
             ],
             [
                 'type' => 'select',
                 'label' => 'Type',
-                'name' =>  'type',
+                'name' => 'type',
                 'class' => 'col-md-2',
                 'options' => $optionsType,
             ],
             [
                 'type' => 'month',
                 'label' => 'Periode',
-                'name' =>  'tanggal',
+                'name' => 'tanggal',
                 'class' => 'col-md-2',
             ],
         ];
@@ -295,15 +291,14 @@ class InventoryConsumableMovementController extends DefaultController
         return $fields;
     }
 
-
     protected function rules($id = null)
     {
         $rules = [
-                    'item_id' => 'required|string',
-                    'qty' => 'required|numeric',
-                    'type' => 'required|string',
-                    'movement_datetime' => 'required|string',
-                    //'harga_satuan' => 'required|integer',
+            'item_id' => 'required|string',
+            'qty' => 'required|numeric',
+            'type' => 'required|string',
+            'movement_datetime' => 'required|string',
+            // 'harga_satuan' => 'required|integer',
         ];
 
         return $rules;
@@ -346,13 +341,13 @@ class InventoryConsumableMovementController extends DefaultController
             $filters[] = [
                 'inventory_consumable_movements.movement_datetime',
                 '>=',
-                $date->copy()->startOfMonth()
+                $date->copy()->startOfMonth(),
             ];
 
             $filters[] = [
                 'inventory_consumable_movements.movement_datetime',
                 '<=',
-                $date->copy()->endOfMonth()
+                $date->copy()->endOfMonth(),
             ];
         }
 
@@ -369,19 +364,18 @@ class InventoryConsumableMovementController extends DefaultController
                     if (array_key_exists('search', $th) && $th['search'] == false) {
                         $efc[] = $th['column'];
                     }
-                    if(!in_array($th['column'], $efc))
-                    {
-                        if($key == 0){
-                            $query->where($th['column'], 'LIKE', '%' . $orThose . '%');
-                        }else{
-                            $query->orWhere($th['column'], 'LIKE', '%' . $orThose . '%');
+                    if (! in_array($th['column'], $efc)) {
+                        if ($key == 0) {
+                            $query->where($th['column'], 'LIKE', '%'.$orThose.'%');
+                        } else {
+                            $query->orWhere($th['column'], 'LIKE', '%'.$orThose.'%');
                         }
                     }
                 }
 
-                $query->orWhere('inventory_consumables.name', 'LIKE', '%' . $orThose . '%');
-                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%' . $orThose . '%');
-                $query->orWhere('subcategories.name', 'LIKE', '%' . $orThose . '%');
+                $query->orWhere('inventory_consumables.name', 'LIKE', '%'.$orThose.'%');
+                $query->orWhere('inventory_consumable_categories.name', 'LIKE', '%'.$orThose.'%');
+                $query->orWhere('subcategories.name', 'LIKE', '%'.$orThose.'%');
             })
             ->orderBy($orderBy, $orderState)
             ->groupBy('inventory_consumable_movements.id') // Group because of multiple subcategories
@@ -399,9 +393,6 @@ class InventoryConsumableMovementController extends DefaultController
         return $dataQueries;
     }
 
-
-
-
     public function index()
     {
         $baseUrlExcel = route($this->generalUri.'.export-excel-default');
@@ -413,17 +404,17 @@ class InventoryConsumableMovementController extends DefaultController
             [
                 'key' => 'import-excel-default',
                 'name' => 'Import Excel',
-                'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>"
+                'html_button' => "<button id='import-excel' type='button' class='btn btn-sm btn-info radius-6' href='#' data-bs-toggle='modal' data-bs-target='#modalImportDefault' title='Import Excel' ><i class='ti ti-upload'></i></button>",
             ],
             [
                 'key' => 'export-excel-default',
                 'name' => 'Export Excel',
-                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='" . $baseUrlExcel . "'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>"
+                'html_button' => "<a id='export-excel' data-base-url='".$baseUrlExcel."' class='btn btn-sm btn-success radius-6' target='_blank' href='".$baseUrlExcel."'  title='Export Excel'><i class='ti ti-cloud-download'></i></a>",
             ],
             [
                 'key' => 'export-pdf-default',
                 'name' => 'Export Pdf',
-                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='" . $baseUrlPdf . "' title='Export PDF'><i class='ti ti-file'></i></a>"
+                'html_button' => "<a id='export-pdf' data-base-url='".$baseUrlPdf."' class='btn btn-sm btn-danger radius-6' target='_blank' href='".$baseUrlPdf."' title='Export PDF'><i class='ti ti-file'></i></a>",
             ],
         ];
 
@@ -442,7 +433,7 @@ class InventoryConsumableMovementController extends DefaultController
                     >
                     <i class="ti ti-file-report"></i>
                     </button>
-                '
+                ',
             ],
             [
                 'key' => 'export-laporan-bulanan-excel-default',
@@ -458,19 +449,18 @@ class InventoryConsumableMovementController extends DefaultController
                     >
                     <i class="ti ti-file-report"></i>
                     </button>
-                '
+                ',
             ],
         ];
 
-        $permissions =  $this->arrPermissions;
+        $permissions = $this->arrPermissions;
         if ($this->dynamicPermission) {
-            $permissions = (new Constant())->permissionByMenu($this->generalUri);
+            $permissions = (new Constant)->permissionByMenu($this->generalUri);
         }
         $layout = (request('from_ajax') && request('from_ajax') == true) ? 'easyadmin::backend.idev.list_drawer_ajax' : 'backend.idev.list_drawer_inventory_consumable_movement';
-        if(isset($this->drawerLayout)){
+        if (isset($this->drawerLayout)) {
             $layout = $this->drawerLayout;
         }
-
 
         $data['permissions'] = $permissions;
         $data['more_actions'] = $moreActions;
@@ -479,19 +469,19 @@ class InventoryConsumableMovementController extends DefaultController
         $data['table_headers'] = $this->tableHeaders;
         $data['title'] = $this->title;
         $data['uri_key'] = $this->generalUri;
-        $data['uri_list_api'] = route($this->generalUri . '.listapi');
-        $data['uri_create'] = route($this->generalUri . '.create');
-        $data['url_store'] = route($this->generalUri . '.store');
+        $data['uri_list_api'] = route($this->generalUri.'.listapi');
+        $data['uri_create'] = route($this->generalUri.'.create');
+        $data['url_store'] = route($this->generalUri.'.store');
         $data['fields'] = $this->fields();
         $data['edit_fields'] = $this->fields('edit');
-        
+
         /* Append build query params */
         $params = [];
         if (request('inventory_consumable_id')) {
             $params['inventory_consumable_id'] = request('inventory_consumable_id');
         }
         $urlListApiQueryParams = http_build_query($params);
-        $data['uri_list_api'] = $data['uri_list_api'] . '?' . $urlListApiQueryParams;
+        $data['uri_list_api'] = $data['uri_list_api'].'?'.$urlListApiQueryParams;
 
         /* Override edit button */
         // unset first
@@ -509,19 +499,17 @@ class InventoryConsumableMovementController extends DefaultController
             $this->actionButtonViews[] = 'backend.idev.buttons.delete';
         }
 
-
         $data['actionButtonViews'] = $this->actionButtonViews;
-        $data['templateImportExcel'] = "#";
+        $data['templateImportExcel'] = '#';
         $data['import_scripts'] = $this->importScripts;
         $data['import_styles'] = $this->importStyles;
         $data['filters'] = $this->filters();
         $data['buttonTextCreate'] = 'Input Kartu Stock';
         $data['buttonTextCreateNew'] = 'Input Kartu Stock';
-        
+
         return view($layout, $data);
     }
 
-    
     protected function store(Request $request)
     {
         $rules = $this->rules();
@@ -555,27 +543,26 @@ class InventoryConsumableMovementController extends DefaultController
             $currentStock = (int) InventoryConsumableStock::where('item_id', $request->item_id)
                 ->value('stock') ?? 0;
 
-            $inputQty       = (int) $request->qty;
-            $type           = $request->type;
-
+            $inputQty = (int) $request->qty;
+            $type = $request->type;
 
             // SET QTY & STOCK
             if ($type === 'in') {
-                $qty        = abs($inputQty);
+                $qty = abs($inputQty);
                 $stockAkhir = $currentStock + $qty;
 
-                $hargaType      = $request->harga_type;
+                $hargaType = $request->harga_type;
                 if ($hargaType === 'satuan') {
                     $hargaSatuan = $request->harga;
-                    $hargaTotal  = $hargaSatuan * $qty;
+                    $hargaTotal = $hargaSatuan * $qty;
                 }
                 if ($hargaType === 'total') {
                     $hargaSatuan = $request->harga / $qty;
-                    $hargaTotal  = $request->harga;
+                    $hargaTotal = $request->harga;
                 }
-                
+
             } elseif ($type === 'out') {
-                $qty        = -abs($inputQty);
+                $qty = -abs($inputQty);
                 $stockAkhir = $currentStock + $qty;
 
                 if ($stockAkhir < 0) {
@@ -590,14 +577,14 @@ class InventoryConsumableMovementController extends DefaultController
                     throw new Exception('Stock tidak valid');
                 }
 
-                $qty        = $stockAkhir - $currentStock;
+                $qty = $stockAkhir - $currentStock;
                 $hargaTotal = 0;
 
             } else {
                 throw new Exception('Kolom type tidak valid');
             }
 
-            $insert = new $this->modelClass();
+            $insert = new $this->modelClass;
 
             foreach ($this->fields('create') as $th) {
                 if ($request->filled($th['name'])) {
@@ -611,17 +598,17 @@ class InventoryConsumableMovementController extends DefaultController
                 }
             }
 
-            $insert->qty               = $qty;
-            $insert->stock_awal        = $currentStock;
-            $insert->stock_akhir       = $stockAkhir;
-            $insert->harga_satuan      = $hargaSatuan;
-            $insert->harga_total       = $hargaTotal;
+            $insert->qty = $qty;
+            $insert->stock_awal = $currentStock;
+            $insert->stock_akhir = $stockAkhir;
+            $insert->harga_satuan = $hargaSatuan;
+            $insert->harga_total = $hargaTotal;
             $insert->movement_datetime = $request->movement_datetime ?? now();
 
             $dataSubcategory = $request->subcategory_id ?? [];
             unset(
-                $insert->subcategory_id, 
-                $insert->category_id, 
+                $insert->subcategory_id,
+                $insert->category_id,
                 $insert->harga
             );
 
@@ -634,7 +621,7 @@ class InventoryConsumableMovementController extends DefaultController
             );
 
             // SET SUBCATEGORY
-            if (!empty($dataSubcategory)) {
+            if (! empty($dataSubcategory)) {
                 $insert->subcategories()->sync($dataSubcategory);
             }
 
@@ -657,9 +644,6 @@ class InventoryConsumableMovementController extends DefaultController
             ], 500);
         }
     }
-
-
-
 
     protected function update(Request $request, $id)
     {
@@ -687,25 +671,16 @@ class InventoryConsumableMovementController extends DefaultController
         try {
             $appendUpdate = $this->appendUpdate($request);
 
-            // Lock movement
             $change = $this->modelClass::lockForUpdate()->findOrFail($id);
-
-            // 24h rule
-            if (Carbon::parse($change->created_at)->isBefore(now()->subHours(24))) {
-                throw new Exception('Tidak dapat mengubah transaksi setelah 24 jam');
-            }
-            
-            // LOCK & VERIFY STOCK ROW
             $stock = InventoryConsumableStock::where('item_id', $change->item_id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
             // Must be latest transaction
             if ($change->stock_akhir !== $stock->stock) {
-                throw new Exception('Tidak dapat mengubah transaksi lama');
+                throw new Exception('Tidak dapat mengubah transaksi lama pada barang ini');
             }
 
-            
             // ALLOW TYPE + QTY CHANGE
             if ($request->filled('qty') || $request->filled('type')) {
 
@@ -714,7 +689,7 @@ class InventoryConsumableMovementController extends DefaultController
                     ? $request->type
                     : $change->type;
 
-                if (!in_array($newType, ['in', 'out'], true)) {
+                if (! in_array($newType, ['in', 'out'], true)) {
                     throw new Exception('Tipe transaksi tidak valid');
                 }
 
@@ -749,33 +724,39 @@ class InventoryConsumableMovementController extends DefaultController
                 $stock->save();
             }
 
-            
             // PRICE UPDATE
-            if ($request->filled('harga_satuan')) {
-                $change->harga_satuan = (int) $request->harga_satuan;
-
+            if ($request->filled('harga_type') && $request->filled('harga')) {
                 if ($change->type === 'in') {
-                    $change->harga_total = abs($change->qty) * $change->harga_satuan;
+                    $hargaType = $request->harga_type;
+
+                    if ($hargaType === 'satuan') {
+                        $hargaSatuan = $request->harga;
+                        $hargaTotal = $hargaSatuan * $change->qty;
+                    }
+                    if ($hargaType === 'total') {
+                        $hargaSatuan = $request->harga / $change->qty;
+                        $hargaTotal = $request->harga;
+                    }
+
+                    $change->harga_satuan = $hargaSatuan;
+                    $change->harga_total = $hargaTotal;
                 } else {
+                    $change->harga_satuan = 0;
                     $change->harga_total = 0;
                 }
             }
 
-            
             // NOTES
             if ($request->filled('notes')) {
                 $change->notes = $request->notes;
             }
 
-            
-            // EXTRA APPENDED COLUMNS
             if (array_key_exists('columns', $appendUpdate)) {
                 foreach ($appendUpdate['columns'] as $as) {
                     $change->{$as['name']} = $as['value'];
                 }
             }
 
-            
             // IMMUTABLE FIELDS
             unset(
                 $change->item_id,
@@ -807,7 +788,6 @@ class InventoryConsumableMovementController extends DefaultController
         }
     }
 
-
     protected function show($id)
     {
         $singleData = $this->defaultDataQuery()->where('inventory_consumable_movements.id', $id)->first();
@@ -819,14 +799,13 @@ class InventoryConsumableMovementController extends DefaultController
         return view('easyadmin::backend.idev.show-default', $data);
     }
 
-
     protected function exportLaporanBulananPdf(Request $request)
     {
         $requestMonthYear = $request->input('month_year', now()->format('Y-m'));
         $carbonMonthYear = Carbon::parse($requestMonthYear);
 
         $month = $carbonMonthYear->month;
-        $year  = $carbonMonthYear->year;
+        $year = $carbonMonthYear->year;
         $data['monthName'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('M'));
         $data['year'] = $year;
         $data['records'] = InventoryConsumableHelper::getDataExportLaporanBulanan(
@@ -838,7 +817,7 @@ class InventoryConsumableMovementController extends DefaultController
         $pdf = Pdf::loadView('pdf.inventory_consumable.laporan_bulanan_inventaris', $data);
         $pdf->setPaper('A4');
 
-        $fileName = 'laporan-bulanan-inventaris-' . Carbon::now()->format('YmdHis') . '.pdf';
+        $fileName = 'laporan-bulanan-inventaris-'.Carbon::now()->format('YmdHis').'.pdf';
 
         return $pdf->stream($fileName);
     }
@@ -849,7 +828,7 @@ class InventoryConsumableMovementController extends DefaultController
         $carbonMonthYear = Carbon::parse($requestMonthYear);
 
         $month = $carbonMonthYear->month;
-        $year  = $carbonMonthYear->year;
+        $year = $carbonMonthYear->year;
         $data['monthName'] = Str::upper(Carbon::createFromFormat('m', $month)->locale('id')->translatedFormat('M'));
         $data['year'] = $year;
         $data['records'] = InventoryConsumableHelper::getDataExportLaporanBulanan(

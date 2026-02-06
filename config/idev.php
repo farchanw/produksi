@@ -8,6 +8,3 @@ return [
     'enable_role' => true,
     'copyright' => 'Copyright &copy; Sampharindo Perdana',
 ];
-
-
-
