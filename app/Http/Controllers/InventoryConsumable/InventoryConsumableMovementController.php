@@ -570,6 +570,7 @@ class InventoryConsumableMovementController extends DefaultController
                     throw new Exception('Stock tidak mencukupi');
                 }
 
+                $hargaSatuan = 0;
                 $hargaTotal = 0;
             } elseif ($type === 'adjust') {
                 $stockAkhir = $inputQty;
@@ -579,6 +580,7 @@ class InventoryConsumableMovementController extends DefaultController
                 }
 
                 $qty = $stockAkhir - $currentStock;
+                $hargaSatuan = 0;
                 $hargaTotal = 0;
 
             } else {
