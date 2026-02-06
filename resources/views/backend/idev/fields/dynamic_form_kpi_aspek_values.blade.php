@@ -225,5 +225,9 @@ document.addEventListener('click', function (e) {
             font-size: .875rem;
         }
 
+        .select-realisasi {
+            background-color: #cacaca!important;
+        }
+
     </style>
 @endpush
