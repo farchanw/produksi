@@ -201,7 +201,9 @@ class AspekKpiItemController extends DefaultController
         if (strtolower($kategori ?? '') == 'personal') {
             // $kode == nik
             $data = $this->modelClass::join('master_kpis', 'aspek_kpi_items.master_kpi_id', '=', 'master_kpis.id')
-                ->join('kpi_employees', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'kpi_employees.aspek_kpi_header_id')
+                ->join('kpi_aspek_employees', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'kpi_aspek_employees.aspek_kpi_header_id')
+                ->join('kpi_employees', 'aspek_kpi_items.aspek_kpi_header_id', '=', 'kpi_aspek_employees.aspek_kpi_header_id')
+                
                 ->where('kpi_employees.nik', $kode)
                 ->select(
                     'aspek_kpi_items.*',

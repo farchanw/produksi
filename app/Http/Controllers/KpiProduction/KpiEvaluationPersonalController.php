@@ -7,6 +7,7 @@ use App\Helpers\Modules\KpiProductionHelper;
 use App\Models\AspekKpiHeader;
 use App\Models\KpiEmployee;
 use App\Models\KpiEvaluation;
+use App\Models\KpiAspekEmployee;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
@@ -253,7 +254,8 @@ class KpiEvaluationPersonalController extends DefaultController
             $insert->periode = DatetimeHelper::getKpiPeriode($insert->periode);
 
             // aspek_kpi_header_id
-            $insert->aspek_kpi_header_id = KpiEmployee::where('nik', $request->input('kode'))
+            $insert->aspek_kpi_header_id = KpiAspekEmployee::join('kpi_employees', 'kpi_aspek_employees.kpi_employee_id', '=', 'kpi_employees.id')
+            ->where('nik', $request->input('kode'))
                 ->first()
                 ->aspek_kpi_header_id;
 

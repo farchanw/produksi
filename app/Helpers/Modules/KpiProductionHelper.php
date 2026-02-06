@@ -32,19 +32,29 @@ class KpiProductionHelper
             $tipe = strtolower($tipe);
             $skor = 0;
 
-            if ($target <= 0) {
-                $skor = 0;
+            if ($tipe === 'max') {
 
-            } elseif ($tipe === 'max') {
-                $skor = ($realisasi / $target) * 100;
+                if ($target <= 0) {
+                    $skor = 0;
+                } else {
+                    $skor = ($realisasi / $target) * 100;
+                }
 
             } elseif ($tipe === 'min') {
+
                 if ($realisasi <= 0) {
                     $skor = 100;
+                } elseif ($target <= 0) {
+                    $skor = 0;
                 } else {
                     $skor = ($target / $realisasi) * 100;
                 }
+
+            } else {
+                // fallback if tipe is unknown
+                $skor = 0;
             }
+
 
             $skor = round($skor, 2);
             $skor_akhir = round($skor * ($bobot / 100), 2);

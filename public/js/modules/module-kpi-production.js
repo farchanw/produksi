@@ -175,7 +175,7 @@ function renderAspekKpiItem(selectElement, response) {
         $(clone).find('.input-skor').val(editValue.skor || item.skor || '');
         $(clone).find('.input-skor-akhir').val(editValue.skor_akhir || item.skor_akhir || '');
         $(clone).find('.input-kpi-id').val(item.id);
-        $(clone).find('.input-realisasi').val(editValue.realisasi || '');
+        $(clone).find('.input-realisasi').val(editValue.realisasi || '0');
 
         // Dynamically create hidden inputs for readonly/display values
         const $row = $(clone).find('.row');
@@ -208,17 +208,34 @@ function renderAspekKpiItem(selectElement, response) {
         // Realisasi input is already editable, just set its name
         $(clone).find('.input-realisasi').attr('name', `aspek_values_input[${index}][realisasi]`);
         $(clone).find('.input-realisasi').on('input', function () {
-            console.log('aaaaaaaaaaaaauasibabcsj')
+            const tipe = item.tipe;
+            const target = parseFloat(item.target) || 0;
+            const bobot = parseFloat(item.bobot) || 0;
             const realisasi = parseFloat($(this).val()) || 0;
             let valueSkor = 0;
 
-            if (item.tipe === 'max') {
-                valueSkor = realisasi / item.target * 100;
-            } else if (item.tipe === 'min') {
-                valueSkor = realisasi <= 0 ? 100 : item.target / realisasi * 100;
+            if (tipe === 'max') {
+
+                if (target <= 0) {
+                    valueSkor = 0;
+                } else {
+                    valueSkor = (realisasi / target) * 100;
+                }
+
+            } else if (tipe === 'min') {
+
+                if (realisasi <= 0) {
+                    valueSkor = 100;
+                } else if (target <= 0) {
+                    valueSkor = 0;
+                } else {
+                    valueSkor = (target / realisasi) * 100;
+                }
             }
 
-            const valueSkorAkhir = valueSkor * (item.bobot / 100);
+            // weighted score
+            const valueSkorAkhir = valueSkor * (bobot / 100);
+
 
             $(clone).find('.input-skor').val(valueSkor);
             $(clone).find('.input-skor-akhir').val(valueSkorAkhir);
@@ -240,13 +257,29 @@ function renderAspekKpiItem(selectElement, response) {
         let tipe = $row.find('.input-tipe').val().toLowerCase();
         let valueSkor = 0;
 
+
         if (tipe === 'max') {
-            valueSkor = realisasi / target * 100;
+
+            if (target <= 0) {
+                valueSkor = 0;
+            } else {
+                valueSkor = (realisasi / target) * 100;
+            }
+
         } else if (tipe === 'min') {
-            valueSkor = realisasi <= 0 ? 100 : target / realisasi * 100;
+
+            if (realisasi <= 0) {
+                valueSkor = 100;
+            } else if (target <= 0) {
+                valueSkor = 0;
+            } else {
+                valueSkor = (target / realisasi) * 100;
+            }
         }
 
+        // weighted score
         const valueSkorAkhir = valueSkor * (bobot / 100);
+
 
         $row.find('.input-skor').val(valueSkor.toFixed(2));
         $row.find('.input-skor-akhir').val(valueSkorAkhir.toFixed(2));
@@ -355,110 +388,114 @@ $('body').append(/*html*/`
 </div>`);
 
 // Modal import excel oee
-$('body').append(/*html*/`
-<div class="modal fade" id="modalImportExcelOeePersonalBulananDefault" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form method="post" id="formImportExcelOeePersonalBulananDefault" enctype="multipart/form-data" action="${
-                document.querySelector('#import-excel-oee-personal-bulanan-default').dataset.baseUrl
-            }">
-            <input type="hidden" name="_token" value="${
-                document.querySelector('#import-excel-oee-personal-bulanan-default').dataset.csrf
-            }">
+if (document.querySelector('#import-excel-oee-personal-bulanan-default')) {
+    $('body').append(/*html*/`
+    <div class="modal fade" id="modalImportExcelOeePersonalBulananDefault" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="post" id="formImportExcelOeePersonalBulananDefault" enctype="multipart/form-data" action="${
+                    document.querySelector('#import-excel-oee-personal-bulanan-default').dataset.baseUrl
+                }">
+                <input type="hidden" name="_token" value="${
+                    document.querySelector('#import-excel-oee-personal-bulanan-default').dataset.csrf
+                }">
 
-            <div class="modal-content">
-                <div class="modal-header bg-secondary text-white">
-                    <h5 class="modal-title text-white">Import Excel Data OEE Personal Bulanan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <label class="me-2 mb-0" style="min-width:70px;">Periode</label>
-                        <input 
-                            type="month"
-                            name="periode"
-                            class="form-control form-control-sm"
-                            required
-                        >
+                <div class="modal-content">
+                    <div class="modal-header bg-secondary text-white">
+                        <h5 class="modal-title text-white">Import Excel Data OEE Personal Bulanan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <label class="me-2 mb-0" style="min-width:70px;">File</label>
-                        <input type="file" name="file" class="form-control form-control-sm" accept=".xlsx, .xls">
+
+                    <div class="modal-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <label class="me-2 mb-0" style="min-width:70px;">Periode</label>
+                            <input 
+                                type="month"
+                                name="periode"
+                                class="form-control form-control-sm"
+                                required
+                            >
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <label class="me-2 mb-0" style="min-width:70px;">File</label>
+                            <input type="file" name="file" class="form-control form-control-sm" accept=".xlsx, .xls">
+                        </div>
+                    </div>
+
+
+                    <div class="modal-footer mt-2">
+                        <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Impor
+                        </button>
                     </div>
                 </div>
+            </form>
+        </div>
+    </div>`);
 
+    document.getElementById('formImportExcelOeePersonalBulananDefault').addEventListener('submit', function (e) {
 
-                <div class="modal-footer mt-2">
-                    <button type="button" class="btn btn-muted" data-bs-dismiss="modal">
-                        Batal
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        Impor
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>`);
+        e.preventDefault(); // stop normal submit
 
-document.getElementById('formImportExcelOeePersonalBulananDefault').addEventListener('submit', function (e) {
+        const form = this;
+        const formData = new FormData(form);
 
-    e.preventDefault(); // stop normal submit
+        const modalEl = form.closest('.modal');
+        bootstrap.Modal.getInstance(modalEl).hide();
 
-    const form = this;
-    const formData = new FormData(form);
+        Swal.fire({
+            title: 'Mengimpor data...',
+            text: 'Mohon tunggu...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-    const modalEl = form.closest('.modal');
-    bootstrap.Modal.getInstance(modalEl).hide();
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(res => {
+            Swal.close();
 
-    Swal.fire({
-        title: 'Mengimpor data...',
-        text: 'Mohon tunggu...',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+            if (res.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Data berhasil diimport',
 
-    fetch(form.action, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(res => {
-        Swal.close();
-
-        if (res.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Data berhasil diimport',
-
-                html: `
-                    <p>${res.data['oee_created']} data baru disimpan</p>
-                    <p>${res.data['oee_updated']} data diperbarui</p>
-                    <p>${res.data['oee_skipped']} data dilewati (duplikat/sudah ada)</p>
-                `
-            }).then(() => {
-                window.location.reload();
-            });
-        } else {
+                    html: `
+                        <p>${res.data['oee_created']} data baru disimpan</p>
+                        <p>${res.data['oee_updated']} data diperbarui</p>
+                        <p>${res.data['oee_skipped']} data dilewati (duplikat/sudah ada)</p>
+                    `
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed',
+                    text: res.message || 'Import failed'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.close();
             Swal.fire({
                 icon: 'error',
-                title: 'Failed',
-                text: res.message || 'Import failed'
+                title: 'Error',
+                text: 'Something went wrong'
             });
-        }
-    })
-    .catch(error => {
-        Swal.close();
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Something went wrong'
+            console.error(error);
         });
-        console.error(error);
     });
-});
+}
+
+
 
 
 

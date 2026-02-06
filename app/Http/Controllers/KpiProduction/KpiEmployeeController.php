@@ -8,8 +8,15 @@ use App\Models\AspekKpiHeader;
 use App\Models\KpiEmployee;
 use App\Models\MasterSection;
 use App\Models\MasterSubsection;
+use App\Models\KpiAspekEmployee;
 use Idev\EasyAdmin\app\Helpers\Constant;
 use Idev\EasyAdmin\app\Http\Controllers\DefaultController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Idev\EasyAdmin\app\Helpers\Validation;
+use Exception;
+
 
 class KpiEmployeeController extends DefaultController
 {
@@ -98,10 +105,10 @@ class KpiEmployeeController extends DefaultController
             [
                 'type' => 'select',
                 'label' => 'Aspek KPI',
-                'name' => 'aspek_kpi_header_id',
+                'name' => 'aspek_id',
                 'class' => 'col-md-12 my-2',
-                'required' => $this->flagRules('aspek_kpi_header_id', $id),
-                'value' => (isset($edit)) ? $edit->aspek_kpi_header_id : '',
+                'required' => $this->flagRules('aspek_id', $id),
+                'value' => (isset($edit)) ? $edit->aspek_id : '',
                 'options' => AspekKpiHeader::select('id as value', 'nama as text')->orderBy('nama', 'ASC')->get()->toArray(),
             ],
         ];
@@ -116,7 +123,7 @@ class KpiEmployeeController extends DefaultController
             'nik' => 'required|string',
             'master_section_id' => 'required|string',
             'master_subsection_id' => 'required|string',
-            'aspek_kpi_header_id' => 'required|string',
+            'aspek_id' => 'required|string',
         ];
 
         return $rules;
@@ -138,10 +145,11 @@ class KpiEmployeeController extends DefaultController
 
         $dataQueries = $this->modelClass::join('master_subsections', 'kpi_employees.master_subsection_id', '=', 'master_subsections.id')
             ->join('master_sections', 'master_subsections.master_section_id', '=', 'master_sections.id')
-            ->join('aspek_kpi_headers', 'kpi_employees.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
+            ->join('kpi_aspek_employees', 'kpi_employees.id', '=', 'kpi_aspek_employees.kpi_employee_id')
+            ->join('aspek_kpi_headers', 'kpi_aspek_employees.aspek_kpi_header_id', '=', 'aspek_kpi_headers.id')
             ->where($filters)
             ->where(function ($query) use ($orThose) {
-                $efc = ['#', 'created_at', 'updated_at', 'id', 'master_section', 'master_subsection', 'aspek_kpi_header', 'nama'];
+                $efc = ['#', 'created_at', 'updated_at', 'id', 'master_section', 'master_subsection', 'aspek_kpi_header', 'nama', 'aspek_id'];
 
                 foreach ($this->tableHeaders as $key => $th) {
                     if (array_key_exists('search', $th) && $th['search'] == false) {
@@ -259,5 +267,77 @@ class KpiEmployeeController extends DefaultController
         $data = $query->get();
 
         return response()->json($data);
+    }
+
+
+    protected function store(Request $request)
+    {
+        $rules = $this->rules();
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeInsertResponse = $this->beforeMainInsert($request);
+        if ($beforeInsertResponse !== null) {
+            return $beforeInsertResponse; // Return early if there's a response
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendStore = $this->appendStore($request);
+            
+            if (array_key_exists('error', $appendStore)) {
+                return response()->json($appendStore['error'], 200);
+            }
+
+            $insert = new $this->modelClass();
+            foreach ($this->fields('create') as $key => $th) {
+                if ($request[$th['name']]) {
+                    $insert->{$th['name']} = $request[$th['name']];
+                }
+            }
+            if (array_key_exists('columns', $appendStore)) {
+                foreach ($appendStore['columns'] as $key => $as) {
+                    $insert->{$as['name']} = $as['value'];
+                }
+            }
+
+            // insert kpi_aspek_employees
+            $aspekId = $insert->aspek_id;
+            unset($insert->aspek_id);
+
+            $insert->save();
+            
+            $insertAspek = new KpiAspekEmployee();
+            $insertAspek->kpi_employee_id = $insert->id;
+            $insertAspek->aspek_kpi_header_id = $aspekId;
+            $insertAspek->save();
+
+            $this->afterMainInsert($insert, $request);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Was Created Successfully',
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
