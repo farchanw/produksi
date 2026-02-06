@@ -206,6 +206,15 @@ class InventoryConsumableMovementController extends DefaultController
                     'text' => isset($edit) ? $edit->name : '',
                 ],
                 [
+                    'type' => 'onlyview_alt',
+                    'label' => 'Tanggal',
+                    'name' => 'movement_datetime',
+                    'class' => '',
+                    'required' => $this->flagRules('movement_datetime', $id),
+                    'value' => (isset($edit)) ? $edit->movement_datetime : '',
+                    'text' => (isset($edit)) ? $edit->movement_datetime : '',
+                ],
+                [
                     'type' => 'select',
                     'label' => 'Type',
                     'name' => 'type',
@@ -235,14 +244,6 @@ class InventoryConsumableMovementController extends DefaultController
                         ['value' => 'satuan', 'text' => 'Satuan'],
                         ['value' => 'total', 'text' => 'Total', 'checked' => true],
                     ],
-                ],
-                [
-                    'type' => 'hidden',
-                    'label' => 'Tanggal',
-                    'name' => 'movement_datetime',
-                    'class' => '',
-                    'required' => $this->flagRules('movement_datetime', $id),
-                    'value' => (isset($edit)) ? $edit->movement_datetime : '',
                 ],
                 [
                     'type' => 'textarea',
