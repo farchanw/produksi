@@ -540,14 +540,12 @@ class InventoryConsumableMovementController extends DefaultController
                 return response()->json($appendStore['error'], 200);
             }
 
-            // GET STOCK
             $currentStock = (int) InventoryConsumableStock::where('item_id', $request->item_id)
                 ->value('stock') ?? 0;
 
             $inputQty = (int) $request->qty;
             $type = $request->type;
 
-            // SET QTY & STOCK
             if ($type === 'in') {
                 $qty = abs($inputQty);
                 $stockAkhir = $currentStock + $qty;
@@ -561,7 +559,6 @@ class InventoryConsumableMovementController extends DefaultController
                     $hargaSatuan = $request->harga / $qty;
                     $hargaTotal = $request->harga;
                 }
-
             } elseif ($type === 'out') {
                 $qty = -abs($inputQty);
                 $stockAkhir = $currentStock + $qty;

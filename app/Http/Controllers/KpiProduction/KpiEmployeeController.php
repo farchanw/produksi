@@ -340,4 +340,74 @@ class KpiEmployeeController extends DefaultController
             ], 500);
         }
     }
+
+
+        protected function update(Request $request, $id)
+    {
+        $rules = $this->rules($id);
+        
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $messageErrors = (new Validation)->modify($validator, $rules);
+
+            return response()->json([
+                'status' => false,
+                'alert' => 'danger',
+                'message' => 'Required Form',
+                'validation_errors' => $messageErrors,
+            ], 200);
+        }
+
+        $beforeUpdateResponse = $this->beforeMainUpdate($id, $request);
+        if ($beforeUpdateResponse !== null) {
+            return $beforeUpdateResponse; // Return early if there's a response
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $appendUpdate = $this->appendUpdate($request);
+
+            $change = $this->modelClass::where('id', $id)->first();
+            foreach ($this->fields('edit', $id) as $key => $th) {
+                if ($request[$th['name']]) {
+                    $change->{$th['name']} = $request[$th['name']];
+                }
+            }
+            if (array_key_exists('columns', $appendUpdate)) {
+                foreach ($appendUpdate['columns'] as $key => $as) {
+                    $change->{$as['name']} = $as['value'];
+                }
+            }
+
+            // insert kpi_aspek_employees
+            $aspekId = $change->aspek_id;
+            unset($change->aspek_id);
+            
+            $change->save();
+
+            
+            $changeAspek = new KpiAspekEmployee();
+            $changeAspek->kpi_employee_id = $change->id;
+            $changeAspek->aspek_kpi_header_id = $aspekId;
+            $changeAspek->save();
+
+            $this->afterMainUpdate($change, $request);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'alert' => 'success',
+                'message' => 'Data Was Updated Successfully',
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -14,20 +14,6 @@ use App\Http\Controllers\TestPersonalOeeController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], function () {
-    Route::post('/test-upload-oee', [TestPersonalOeeController::class, 'upload']);
-
-    Route::get('/test-upload-oee', function () {
-        $csrf = csrf_token();
-
-        return <<<HTML
-        <form method="post" enctype="multipart/form-data">
-            <input type="hidden" name="_token" value="{$csrf}">
-            <input type="file" name="file" required>
-            <button type="submit">Upload</button>
-        </form>
-        HTML;
-    });
-
     Route::resource('dashboard-kpi-production', DashboardKpiProductionController::class);
     Route::get('dashboard-kpi-production-api', [DashboardKpiProductionController::class, 'indexApi'])->name('dashboard-kpi-production.listapi');
 
@@ -41,6 +27,8 @@ Route::group(['middleware' => ['web', 'auth'], 'prefix' => 'kpi-production'], fu
     Route::post('kpi-production-kpi-evaluation-personal-bulk-action-default', [KpiEvaluationPersonalController::class, 'bulkAction'])->name('kpi-evaluation-personal.bulk-action-default');
 
     Route::post('import-excel-oee-personal-bulanan-default', [KpiPersonalOeeController::class, 'importExcelBulanan'])->name('kpi-personal-oee.import-excel-oee-personal-bulanan-default');
+
+    Route::get('kpi-production-fetch-realisasi-default', [MasterKpiController::class, 'fetchRealisasiDefault'])->name('kpi-production.fetch-realisasi-default');
 });
 
 Route::group(['middleware' => ['web', 'auth', 'middlewareByAccess'], 'prefix' => 'kpi-production'], function () {

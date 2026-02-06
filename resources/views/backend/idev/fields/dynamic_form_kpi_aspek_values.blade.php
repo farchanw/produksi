@@ -50,8 +50,21 @@
 
                 <div class="col">
                     <label class="form-label fw-bold">Realisasi</label>
-                    <input type="number" step="any" class="form-control form-control-sm input-realisasi" placeholder="Input realisasi" required>
+                    <div class="input-group input-group-sm">
+                        <input type="number" step="any" 
+                            class="form-control input-realisasi" 
+                            placeholder="Input realisasi" 
+                            required>
+
+                        <button class="btn btn-primary btn-search-realisasi" 
+                                type="button" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#realisasiModal">
+                            <i class="ti ti-search"></i>
+                        </button>
+                    </div>
                 </div>
+
 
                 <div class="col-md-1">
                     <label class="form-label">Skor</label>
@@ -69,6 +82,127 @@
     </div>
 </template>
 
+
+<script>
+$(document).ready(function () {
+    $('body').append(/*html*/`
+        <div class="modal fade" id="realisasiModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Pilih Realisasi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+    `);
+
+    /*
+    <button class="btn btn-light w-100 mb-2 select-realisasi" data-value="100000">
+        100,000
+    </button>
+    */
+
+    // on modal open
+    $('#realisasiModal').on('show.bs.modal', function (e) {
+        // get form from e
+        const form = e.relatedTarget.closest('form');
+        const kategori = $(form).find('[name="kategori"]').val();
+        const periode = $(form).find('[name="periode"]').val();
+        const kode = $(form).find('[name="kode"]').val();
+
+        const modalBody = $(this).find('.modal-body');
+
+        // console.log(kategori, periode, kode);
+
+        modalBody.empty();
+
+        if (window.kpiProductionSelectRealisasiData && window.kpiProductionSelectRealisasiData[`${kategori}-${periode}-${kode}`]) {
+            window.kpiProductionSelectRealisasiData[`${kategori}-${periode}-${kode}`].forEach((item) => {
+                modalBody.append(/*html*/`
+                    <button class="btn btn-light w-100 mb-2 select-realisasi" data-value="${item.value}">
+                        ${item.text}
+                    </button>
+                `);
+            });
+            return;
+        }
+
+        // show loading
+        modalBody.html(`
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `);
+
+
+        
+
+        $.ajax({
+            url: 'kpi-production-fetch-realisasi-default',
+            method: 'GET',
+            data: {
+                kategori: kategori,
+                periode: periode,
+                kode: kode,
+            },
+            success: function (response) {
+                modalBody.empty();
+                // response is json of data
+                if (response.length > 0) {
+                    window.kpiProductionSelectRealisasiData = window.kpiProductionSelectRealisasiData || [];
+                    window.kpiProductionSelectRealisasiData[`${kategori}-${periode}-${kode}`] = response;
+                    response.forEach((item) => {
+                        modalBody.append(/*html*/`
+                            <button class="btn btn-light w-100 mb-2 select-realisasi" data-value="${item.value}">
+                                ${item.text}
+                            </button>
+                        `);
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                modalBody.html(`
+                    <div class="alert alert-danger">
+                        Something went wrong
+                    </div>
+                `);
+            }
+        });
+    });
+
+
+})
+window.activeRealisasiInput = null;
+
+// When search button is clicked, remember which input it belongs to
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.btn-search-realisasi')) {
+        window.activeRealisasiInput = e.target
+            .closest('.input-group')
+            .querySelector('.input-realisasi');
+    }
+
+    // When selecting value from modal
+    if (e.target.closest('.select-realisasi')) {
+        window.activeRealisasiInput.value = e.target.dataset.value;
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(
+            document.getElementById('realisasiModal')
+        );
+        modal.hide();
+    }
+
+});
+
+</script>
 
 
 

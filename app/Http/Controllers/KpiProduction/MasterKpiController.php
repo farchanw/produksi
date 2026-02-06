@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\KpiProduction;
 
 use App\Helpers\Modules\KpiProductionHelper;
+use App\Helpers\Common\DatetimeHelper;
+use App\Models\KpiPersonalOee;
 use App\Models\MasterKpi;
 use App\Models\MasterSection;
 use App\Models\MasterSubsection;
@@ -304,5 +306,34 @@ class MasterKpiController extends DefaultController
 
         return response()->json($data);
 
+    }
+
+    // TODO: Pindah?
+    public function fetchRealisasiDefault(Request $request)
+    {
+        $kategori = $request->kategori;
+        $periode = $request->periode;
+        $kode = $request->kode;
+
+        $data = collect();
+
+        if(!$kategori || !$periode || !$kode) {
+            return response()->json($data);
+        }
+
+        if ($kategori === 'personal') {
+            $dataOee = KpiPersonalOee::join('kpi_employees', 'kpi_employees.id', '=', 'kpi_personal_oees.kpi_employees_id')
+                ->where('nik', $kode)
+                ->where('periode', DatetimeHelper::getKpiPeriode($periode))
+                ->first();
+            
+            $data->add([
+               'value' => $dataOee->oee,
+               'text' => "Data OEE ({$dataOee->oee}%)",
+            ]);
+            
+            return response()->json($data);
+        }
+        
     }
 }
